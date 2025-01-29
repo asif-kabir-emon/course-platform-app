@@ -9,11 +9,11 @@ model Users {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  profile              UserProfiles?
-  userVerificationOTPs VerificationOTPs[]
-  userCourseAccess     UserCourseAccess[]
-  PurchaseHistories    PurchaseHistories[]
-  UserLessonComplete   UserLessonComplete[]
+  profile            UserProfiles?
+  OTPVerifications   OTPVerifications[]
+  userCourseAccess   UserCourseAccess[]
+  PurchaseHistories  PurchaseHistories[]
+  UserLessonComplete UserLessonComplete[]
 
   @@map("users")
 }

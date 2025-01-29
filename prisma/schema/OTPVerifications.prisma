@@ -1,4 +1,4 @@
-model VerificationOTPs {
+model OTPVerifications {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
   otpType   OTPType  @default(email_verification)
@@ -10,7 +10,7 @@ model VerificationOTPs {
   user Users @relation(fields: [userId], references: [id])
 
   @@unique([userId, otpType])
-  @@map("verification_otps")
+  @@map("otp_verifications")
 }
 
 enum OTPType {

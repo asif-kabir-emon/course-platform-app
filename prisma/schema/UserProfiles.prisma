@@ -1,10 +1,11 @@
 model UserProfiles {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   userId          String   @unique @db.ObjectId
-  firstName       String
-  lastName        String
-  phone           String
-  address         String
+  firstName       String?
+  lastName        String?
+  phone           String?
+  address         String?
+  dateOfBirth     String?
   email           String   @unique
   isEmailVerified Boolean  @default(false)
   isPhoneVerified Boolean  @default(false)
