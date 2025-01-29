@@ -1,0 +1,24 @@
+model CourseLessons {
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  sectionId   String             @db.ObjectId
+  name        String
+  description String
+  videoUrl    String
+  transcript  String             @default("")
+  status      CourseLessonStatus @default(private)
+  order       Int
+  isDeleted   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  section            CourseSections       @relation(fields: [sectionId], references: [id])
+  UserLessonComplete UserLessonComplete[]
+
+  @@map("course_lessons")
+}
+
+enum CourseLessonStatus {
+  public
+  private
+  preview
+}

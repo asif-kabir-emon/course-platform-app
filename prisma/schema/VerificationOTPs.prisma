@@ -1,0 +1,19 @@
+model VerificationOTPs {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  otpType   OTPType  @default(email_verification)
+  otpCode   String
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user Users @relation(fields: [userId], references: [id])
+
+  @@unique([userId, otpType])
+  @@map("verification_otps")
+}
+
+enum OTPType {
+  email_verification
+  phone_verification
+}

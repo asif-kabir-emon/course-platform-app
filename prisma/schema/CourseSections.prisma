@@ -1,0 +1,20 @@
+model CourseSections {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  courseId    String              @db.ObjectId
+  status      CourseSectionStatus @default(private)
+  name        String
+  description String
+  isDeleted   Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  product Products        @relation(fields: [courseId], references: [id])
+  lessons CourseLessons[]
+
+  @@map("course_sections")
+}
+
+enum CourseSectionStatus {
+  public
+  private
+}

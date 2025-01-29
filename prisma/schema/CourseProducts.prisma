@@ -1,0 +1,11 @@
+model CourseProducts {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String @db.ObjectId
+  productId String @db.ObjectId
+
+  course  Courses  @relation(fields: [courseId], references: [id])
+  product Products @relation(fields: [productId], references: [id])
+
+  @@unique([courseId, productId])
+  @@map("course_products")
+}

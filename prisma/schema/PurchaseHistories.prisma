@@ -1,0 +1,22 @@
+model PurchaseHistories {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  pricePaidInCent Int
+  productDetails  ProductDetail
+  userId          String        @db.ObjectId
+  productId       String        @db.ObjectId
+  stripeSessionId String        @unique
+  refundAt        DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user    Users    @relation(fields: [userId], references: [id])
+  product Products @relation(fields: [productId], references: [id])
+
+  @@map("purchase_histories")
+}
+
+type ProductDetail {
+  name        String
+  description String
+  imageUrls   String
+}

@@ -1,0 +1,22 @@
+model Products {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String
+  imageUrls     String
+  priceInDollar Float         @default(0)
+  status        ProductStatus @default(private)
+  isDeleted     Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  courseProducts    CourseProducts[]
+  courseSections    CourseSections[]
+  PurchaseHistories PurchaseHistories[]
+
+  @@map("products")
+}
+
+enum ProductStatus {
+  public
+  private
+}
