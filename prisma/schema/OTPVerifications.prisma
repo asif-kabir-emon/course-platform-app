@@ -3,7 +3,7 @@ model OTPVerifications {
   userId    String   @db.ObjectId
   otpType   OTPType  @default(email_verification)
   otpCode   String
-  isUsed    Boolean  @default(false)
+  expiresAt DateTime @db.Timestamp
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -16,4 +16,6 @@ model OTPVerifications {
 enum OTPType {
   email_verification
   phone_verification
+  login_verification
+  forgot_password_verification
 }

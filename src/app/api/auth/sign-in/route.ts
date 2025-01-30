@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
@@ -15,11 +15,6 @@ export const POST = catchAsync(async (request: Request) => {
     return ApiError(400, "Invalid payload!");
   }
 
-  // Check if password is at least 8 characters long
-  if (password.length < 8) {
-    return ApiError(400, "Password must be at least 8 characters long!");
-  }
-
   // Check is user already exists with the provided email or not
   const isUserExist = await prisma.users.findUnique({
     where: {
@@ -28,43 +23,27 @@ export const POST = catchAsync(async (request: Request) => {
     },
   });
 
-  if (isUserExist) {
-    return ApiError(404, "Already have an account with this email!");
+  if (!isUserExist) {
+    return ApiError(404, "User not found! Please Create an account.");
   }
 
-  // Hash the password
-  const hashed_password = await bcrypt.hash(
+  // Check if user is verified or not before login
+  if (isUserExist && !isUserExist.isVerified) {
+    return ApiError(404, "User not verified!");
+  }
+
+  // Check if password is correct or not
+  const isPasswordValid = await bcrypt.compare(
     password,
-    Number(process.env.SALT_ROUNDS),
+    String(isUserExist?.password),
   );
 
-  // Create a new user
-  const newUser = await prisma.$transaction(
-    async (tsc: Prisma.TransactionClient) => {
-      const createdUser = await tsc.users.create({
-        data: {
-          email: email,
-          password: hashed_password,
-        },
-      });
-
-      await tsc.userProfiles.create({
-        data: {
-          email: createdUser.email,
-          userId: createdUser.id,
-        },
-      });
-
-      return createdUser;
-    },
-  );
-
-  if (!newUser) {
-    return ApiError(400, "Failed to create user!");
+  if (!isPasswordValid) {
+    return ApiError(401, "Incorrect Credential!");
   }
 
   // Generate JWT token for the user
-  const payload = { id: newUser.id, email: newUser.email };
+  const payload = { id: isUserExist.id, email: isUserExist.email };
   const jwtSecret = String(process.env.JWT_SECRET) || "";
   const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";
   const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
@@ -75,7 +54,7 @@ export const POST = catchAsync(async (request: Request) => {
 
   return sendResponse({
     status: 200,
-    message: "Successfully Created an account.",
+    message: "Successfully logged in.",
     success: true,
     data: {
       accessToken: token,
