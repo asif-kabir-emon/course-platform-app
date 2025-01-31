@@ -8,10 +8,10 @@ import { createToken } from "@/utils/jwtToken";
 const prisma = new PrismaClient();
 
 export const POST = catchAsync(async (request: Request) => {
-  const { email, password } = await request.json();
+  const { email, password, firstName, lastName } = await request.json();
 
   // Check if email and password are provided in the payload or not
-  if (!email || !password) {
+  if (!email || !password || !firstName || !lastName) {
     return ApiError(400, "Invalid payload!");
   }
 
@@ -65,10 +65,14 @@ export const POST = catchAsync(async (request: Request) => {
         create: {
           email: createdUser.email,
           userId: createdUser.id,
+          firstName: firstName,
+          lastName: lastName,
         },
         update: {
           email: createdUser.email,
           userId: createdUser.id,
+          firstName: firstName,
+          lastName: lastName,
         },
       });
 

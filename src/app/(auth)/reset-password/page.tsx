@@ -1,64 +1,49 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AppName } from "@/constants/App.constant";
+import Link from "next/link";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 type TFormInput = {
-  email: string;
   password: string;
+  confirmPassword: string;
 };
 
-const SignInPage = () => {
+const ResetPasswordPage = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<TFormInput>({
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
   const onSubmit: SubmitHandler<TFormInput> = (data) => {
+    if (data.password !== data.confirmPassword) return;
+
     console.log("Login Data:", data);
     alert("Login successful!");
   };
-
   return (
     <div className="p-2 w-full max-w-md mx-auto">
       <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
           <h3 className="text-gray-500 text-2xl">Welcome back!</h3>
-          <h2 className="text-xl">Sign in to {String(AppName)}</h2>
+          <h2 className="text-xl">Try to Reset Your Password</h2>
         </div>
 
         <hr />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email Field */}
-          <div>
-            <label className="text-gray-700">Email address</label>
-            <Input
-              type="text"
-              placeholder="Enter your email address"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                  message: "Invalid email address",
-                },
-              })}
-              className="mt-1"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {String(errors.email.message)}
-              </p>
-            )}
-          </div>
+          <p className="text-gray-500 text-sm mb-5">
+            Enter your new password below. Password must be at least 6
+            characters long.
+          </p>
 
           {/* Password Field */}
           <div>
@@ -82,19 +67,37 @@ const SignInPage = () => {
             )}
           </div>
 
-          {/* Forgot Password */}
+          {/* Confirm Password Field */}
           <div>
-            <a
-              href="/forgot-password"
-              className="text-sm text-gray-700 underline"
-            >
-              Forgot password?
-            </a>
+            <label className="text-gray-700">Confirm Password</label>
+            <Input
+              type="password"
+              placeholder="Re-enter your password"
+              {...register("confirmPassword", {
+                required: "Confirm password is required",
+                validate: (value) =>
+                  value === watch("password") || "Passwords do not match",
+              })}
+              className="mt-1"
+            />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {String(errors.confirmPassword.message)}
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full text-md py-2 mt-1">
-            Sign In
+          <Button
+            type="submit"
+            className="w-full text-md py-2 mt-1"
+            disabled={
+              watch("password") !== watch("confirmPassword") ||
+              watch("password").length < 6 ||
+              watch("confirmPassword").length < 6
+            }
+          >
+            Reset Password
           </Button>
         </form>
 
@@ -102,10 +105,16 @@ const SignInPage = () => {
 
         <div>
           <p className="text-gray-700 text-center">
-            Don&apos;t have an account?{" "}
-            <a href="/sign-up" className="font-bold hover:underline">
-              Sign up
-            </a>
+            <Link
+              href="/"
+              className="hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Return to
+              <span className="font-bold"> Home </span>
+              page
+            </Link>
           </p>
         </div>
       </div>
@@ -113,4 +122,4 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default ResetPasswordPage;
