@@ -92,6 +92,9 @@ const SignInPage = () => {
         }),
       );
 
+      // Redirect to the home page
+      router.push("/");
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
       toast.error("Failed to sign in. Please try again.", {

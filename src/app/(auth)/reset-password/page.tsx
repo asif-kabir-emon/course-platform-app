@@ -25,7 +25,7 @@ const ResetPasswordPage = () => {
     } else {
       router.push("/forgot-password");
     }
-  }, [searchParams]);
+  }, [router, searchParams]);
 
   const {
     register,

@@ -2,6 +2,8 @@
 type jwtPayload = {
   id: string;
   email: string;
+  role: string;
+  verified: boolean;
   iat?: number;
   exp?: number;
 };

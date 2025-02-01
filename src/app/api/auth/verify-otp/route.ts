@@ -95,6 +95,7 @@ export const POST = catchAsync(async (request: Request) => {
   const payload = {
     id: isUserExist.id,
     email: isUserExist.email,
+    role: isUserExist.role,
     verified: true,
   };
   const jwtSecret = String(process.env.JWT_SECRET) || "";

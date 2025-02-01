@@ -44,6 +44,7 @@ export const authGuard = (handler: RequestHandler) => {
         id: user.id,
         email: user.email,
         verified: user.isVerified,
+        role: user.role,
       };
 
       // Proceed to the original handler

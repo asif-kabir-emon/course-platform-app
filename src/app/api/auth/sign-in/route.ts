@@ -51,7 +51,12 @@ export const POST = catchAsync(async (request: Request) => {
   }
 
   // Generate JWT token for the user
-  const payload = { id: isUserExist.id, email: isUserExist.email };
+  const payload = {
+    id: isUserExist.id,
+    email: isUserExist.email,
+    role: isUserExist.role,
+    verified: isUserExist.isVerified,
+  };
   const jwtSecret = String(process.env.JWT_SECRET) || "";
   const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";
   const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });

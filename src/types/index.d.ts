@@ -6,6 +6,7 @@ declare global {
     user?: {
       id: string;
       email: string;
+      role: string;
       verified: boolean;
     };
   }
