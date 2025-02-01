@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type TFormInput = {
   email: string;
@@ -26,39 +27,87 @@ const ForgotPasswordPage = () => {
   // Check if 2 minutes have passed since the last request
   useEffect(() => {
     const lastRequestTime = Number(sessionStorage.getItem("lastRequestTime"));
+
     if (lastRequestTime) {
       const elapsedTime = Date.now() - lastRequestTime;
       if (elapsedTime < 120000) {
-        const remainingTime = Math.max(0, 120000 - elapsedTime);
-        setTimeLeft(Math.floor(remainingTime / 1000)); // seconds
+        const remainingTime = Math.ceil((120000 - elapsedTime) / 1000); // Convert to seconds
+        setTimeLeft(remainingTime);
         setIsButtonDisabled(true);
       } else {
         sessionStorage.removeItem("lastRequestTime");
       }
     }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          setIsButtonDisabled(false);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
-  const onSubmit: SubmitHandler<TFormInput> = (data) => {
-    console.log("Requesting password reset for:", data.email);
-
+  const onSubmit: SubmitHandler<TFormInput> = async (data) => {
+    setIsButtonDisabled(true);
     // Save the current time for the next request delay
     sessionStorage.setItem("lastRequestTime", String(Date.now()));
 
-    // Simulate sending the reset link
-    alert("Password reset link sent!");
+    const payload = {
+      email: data.email,
+      otpType: "forgot_password_verification",
+    };
 
-    // Set the timer for re-enabling the button after 2 minutes
-    setIsButtonDisabled(true);
-    let countDown = 120; // 2 minutes in seconds
-    const interval = setInterval(() => {
-      countDown -= 1;
-      setTimeLeft(countDown * 1000); // Convert seconds to milliseconds for accuracy
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      if (countDown <= 0) {
-        clearInterval(interval);
+      const responseData = await response.json();
+
+      if (!responseData.success) {
         setIsButtonDisabled(false);
+
+        toast.error(responseData.message, {
+          position: "top-center",
+          duration: 2000,
+        });
+      } else {
+        toast.success(responseData.message, {
+          position: "top-center",
+          duration: 2000,
+        });
+
+        // Set the timer for re-enabling the button after 2 minutes
+        setTimeLeft(120);
+        let countDown = 120; // 2 minutes in seconds
+        const interval = setInterval(() => {
+          countDown -= 1;
+          setTimeLeft(countDown); // Convert seconds to milliseconds for accuracy
+
+          if (countDown <= 0) {
+            clearInterval(interval);
+            setIsButtonDisabled(false);
+          }
+        }, 1000);
       }
-    }, 1000);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
+      setIsButtonDisabled(false);
+      toast.error("Failed to sign in. Please try again.", {
+        position: "top-center",
+        duration: 2000,
+      });
+    }
   };
 
   return (
@@ -105,8 +154,8 @@ const ForgotPasswordPage = () => {
             className="w-full text-md py-2 mt-1"
             disabled={isButtonDisabled}
           >
-            {isButtonDisabled
-              ? `Try again in ${timeLeft / 1000} seconds`
+            {isButtonDisabled && timeLeft > 0
+              ? `Try again in ${timeLeft} seconds`
               : "Send Reset Link"}
           </Button>
         </form>

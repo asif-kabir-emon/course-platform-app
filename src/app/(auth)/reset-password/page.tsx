@@ -2,8 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type TFormInput = {
   password: string;
@@ -11,6 +13,20 @@ type TFormInput = {
 };
 
 const ResetPasswordPage = () => {
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const tokenFromUrl = searchParams.get("token"); // Get token from URL
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+    } else {
+      router.push("/forgot-password");
+    }
+  }, [searchParams]);
+
   const {
     register,
     handleSubmit,
@@ -23,11 +39,57 @@ const ResetPasswordPage = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<TFormInput> = (data) => {
-    if (data.password !== data.confirmPassword) return;
+  const onSubmit: SubmitHandler<TFormInput> = async (data) => {
+    if (data.password !== data.confirmPassword) {
+      toast.error("Password and Confirm Password must be same!", {
+        position: "top-center",
+        duration: 2000,
+      });
+    }
 
-    console.log("Login Data:", data);
-    alert("Login successful!");
+    const payload = {
+      requestType: "forgot_password",
+      newPassword: data.password,
+    };
+
+    const toastId = toast.loading("Try to reset password!", {
+      position: "top-center",
+      duration: 0,
+    });
+
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      if (!responseData.success) {
+        toast.error(responseData.message, {
+          id: toastId,
+          duration: 2000,
+        });
+      } else {
+        toast.success(responseData.message, {
+          id: toastId,
+          duration: 2000,
+        });
+
+        // Redirect to sign-in page
+        router.push("/sign-in");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Failed to reset password. Please try again.", {
+        id: toastId,
+        duration: 2000,
+      });
+    }
   };
   return (
     <div className="p-2 w-full max-w-md mx-auto">
@@ -41,7 +103,7 @@ const ResetPasswordPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <p className="text-gray-500 text-sm mb-5">
-            Enter your new password below. Password must be at least 6
+            Enter your new password below. Password must be at least 8
             characters long.
           </p>
 
@@ -55,7 +117,7 @@ const ResetPasswordPage = () => {
                 required: "Password is required",
                 minLength: {
                   value: 6,
-                  message: "Password must be at least 6 characters long",
+                  message: "Password must be at least 8 characters long",
                 },
               })}
               className="mt-1"
