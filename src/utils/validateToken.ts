@@ -12,3 +12,36 @@ export async function validateToken(
     return false;
   }
 }
+
+export async function decodedToken(
+  token: string,
+  secret: string,
+): Promise<{
+  success: boolean;
+  data: jwtPayload | null;
+}> {
+  try {
+    const decodedToken = await jwtVerify(
+      token,
+      new TextEncoder().encode(secret),
+    );
+
+    if (!decodedToken) {
+      return {
+        success: false,
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      data: decodedToken.payload as jwtPayload,
+    };
+  } catch (error) {
+    console.error("JWT validation failed:", error);
+    return {
+      success: false,
+      data: null,
+    };
+  }
+}

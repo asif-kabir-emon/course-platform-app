@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { validateToken } from "@/utils/validateToken";
+import { decodedToken, validateToken } from "@/utils/validateToken";
 
 export default function ConsumerLayout({
   children,
@@ -17,32 +17,50 @@ export default function ConsumerLayout({
 }
 
 function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); // Start with null to avoid hydration mismatch
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
 
     if (token) {
-      const isValidate = validateToken(
+      const isValidToken = validateToken(
         token,
         process.env.NEXT_PUBLIC_JWT_SECRET as string,
       );
 
-      if (!isValidate) {
+      if (!isValidToken) {
         Cookies.remove("accessToken");
         setIsLoggedIn(false);
+        setIsAdmin(false);
         return;
       }
 
+      const decodedTokenData = decodedToken(
+        token,
+        process.env.NEXT_PUBLIC_JWT_SECRET as string,
+      ) as unknown as { success: boolean; data: { role: string } | null };
+
+      if (
+        decodedTokenData &&
+        decodedTokenData.data &&
+        decodedTokenData.data?.role === "admin"
+      ) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);
+      setIsAdmin(false);
     }
   }, []);
 
   const handleSignOut = () => {
     Cookies.remove("accessToken");
     setIsLoggedIn(false);
+    setIsAdmin(false);
   };
 
   if (isLoggedIn === null) return null;
@@ -59,12 +77,14 @@ function Navbar() {
 
         {isLoggedIn && (
           <>
-            <Link
-              className="hover:bg-accent/10 px-2 flex items-center"
-              href="/admin"
-            >
-              Admin
-            </Link>
+            {isAdmin && (
+              <Link
+                className="hover:bg-accent/10 px-2 flex items-center"
+                href="/admin"
+              >
+                Admin
+              </Link>
+            )}
             <Link
               className="hover:bg-accent/10 px-2 flex items-center"
               href="/courses"

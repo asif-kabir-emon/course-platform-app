@@ -2,7 +2,7 @@
 type jwtPayload = {
   id: string;
   email: string;
-  role: string;
+  role: "super_admin" | "admin" | "user";
   verified: boolean;
   iat?: number;
   exp?: number;
