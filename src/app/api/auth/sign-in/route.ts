@@ -19,7 +19,6 @@ export const POST = catchAsync(async (request: Request) => {
   const isUserExist = await prisma.users.findUnique({
     where: {
       email: email,
-      isVerified: true,
     },
   });
 
@@ -29,7 +28,16 @@ export const POST = catchAsync(async (request: Request) => {
 
   // Check if user is verified or not before login
   if (isUserExist && !isUserExist.isVerified) {
-    return ApiError(404, "User not verified!");
+    // return ApiError(404, "User not verified!");
+    return sendResponse({
+      status: 401,
+      message: "User not verified!",
+      success: false,
+      data: {
+        accessToken: "",
+        isVerified: isUserExist.isVerified,
+      },
+    });
   }
 
   // Check if password is correct or not
@@ -54,10 +62,11 @@ export const POST = catchAsync(async (request: Request) => {
 
   return sendResponse({
     status: 200,
-    message: "Successfully logged in.",
+    message: "Signed in successfully!",
     success: true,
     data: {
       accessToken: token,
+      isVerified: isUserExist.isVerified,
     },
   });
 });

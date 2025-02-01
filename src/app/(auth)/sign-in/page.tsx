@@ -4,6 +4,11 @@ import { Input } from "@/components/ui/input";
 import { AppName } from "@/constants/App.constant";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
+import { authKey } from "@/constants/AuthKey.constant";
+import { useRouter } from "next/navigation";
+import { sendOTP } from "../verify-otp/page";
 
 type TFormInput = {
   email: string;
@@ -11,6 +16,7 @@ type TFormInput = {
 };
 
 const SignInPage = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -22,9 +28,77 @@ const SignInPage = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<TFormInput> = (data) => {
-    console.log("Login Data:", data);
-    alert("Login successful!");
+  const onSubmit: SubmitHandler<TFormInput> = async (data) => {
+    const payload = {
+      email: data.email,
+      password: data.password,
+    };
+
+    const toasterId = toast.loading("Trying to sign in!", {
+      position: "top-center",
+      duration: 2000,
+    });
+
+    try {
+      // API call
+      const response = await fetch("/api/auth/sign-in", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      // Show error message if login is unsuccessful
+      if (!responseData.success) {
+        toast.error(responseData.message, {
+          id: toasterId,
+          duration: 2000,
+        });
+        // set Temporary session to verify otp
+        if (responseData.data.isVerified === false) {
+          const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiration
+          sessionStorage.setItem(
+            "emailVerifyData",
+            JSON.stringify({ email: data.email, expiry: expiryTime }),
+          );
+          sendOTP(data.email);
+          router.push("/verify-otp");
+        }
+        return;
+      }
+
+      // Set the auth token in cookies and session storage if login is successful
+      toast.success("Signed in successfully!", {
+        id: toasterId,
+        duration: 2000,
+      });
+
+      Cookies.set(authKey, responseData.data.accessToken, {
+        path: "/",
+        secure: true,
+        sameSite: "strict",
+        expires: 28,
+      });
+
+      sessionStorage.setItem(
+        authKey,
+        JSON.stringify({
+          authKey: responseData.data.accessToken,
+          expiry: new Date().getTime() + 28 * 24 * 60 * 60 * 1000,
+          isVerified: responseData.data.isVerified,
+        }),
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
+      toast.error("Failed to sign in. Please try again.", {
+        id: toasterId,
+        duration: 2000,
+      });
+    }
   };
 
   return (

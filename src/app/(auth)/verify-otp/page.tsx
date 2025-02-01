@@ -3,6 +3,45 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import { authKey } from "@/constants/AuthKey.constant";
+
+export const sendOTP = async (email: string) => {
+  const payload = {
+    email: email,
+    otpType: "email_verification",
+  };
+  try {
+    const response = await fetch("/api/auth/send-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseData = await response.json();
+
+    if (!responseData.success) {
+      toast.error(responseData.message, {
+        position: "top-center",
+        duration: 2000,
+      });
+    } else {
+      toast.success(responseData.message, {
+        position: "top-center",
+        duration: 2000,
+      });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error: unknown) {
+    toast.error("Failed to sign in. Please try again.", {
+      position: "top-center",
+      duration: 2000,
+    });
+  }
+};
 
 const VerifyOtpPage = () => {
   const router = useRouter();
@@ -70,21 +109,92 @@ const VerifyOtpPage = () => {
     }
   };
 
-  const handleResendOtp = () => {
-    // Reset the OTP and start the countdown again
-    setOtp(Array(6).fill(""));
-    setSeconds(120); // Reset timer to 2 minutes
-    setIsResendDisabled(true); // Disable Resend button during countdown
-    alert("OTP has been resent to your email address.");
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").slice(0, 6); // Extract first 6 digits
+
+    if (/^\d{6}$/.test(pasteData)) {
+      setOtp(pasteData.split(""));
+
+      // Move focus to the last input field
+      const lastIndex = pasteData.length - 1;
+      const lastInput = document.getElementById(`otp-input-${lastIndex}`);
+      lastInput?.focus();
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (emailAddress) {
+      sendOTP(emailAddress);
+
+      // Reset the OTP and start the countdown again
+      setOtp(Array(6).fill(""));
+      setSeconds(120); // Reset timer to 2 minutes
+      setIsResendDisabled(true); // Disable Resend button during countdown
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const payload = {
       email: emailAddress,
       otpType: "email_verification",
       otpCode: otp.join(""),
     };
+
+    const toasterId = toast.loading("Trying to verify your account!", {
+      position: "top-center",
+      duration: 2000,
+    });
+
+    try {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      if (responseData.success) {
+        toast.success(responseData.message, {
+          id: toasterId,
+          duration: 2000,
+        });
+
+        Cookies.set(authKey, responseData.data.accessToken, {
+          path: "/",
+          secure: true,
+          sameSite: "strict",
+          expires: 28,
+        });
+
+        sessionStorage.setItem(
+          authKey,
+          JSON.stringify({
+            authKey: responseData.data.accessToken,
+            expiry: new Date().getTime() + 28 * 24 * 60 * 60 * 1000,
+            isVerified: responseData.data.isVerified,
+          }),
+        );
+
+        router.push("/");
+      } else {
+        toast.error(responseData.message, {
+          id: toasterId,
+          duration: 2000,
+        });
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
+      toast.error("Failed to verify your account. Please try again.", {
+        id: toasterId,
+        duration: 2000,
+      });
+    }
   };
 
   return (
@@ -116,6 +226,7 @@ const VerifyOtpPage = () => {
                   value={digit}
                   onChange={(e) => handleOtpChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)} // Handling Backspace
+                  onPaste={handlePaste}
                   maxLength={1}
                   className="w-10 h-10 text-center text-lg border-2 border-gray-300 rounded-md"
                 />

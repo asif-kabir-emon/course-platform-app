@@ -107,7 +107,7 @@ export const POST = catchAsync(async (request: Request) => {
 
   return sendResponse({
     status: 200,
-    message: "OTP verified successfully.",
+    message: "OTP verified successfully. Signed in successfully!",
     success: true,
     data: {
       accessToken: token,

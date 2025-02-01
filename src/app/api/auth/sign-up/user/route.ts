@@ -29,10 +29,7 @@ export const POST = catchAsync(async (request: Request) => {
   });
 
   if (isUserExist) {
-    return ApiError(
-      400,
-      "Already have an account with this email! Please Sign In.",
-    );
+    return ApiError(400, "Already have an account with this email!");
   }
 
   // Hash the password

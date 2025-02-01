@@ -95,7 +95,7 @@ export const POST = catchAsync(async (request: Request) => {
 
   return sendResponse({
     status: 200,
-    message: "OTP sent successfully.",
+    message: "OTP sent successfully. Please check your email.",
     success: true,
   });
 });

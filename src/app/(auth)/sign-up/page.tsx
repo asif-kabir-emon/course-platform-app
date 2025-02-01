@@ -5,6 +5,7 @@ import { AppName } from "@/constants/App.constant";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type TFormInput = {
   firstName: string;
@@ -30,17 +31,59 @@ const SignUpPage = () => {
   });
 
   const onSubmit: SubmitHandler<TFormInput> = async (data) => {
-    console.log("Login Data:", data);
-    alert("Login successful!");
+    const payload = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: data.password,
+    };
 
-    // set Temporary session to verify otp
-    if (data.email) {
-      const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiration
-      sessionStorage.setItem(
-        "emailVerifyData",
-        JSON.stringify({ email: data.email, expiry: expiryTime }),
-      );
-      router.push("/verify-otp");
+    const toasterId = toast.loading("Trying to sign up!", {
+      position: "top-center",
+      duration: 2000,
+    });
+
+    try {
+      // API call
+      const response = await fetch("/api/auth/sign-up/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      // Show error message if login is unsuccessful
+      if (!responseData.success) {
+        toast.error(responseData.message, {
+          id: toasterId,
+          duration: 2000,
+        });
+      } else {
+        toast.success(responseData.message, {
+          id: toasterId,
+          duration: 2000,
+        });
+
+        if (data.email && responseData.success === true) {
+          // set Temporary session to verify otp
+          const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiration
+          sessionStorage.setItem(
+            "emailVerifyData",
+            JSON.stringify({ email: data.email, expiry: expiryTime }),
+          );
+          router.push("/verify-otp");
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Failed to sign up. Please try again.", {
+        id: toasterId,
+        duration: 2000,
+      });
     }
   };
 
@@ -130,8 +173,8 @@ const SignUpPage = () => {
               {...register("password", {
                 required: "Password is required",
                 minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters long",
+                  value: 8,
+                  message: "Password must be at least 8 characters long",
                 },
               })}
               className="mt-1"
