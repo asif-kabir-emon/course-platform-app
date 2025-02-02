@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { decodedToken, validateToken } from "@/utils/validateToken";
+import { AppName } from "@/constants/App.constant";
 
 export default function ConsumerLayout({
   children,
@@ -70,9 +71,9 @@ function Navbar() {
       <nav className="flex gap-4 container">
         <Link
           href="/"
-          className="mr-auto text-lg hover:underline px-2 flex items-center"
+          className="mr-auto text-lg hover:underline flex items-center"
         >
-          Course Platform App
+          {AppName}
         </Link>
 
         {isLoggedIn && (
