@@ -31,7 +31,7 @@ const TextAreaInput = ({
             <Textarea
               id={name}
               placeholder={placeholder}
-              className={`min-h-[100px] w-full py-2 px-3 focus:outline-none mt-2 mb-0.5 focus:border-primary ${
+              className={`min-h-[110px] w-full py-2 px-3 focus:outline-none mt-2 mb-0.5 focus:border-primary ${
                 error ? "border-red-400" : ""
               }`}
               {...field}
