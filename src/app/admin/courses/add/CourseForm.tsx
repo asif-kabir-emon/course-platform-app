@@ -28,7 +28,7 @@ const CourseForm = () => {
 
     const toastId = toast.loading("Adding new course...", {
       duration: 2000,
-      position: "top-right",
+      position: "top-center",
     });
 
     try {

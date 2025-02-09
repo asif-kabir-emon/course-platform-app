@@ -82,12 +82,9 @@ export const DELETE = authGuard(
     }
 
     // Delete course
-    const deleteCourse = await prisma.courses.update({
+    const deleteCourse = await prisma.courses.delete({
       where: {
         id: courseId,
-      },
-      data: {
-        isDeleted: true,
       },
     });
 

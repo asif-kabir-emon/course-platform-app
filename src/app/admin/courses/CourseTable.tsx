@@ -7,16 +7,46 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatPlural } from "@/lib/formatPlural";
-import { useGetCoursesQuery } from "@/redux/api/courseApi";
+import {
+  useDeleteCourseMutation,
+  useGetCoursesQuery,
+} from "@/redux/api/courseApi";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
+import { Trash2Icon } from "lucide-react";
+import { ActionButton } from "@/components/ActionButton";
+import { toast } from "sonner";
 
 const CourseTable = () => {
   const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({});
+  const [deleteCourse, { isLoading: isDeletingCourse }] =
+    useDeleteCourseMutation();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   if (isFetchingData) {
     return <div>Loading...</div>;
   }
+
+  const handleDeleteCourse = async (id: string) => {
+    const toastId = toast.loading("Deleting course...", {
+      duration: 2000,
+      position: "top-center",
+    });
+    try {
+      const response = await deleteCourse(id).unwrap();
+
+      if (response.success) {
+        toast.success(response.message, { id: toastId, duration: 2000 });
+      } else {
+        toast.error(response.message, { id: toastId, duration: 2000 });
+      } // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Failed to add new course!", { id: toastId, duration: 2000 });
+    } finally {
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div>
@@ -62,7 +92,7 @@ const CourseTable = () => {
                           includeCount: true,
                         },
                       )}
-                      •{" "}
+                      {" • "}
                       {formatPlural(
                         course.lessonsCount,
                         {
@@ -79,14 +109,28 @@ const CourseTable = () => {
                 <TableCell>{course.studentCount}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button asChild>
+                    <Button>
                       <Link href={`/admin/courses/${course.id}/edit`}>
                         Edit
                       </Link>
                     </Button>
-                    <Button asChild className="btn btn-sm btn-danger">
-                      Delete
-                    </Button>
+                    <ActionButton
+                      action={() => {
+                        handleDeleteCourse(course.id);
+                      }}
+                      isOpen={isOpen}
+                      setOpen={setIsOpen}
+                      tryAction={isDeletingCourse}
+                    >
+                      <Button
+                        variant="outline"
+                        className="border-red-500 hover:bg-red-500 text-red-500"
+                        onClick={() => setIsOpen(!isOpen)}
+                      >
+                        <Trash2Icon />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </ActionButton>
                   </div>
                 </TableCell>
               </TableRow>
