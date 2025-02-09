@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
 import { useRouter } from "next/navigation";
-import { sendOTP } from "../verify-otp/page";
+import { sendOTP } from "@/utils/auth";
 
 type TFormInput = {
   email: string;

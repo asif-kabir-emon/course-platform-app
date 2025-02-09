@@ -7,7 +7,7 @@ import { UserRole } from "@/constants/UserRole.constant";
 
 const prisma = new PrismaClient();
 
-export const UPDATE = authGuard(
+export const PUT = authGuard(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catchAsync(async (request: Request, context: any) => {
     const user = request.user;

@@ -1,7 +1,9 @@
+"use client";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
+import CourseTable from "./CourseTable";
 
 const CoursesPage = () => {
   return (
@@ -11,6 +13,7 @@ const CoursesPage = () => {
           <Link href="/admin/courses/add">Add Course</Link>
         </Button>
       </PageHeader>
+      <CourseTable />
     </div>
   );
 };

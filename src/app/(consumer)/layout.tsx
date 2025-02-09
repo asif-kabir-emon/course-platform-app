@@ -22,10 +22,16 @@ function Navbar() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
+    const checkAuth = async () => {
+      const token = Cookies.get("accessToken");
 
-    if (token) {
-      const isValidToken = validateToken(
+      if (!token) {
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        return;
+      }
+
+      const isValidToken = await validateToken(
         token,
         process.env.NEXT_PUBLIC_JWT_SECRET as string,
       );
@@ -37,25 +43,21 @@ function Navbar() {
         return;
       }
 
-      const decodedTokenData = decodedToken(
+      const decodedTokenData = await decodedToken(
         token,
         process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      ) as unknown as { success: boolean; data: { role: string } | null };
+      );
 
-      if (
-        decodedTokenData &&
-        decodedTokenData.data &&
-        decodedTokenData.data?.role === "admin"
-      ) {
+      if (decodedTokenData.success && decodedTokenData.data?.role === "admin") {
         setIsAdmin(true);
       } else {
         setIsAdmin(false);
       }
+
       setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-      setIsAdmin(false);
-    }
+    };
+
+    checkAuth();
   }, []);
 
   const handleSignOut = () => {
