@@ -5,8 +5,8 @@ model UserCourseAccess {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   Users   @relation(fields: [userId], references: [id])
-  course Courses @relation(fields: [courseId], references: [id])
+  users   Users   @relation(fields: [userId], references: [id])
+  courses Courses @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
   @@map("user_course_access")

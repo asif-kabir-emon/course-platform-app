@@ -45,11 +45,38 @@ export const POST = authGuard(
 );
 
 export const GET = catchAsync(async () => {
-  const courses = await prisma.courses.findMany();
+  const courses = await prisma.courses.findMany({
+    include: {
+      userCourseAccess: true,
+      sections: {
+        include: {
+          lessons: true,
+        },
+      },
+    },
+  });
 
   if (!courses) {
     return ApiError(404, "No courses found!");
   }
+
+  const responseData =
+    courses.length > 0
+      ? courses?.map((course) => ({
+          id: course.id,
+          name: course.name,
+          description: course.description,
+          sectionsCount: course.sections.length,
+          lessonsCount: course.sections.reduce(
+            (count, section) => count + section.lessons.length,
+            0,
+          ),
+          studentCount: course.userCourseAccess.length,
+          isDeleted: course.isDeleted,
+          createdAt: course.createdAt,
+          updatedAt: course.updatedAt,
+        }))
+      : [];
 
   return sendResponse({
     status: 200,
@@ -58,6 +85,6 @@ export const GET = catchAsync(async () => {
     meta: {
       count: courses.length,
     },
-    data: courses,
+    data: responseData,
   });
 });

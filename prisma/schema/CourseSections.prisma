@@ -10,6 +10,7 @@ model CourseSections {
 
   product Products        @relation(fields: [courseId], references: [id])
   lessons CourseLessons[]
+  courses Courses @relation(fields: [courseId], references: [id])
 
   @@map("course_sections")
 }
