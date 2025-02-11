@@ -12,7 +12,7 @@ import {
   useGetCoursesQuery,
 } from "@/redux/api/courseApi";
 import Link from "next/link";
-import React, { useState } from "react";
+import React from "react";
 import { Trash2Icon } from "lucide-react";
 import { ActionButton } from "@/components/ActionButton";
 import { toast } from "sonner";
@@ -21,8 +21,6 @@ const CourseTable = () => {
   const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({});
   const [deleteCourse, { isLoading: isDeletingCourse }] =
     useDeleteCourseMutation();
-
-  const [isOpen, setIsOpen] = useState(false);
 
   if (isFetchingData) {
     return <div>Loading...</div>;
@@ -42,9 +40,7 @@ const CourseTable = () => {
         toast.error(response.message, { id: toastId, duration: 2000 });
       } // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to add new course!", { id: toastId, duration: 2000 });
-    } finally {
-      setIsOpen(false);
+      toast.error("Failed to delete course!", { id: toastId, duration: 2000 });
     }
   };
 
@@ -118,14 +114,11 @@ const CourseTable = () => {
                       action={() => {
                         handleDeleteCourse(course.id);
                       }}
-                      isOpen={isOpen}
-                      setOpen={setIsOpen}
                       tryAction={isDeletingCourse}
                     >
                       <Button
                         variant="outline"
                         className="border-red-500 hover:bg-red-500 text-red-500"
-                        onClick={() => setIsOpen(!isOpen)}
                       >
                         <Trash2Icon />
                         <span className="sr-only">Delete</span>

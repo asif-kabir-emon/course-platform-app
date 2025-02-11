@@ -1,4 +1,5 @@
 export { jwtPayload } from "./jwtPayload.type";
+export { courseSectionStatus } from "./CourseSectionStatus.type";
 export { OTPType } from "./OTPVerification.type";
 
 declare global {

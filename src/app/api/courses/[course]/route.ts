@@ -10,8 +10,9 @@ const prisma = new PrismaClient();
 export const PUT = authGuard(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catchAsync(async (request: Request, context: any) => {
+    const params = await context.params;
     const user = request.user;
-    const courseId = context.params.course;
+    const courseId = params.course;
     const { name, description } = await request.json();
 
     // Check if user is authenticated or not
@@ -19,7 +20,7 @@ export const PUT = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
-    // Check if email and password are provided in the payload or not
+    // Check if name and description are provided in the payload or not
     if (!name || !description) {
       return ApiError(400, "Invalid payload!");
     }
@@ -62,8 +63,9 @@ export const PUT = authGuard(
 export const DELETE = authGuard(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catchAsync(async (request: Request, context: any) => {
+    const params = await context.params;
     const user = request.user;
-    const courseId = context.params.course;
+    const courseId = params.course;
 
     // Check if user is authenticated or not
     if (user && user.role !== UserRole.admin) {
@@ -100,3 +102,37 @@ export const DELETE = authGuard(
     });
   }),
 );
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const GET = catchAsync(async (request: Request, context: any) => {
+  const params = await context.params;
+  const courseId = params.course;
+
+  // Check if course exists
+  const course = await prisma.courses.findUnique({
+    where: {
+      id: courseId,
+    },
+    include: {
+      sections: {
+        orderBy: { order: "asc" },
+        include: {
+          lessons: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
+  });
+
+  if (!course) {
+    return ApiError(404, "Course not found!");
+  }
+
+  return sendResponse({
+    status: 200,
+    message: "Course fetched successfully!",
+    success: true,
+    data: course,
+  });
+});

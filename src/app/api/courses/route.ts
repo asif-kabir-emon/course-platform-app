@@ -18,7 +18,7 @@ export const POST = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
-    // Check if email and password are provided in the payload or not
+    // Check if name and description are provided in the payload or not
     if (!name || !description) {
       return ApiError(400, "Invalid payload!");
     }

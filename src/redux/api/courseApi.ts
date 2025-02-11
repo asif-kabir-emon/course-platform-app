@@ -19,11 +19,18 @@ export const CourseApi = baseApi.injectEndpoints({
       }),
       providesTags: [TagTypes.course],
     }),
+    getCourseById: build.query({
+      query: (id: string) => ({
+        url: `${Route_URL}/${id}`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.course],
+    }),
     updateCourse: build.mutation({
-      query: (data) => ({
-        url: `${Route_URL}/${data.id}`,
+      query: ({ id, body }) => ({
+        url: `${Route_URL}/${id}`,
         method: "PUT",
-        data: data,
+        data: body,
       }),
       invalidatesTags: [TagTypes.course],
     }),
@@ -40,6 +47,7 @@ export const CourseApi = baseApi.injectEndpoints({
 export const {
   useAddCourseMutation,
   useGetCoursesQuery,
+  useGetCourseByIdQuery,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
 } = CourseApi;
