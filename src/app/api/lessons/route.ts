@@ -1,4 +1,4 @@
-import { CourseSectionStatus, PrismaClient } from "@prisma/client";
+import { CourseLessonStatus, PrismaClient } from "@prisma/client";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
@@ -10,7 +10,8 @@ const prisma = new PrismaClient();
 export const POST = authGuard(
   catchAsync(async (request: Request) => {
     const user = request.user;
-    const { name, courseId, status } = await request.json();
+    const { name, description, youtubeVideoId, status, sectionId } =
+      await request.json();
 
     // Check if user is authenticated or not
     if (user && user.role !== UserRole.admin) {
@@ -20,37 +21,40 @@ export const POST = authGuard(
     // Check if name, courseId and status are provided in the payload or not
     if (
       !name ||
-      !courseId ||
+      !youtubeVideoId ||
+      !sectionId ||
       !status ||
-      ![CourseSectionStatus.public, CourseSectionStatus.private].includes(
-        status,
-      )
+      ![
+        CourseLessonStatus.public,
+        CourseLessonStatus.private,
+        CourseLessonStatus.preview,
+      ].includes(status)
     ) {
       return ApiError(400, "Invalid payload!");
     }
 
-    const totalExistingSections = await prisma.courseSections.count({
+    const totalExistingLessons = await prisma.courseLessons.count({
       where: {
-        courseId,
+        sectionId,
       },
     });
 
-    if (totalExistingSections > 0) {
-      // reordering sections based on the order
-      const sections = await prisma.courseSections.findMany({
+    if (totalExistingLessons > 0) {
+      // reordering lessons based on the order
+      const lessons = await prisma.courseLessons.findMany({
         where: {
-          courseId,
+          sectionId,
         },
         orderBy: {
           order: "asc",
         },
       });
 
-      // Update the order of sections
+      // Update the order of lessons
       await Promise.all(
-        sections.map(async (section, index) => {
-          await prisma.courseSections.update({
-            where: { id: section.id },
+        lessons.map(async (lesson, index) => {
+          await prisma.courseLessons.update({
+            where: { id: lesson.id },
             data: { order: index + 1 },
           });
         }),
@@ -58,22 +62,24 @@ export const POST = authGuard(
     }
 
     // Create a new section
-    const newSection = await prisma.courseSections.create({
+    const newSection = await prisma.courseLessons.create({
       data: {
-        name,
-        courseId,
-        status,
-        order: totalExistingSections + 1,
+        name: name,
+        description: description || "",
+        youtubeVideoId: youtubeVideoId || "",
+        status: status,
+        sectionId: sectionId,
+        order: totalExistingLessons + 1,
       },
     });
 
     if (!newSection) {
-      return ApiError(500, "Failed to create section!");
+      return ApiError(500, "Failed to create lesson!");
     }
 
     return sendResponse({
       status: 200,
-      message: "New section added successfully!",
+      message: "New lesson added successfully!",
       success: true,
       data: newSection,
     });

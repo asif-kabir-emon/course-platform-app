@@ -1,6 +1,6 @@
-import { sectionDefaultValues, sectionSchema } from "@/schema/section.schema";
+import { sectionSchema } from "@/schema/section.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CourseSectionStatus } from "@prisma/client";
+import { CourseLessonStatus } from "@prisma/client";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -8,54 +8,63 @@ import { z } from "zod";
 import { Form } from "../Form/Form";
 import TextInput from "../Form/TextInput";
 import { Button } from "../ui/button";
-import {
-  useAddSectionMutation,
-  useUpdateSectionMutation,
-} from "@/redux/api/sectionApi";
 import SelectInput from "../Form/SelectInput";
+import { lessonDefaultValues, lessonSchema } from "@/schema/lesson.schema";
+import {
+  useAddLessonMutation,
+  useUpdateLessonMutation,
+} from "@/redux/api/lessonApi";
+import TextAreaInput from "../Form/TextAreaInput";
+import YoutubeVideoPlayer from "../YoutubeVideoPlayer";
 
-const SectionForm = ({
-  section,
-  courseId,
+const LessonForm = ({
+  lesson,
+  sectionId,
   onSuccess,
 }: {
-  section?: {
+  lesson?: {
     id: string;
     name: string;
-    status: CourseSectionStatus;
+    description: string;
+    youtubeVideoId: string;
+    status: CourseLessonStatus;
   };
-  courseId: string;
+  sectionId: string;
   onSuccess?: () => void;
 }) => {
-  const form = useForm<z.infer<typeof sectionSchema>>({
-    resolver: zodResolver(sectionSchema),
-    defaultValues: section ?? sectionDefaultValues,
+  const form = useForm<z.infer<typeof lessonSchema>>({
+    resolver: zodResolver(lessonSchema),
+    defaultValues: lesson ?? lessonDefaultValues,
   });
 
-  const [addSection, { isLoading: isAdding }] = useAddSectionMutation();
-  const [updateSection, { isLoading: isUpdating }] = useUpdateSectionMutation();
+  const videoId = form.watch("youtubeVideoId");
 
-  const handleSubmit = async (values: z.infer<typeof sectionSchema>) => {
-    const action = section ? "updated" : "added";
+  const [addLesson, { isLoading: isAdding }] = useAddLessonMutation();
+  const [updateLesson, { isLoading: isUpdating }] = useUpdateLessonMutation();
+
+  const handleSubmit = async (values: z.infer<typeof lessonSchema>) => {
+    const action = lesson ? "updated" : "added";
 
     const payload =
       action === "added"
         ? {
             name: values.name,
+            youtubeVideoId: values.youtubeVideoId,
             status: values.status,
-            courseId: courseId,
+            sectionId: sectionId,
           }
         : {
-            id: section?.id,
+            id: lesson?.id,
             body: {
               name: values.name,
+              youtubeVideoId: values.youtubeVideoId,
               status: values.status,
-              courseId: courseId,
+              sectionId: sectionId,
             },
           };
 
     const toastId = toast.loading(
-      action === "added" ? "Adding new section..." : "Updating section...",
+      action === "added" ? "Adding new lesson ..." : "Updating lesson ...",
       {
         duration: 2000,
         position: "top-center",
@@ -65,8 +74,8 @@ const SectionForm = ({
     try {
       const response =
         action === "added"
-          ? await addSection(payload).unwrap()
-          : await updateSection(payload).unwrap();
+          ? await addLesson(payload).unwrap()
+          : await updateLesson(payload).unwrap();
 
       if (response.success) {
         toast.success(response.message, { id: toastId, duration: 2000 });
@@ -79,8 +88,8 @@ const SectionForm = ({
     } catch (error) {
       toast.error(
         action === "added"
-          ? "Failed to add new section!"
-          : "Failed to update section!",
+          ? "Failed to add new lesson!"
+          : "Failed to update lesson!",
         { id: toastId, duration: 2000 },
       );
     }
@@ -93,7 +102,13 @@ const SectionForm = ({
           <TextInput
             name="name"
             label="Name"
-            placeholder="Enter name of the section"
+            placeholder="Enter name of the lesson"
+            required
+          />
+          <TextInput
+            name="youtubeVideoId"
+            label="Youtube Video ID"
+            placeholder="Enter youtube video id"
             required
           />
           <SelectInput
@@ -103,15 +118,20 @@ const SectionForm = ({
             items={[
               {
                 label: "Public",
-                value: CourseSectionStatus.public,
+                value: CourseLessonStatus.public,
               },
               {
                 label: "Private",
-                value: CourseSectionStatus.private,
+                value: CourseLessonStatus.private,
+              },
+              {
+                label: "Preview",
+                value: CourseLessonStatus.preview,
               },
             ]}
             required
           />
+          <TextAreaInput name="description" label="Description" />
           <div className="text-right">
             <Button
               type="submit"
@@ -121,10 +141,15 @@ const SectionForm = ({
               Save
             </Button>
           </div>
+          {videoId && (
+            <div className="aspect-video">
+              <YoutubeVideoPlayer videoId={videoId} />
+            </div>
+          )}
         </form>
       </Form>
     </div>
   );
 };
 
-export default SectionForm;
+export default LessonForm;
