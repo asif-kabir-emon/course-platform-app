@@ -8,7 +8,7 @@ import CourseForm from "../../../../../components/features/CourseForm";
 import SectionFormDialog from "@/components/features/SectionFormDialog";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import SortableSectionList from "@/components/features/SortableSectionList";
 import { cn } from "@/lib/utils";
 import { CourseLessonStatus, CourseSectionStatus } from "@prisma/client";
@@ -27,8 +27,6 @@ const CourseEditPage = ({
   if (isDataFetching) {
     return <div>Loading...</div>;
   }
-
-  console.log(courses);
 
   return (
     <div className="container my-5">
@@ -84,13 +82,7 @@ const CourseEditPage = ({
                         "text-muted-foreground",
                     )}
                   >
-                    {section.status === CourseSectionStatus.public && (
-                      <Eye className="size-4" />
-                    )}
-                    {section.status === CourseSectionStatus.private && (
-                      <EyeOff className="size-4" />
-                    )}
-                    {section.name}
+                    <span className="mx-2">{section.name}</span>
                   </CardTitle>
                   <LessonFormDialog sectionId={section.id}>
                     <DialogTrigger asChild>

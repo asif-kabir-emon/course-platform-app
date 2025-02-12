@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
-import CourseTable from "./CourseTable";
+import CourseTable from "../../../components/features/CourseTable";
 
 const CoursesPage = () => {
   return (

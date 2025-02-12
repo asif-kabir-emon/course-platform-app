@@ -6,7 +6,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { formatPlural } from "@/lib/formatPlural";
+import { formatPlural } from "@/lib/formatter";
 import {
   useDeleteCourseMutation,
   useGetCoursesQuery,

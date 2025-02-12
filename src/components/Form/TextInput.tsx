@@ -5,7 +5,7 @@ import { Label } from "../ui/label";
 type TextInputProps = {
   name: string;
   label: string;
-  type?: string;
+  type?: "text" | "email" | "password" | "number";
   placeholder?: string;
   required?: boolean;
 };
@@ -37,6 +37,11 @@ const TextInput = ({
                 error ? "border-red-400" : ""
               }`}
               {...field}
+              onChange={(e) => {
+                field.onChange(
+                  type === "number" ? Number(e.target.value) : e.target.value,
+                );
+              }}
             />
             {error && (
               <span className="text-red-500 text-sm">{error.message}</span>

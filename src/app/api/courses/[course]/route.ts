@@ -77,10 +77,17 @@ export const DELETE = authGuard(
       where: {
         id: courseId,
       },
+      include: {
+        sections: true,
+      },
     });
 
     if (!course) {
       return ApiError(404, "Course not found!");
+    }
+
+    if (course.sections.length > 0) {
+      return ApiError(400, "Course has sections. Please delete them first!");
     }
 
     // Delete course

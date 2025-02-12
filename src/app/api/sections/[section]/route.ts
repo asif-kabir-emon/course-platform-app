@@ -84,10 +84,17 @@ export const DELETE = authGuard(
       where: {
         id: sectionId,
       },
+      include: {
+        lessons: true,
+      },
     });
 
     if (!isSectionExist) {
       return ApiError(404, "Not found!");
+    }
+
+    if (isSectionExist.lessons.length > 0) {
+      return ApiError(400, "Section has lessons. Please delete them first!");
     }
 
     // Delete a section

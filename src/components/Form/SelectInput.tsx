@@ -36,7 +36,7 @@ const SelectInput = ({
         render={({ field, fieldState: { error } }) => (
           <>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full mt-2 mb-0.5">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
               <SelectContent>
