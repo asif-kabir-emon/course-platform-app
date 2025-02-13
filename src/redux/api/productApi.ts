@@ -41,6 +41,12 @@ export const ProductApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.product],
     }),
+    checkUserAccess: build.query({
+      query: (id: string) => ({
+        url: `${Route_URL}/${id}/user-access`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -50,4 +56,5 @@ export const {
   useGetProductByIdQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useCheckUserAccessQuery,
 } = ProductApi;

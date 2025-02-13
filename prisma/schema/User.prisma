@@ -12,8 +12,8 @@ model Users {
   profile            UserProfiles?
   OTPVerifications   OTPVerifications[]
   userCourseAccess   UserCourseAccess[]
-  PurchaseHistories  PurchaseHistories[]
-  UserLessonComplete UserLessonComplete[]
+  purchaseHistories  PurchaseHistories[]
+  userLessonComplete UserLessonComplete[]
 
   @@map("users")
 }

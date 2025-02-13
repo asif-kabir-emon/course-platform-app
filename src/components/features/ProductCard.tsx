@@ -1,0 +1,51 @@
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import Image from "next/image";
+import { formatPrice } from "@/lib/formatter";
+import { Button } from "../ui/button";
+import Link from "next/link";
+
+const ProductCard = ({
+  id,
+  name,
+  description,
+  imageUrl,
+  priceInDollar,
+}: {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  priceInDollar: number;
+}) => {
+  return (
+    <Card className="overflow-hidden flex flex-col w-full max-w-[500px] mx-auto">
+      <div className="relative aspect-video w-full">
+        <Image src={imageUrl} alt={name} fill className="object-cover" />
+      </div>
+      <CardHeader className="space-y-0">
+        <CardDescription>
+          <div className="mb-2 text-base">{formatPrice(priceInDollar)}</div>
+        </CardDescription>
+        <CardTitle className="text-xl">{name}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="line-clamp-3">{description}</p>
+      </CardContent>
+      <CardFooter className="mt-auto">
+        <Button className="w-full text-md py-6" asChild>
+          <Link href={`/products/${id}`}>View Course</Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default ProductCard;

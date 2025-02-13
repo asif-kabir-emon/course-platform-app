@@ -1,4 +1,10 @@
-import { Prisma, PrismaClient, ProductStatus } from "@prisma/client";
+import {
+  CourseLessonStatus,
+  CourseSectionStatus,
+  Prisma,
+  PrismaClient,
+  ProductStatus,
+} from "@prisma/client";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
@@ -210,6 +216,39 @@ export const GET = catchAsync(async (request: Request, context: any) => {
   const product = await prisma.products.findUnique({
     where: {
       id: productId,
+    },
+    include: {
+      courseProducts: {
+        include: {
+          course: {
+            include: {
+              sections: {
+                where: {
+                  status: CourseSectionStatus.public,
+                },
+                orderBy: {
+                  order: "asc",
+                },
+                include: {
+                  lessons: {
+                    where: {
+                      status: {
+                        in: [
+                          CourseLessonStatus.public,
+                          CourseLessonStatus.preview,
+                        ],
+                      },
+                    },
+                    orderBy: {
+                      order: "asc",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 

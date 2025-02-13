@@ -3,7 +3,7 @@ import { authKey } from "./constants/AuthKey.constant";
 import { decodedToken, validateToken } from "./utils/validateToken";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
 import { forbidden } from "next/navigation";
-import { setUserCountryHeader } from "./utils/userCountryHeader";
+import { setUserCountryHeader } from "./lib/userCountryHeader";
 
 export function createRouteMatcher(routes: string[]) {
   // Convert patterns to regular expressions
@@ -12,7 +12,7 @@ export function createRouteMatcher(routes: string[]) {
       "^" +
         route
           .replace(/\//g, "\\/")
-          .replace(/\(\.\*\)/g, ".*") // Match wildcard routes
+          .replace(/\(\.\*\)/g, ".*")
           .replace(/:[^/]+/g, "[^/]+") +
         "$",
     );
@@ -102,12 +102,10 @@ export async function middleware(req: NextRequest) {
     const headers = new Headers(req.headers);
     setUserCountryHeader(headers, decision.ip.country);
 
-    return NextResponse.next({
-      request: {
-        headers,
-      },
-    });
+    return NextResponse.next({ request: { headers } });
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
