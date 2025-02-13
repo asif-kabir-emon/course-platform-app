@@ -44,6 +44,14 @@ const isCannotAccessAfterAuthRoutes = createRouteMatcher([
 
 const isAdminRoutes = createRouteMatcher(["/admin(.*)"]);
 
+const isUserRoutes = createRouteMatcher([
+  "/purchases(.*)",
+  "/profile(.*)",
+  "/products/purchase-failure",
+  "/products/:productId/purchase",
+  "/products/:productId/purchase/success",
+]);
+
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
@@ -93,6 +101,10 @@ export async function middleware(req: NextRequest) {
   } else if (isAdminRoutes(pathname)) {
     if (userRole !== "admin") {
       return NextResponse.redirect(new URL("/not-found", req.nextUrl));
+    }
+  } else if (isUserRoutes(pathname)) {
+    if (!token || !isValid) {
+      return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
     }
   } else if (isPublicRoutes(pathname)) {
     console.log("Public route");
