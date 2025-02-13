@@ -9,6 +9,10 @@ const ProductPurchaseFailurePage = () => {
         <div className="text-xl">
           There was a problem purchasing your product.
         </div>
+        <div className="border border-l-[5px] border-l-red-600 mb-4 px-4 py-2 rounded-r-md text-sm text-muted-foreground">
+          Purchase failed due to a network error or, a payment failure on the
+          payment gateway or, already purchased the product.
+        </div>
         <Button asChild className="text-xl h-auto py-4 px-8 rounded-lg">
           <Link href="/">Try again</Link>
         </Button>
