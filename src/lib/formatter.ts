@@ -34,9 +34,6 @@ const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-// export function formatDate(date: Date) {
-//   return DATE_FORMATTER.format(date);
-// }
 export function formatDate(date: Date | string | number) {
   if (!date) return "Invalid Date"; // Handle undefined/null values
   const parsedDate = new Date(date);

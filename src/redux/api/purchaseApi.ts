@@ -11,7 +11,15 @@ export const PurchasesApi = baseApi.injectEndpoints({
       }),
       providesTags: [TagTypes.purchases],
     }),
+    getPurchaseHistoryById: build.query({
+      query: (id: string) => ({
+        url: `${Route_URL}/${id}`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.purchases],
+    }),
   }),
 });
 
-export const { useGetPurchaseHistoryQuery } = PurchasesApi;
+export const { useGetPurchaseHistoryQuery, useGetPurchaseHistoryByIdQuery } =
+  PurchasesApi;
