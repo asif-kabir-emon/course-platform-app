@@ -52,7 +52,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
     <div className="container my-5">
       <PageHeader title="Purchase Details">
         {purchase.data.stripe.receiptUrl && (
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="hover:bg-neutral-800" asChild>
             <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
               View Receipt
             </Link>

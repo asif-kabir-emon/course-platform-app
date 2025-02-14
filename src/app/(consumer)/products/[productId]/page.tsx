@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import { SkeletonButton } from "@/components/Skeleton";
 import {
@@ -35,11 +34,10 @@ const ProductPage = ({
   params: Promise<{ productId: string }>;
 }) => {
   const { productId } = use(params);
-  const { data: product, isLoading: isFetchingData } =
-    useGetProductByIdQuery(productId);
+  const { data: product, isLoading } = useGetProductByIdQuery(productId);
 
-  if (isFetchingData) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <ProductDetailSkeleton />;
   }
 
   if (product.success === false) {
@@ -60,7 +58,7 @@ const ProductPage = ({
 
   return (
     <div className="container my-5 select-none">
-      <div className="flex   justify-between items-center gap-16">
+      <div className="flex justify-between items-center gap-16">
         <div className="flex flex-col items-start gap-6">
           <div className="flex flex-col gap-2">
             <div className="text-xl">
@@ -218,19 +216,101 @@ const ProductPage = ({
 export default ProductPage;
 
 const PurchaseButton = ({ productId }: { productId: string }) => {
-  const { data: userAccess } = useCheckUserAccessQuery(productId);
+  const { data: userAccess, isLoading } = useCheckUserAccessQuery(productId);
 
-  const hasAccess = userAccess?.success && userAccess?.data.hasAccess;
+  if (isLoading) {
+    return <SkeletonButton className="w-28 h-12" />;
+  }
+
+  if (!isLoading && userAccess?.success === false) {
+    return null;
+  }
 
   return (
     <div>
-      {hasAccess ? (
+      {userAccess?.data.hasAccess ? (
         <div>You already own this product!</div>
       ) : (
         <Button className="text-lg h-auto py-1 px-6 rounded-lg" asChild>
           <Link href={`/products/${productId}/purchase`}>Get Now</Link>
         </Button>
       )}
+    </div>
+  );
+};
+
+const ProductDetailSkeleton = () => {
+  return (
+    <div className="container my-8 select-none">
+      <div className="flex justify-between items-center gap-16">
+        <div className="flex flex-col items-start gap-6">
+          <div className="flex flex-col gap-2">
+            <div className="w-24 h-6 bg-gray-300 rounded-lg animate-pulse"></div>
+            <div className="w-60 h-8 bg-gray-300 rounded-lg animate-pulse"></div>
+            <div className="w-40 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
+          </div>
+          <div className="w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
+          <div className="w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
+          <div className="w-28 h-12 bg-gray-300 rounded-lg animate-pulse"></div>
+        </div>
+        <div className="relative aspect-video max-w-lg flex-grow">
+          <div className="w-full h-full bg-gray-300 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 lg:mt-16 items-start w-full">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div className="w-40 h-6 bg-gray-300 rounded-lg animate-pulse"></div>
+            </CardTitle>
+            <CardDescription>
+              <div className="flex gap-2 my-2">
+                <div className="w-14 h-6 bg-gray-300 rounded-lg animate-pulse"></div>
+                <div className="w-6 h-6 bg-gray-300 rounded-full animate-pulse"></div>
+                <div className="w-14 h-6 bg-gray-300 rounded-lg animate-pulse"></div>
+              </div>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="multiple" className="w-full">
+              <AccordionItem value="section-1">
+                <AccordionTrigger className="flex gap-2 hover:no-underline">
+                  <div className="flex flex-col flex-grow gap-1">
+                    <span className="w-24 h-6 bg-gray-300 rounded-lg animate-pulse"></span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="flex-col gap-8 space-y-1">
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="w-6 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                    <div className="w-24 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="w-6 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                    <div className="w-24 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="section-2">
+                <AccordionTrigger className="flex gap-2 hover:no-underline">
+                  <div className="flex flex-col flex-grow gap-1">
+                    <span className="w-24 h-6 bg-gray-300 rounded-lg animate-pulse"></span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="flex-col gap-8 space-y-1">
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="w-6 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                    <div className="w-24 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="w-6 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                    <div className="w-24 h-5 bg-gray-300 rounded-lg animate-pulse"></div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

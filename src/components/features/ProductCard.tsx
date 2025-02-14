@@ -49,3 +49,25 @@ const ProductCard = ({
 };
 
 export default ProductCard;
+
+export const ProductSkeleton = () => {
+  return (
+    <Card className="overflow-hidden flex flex-col w-full max-w-[500px] mx-auto">
+      <div className="relative aspect-video w-full">
+        <div className="bg-gray-200 animate-pulse w-full h-60" />
+      </div>
+      <CardHeader className="space-y-0">
+        <CardDescription>
+          <div className="mb-2 text-base bg-gray-200 animate-pulse h-6 w-20" />
+        </CardDescription>
+        <CardTitle className="text-xl bg-gray-200 animate-pulse h-6 w-40" />
+      </CardHeader>
+      <CardContent>
+        <p className="line-clamp-3 bg-gray-200 animate-pulse h-6 w-full" />
+      </CardContent>
+      <CardFooter className="mt-auto">
+        <Button className="w-full text-md py-6 bg-gray-200 animate-pulse" />
+      </CardFooter>
+    </Card>
+  );
+};

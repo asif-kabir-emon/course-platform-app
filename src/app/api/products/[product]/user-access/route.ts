@@ -14,8 +14,19 @@ export const GET = authGuard(
     const productId = params.product;
 
     // Check if user is authenticated or not
-    if (!user || user.id) {
+    if (!user || !user.id) {
       return ApiError(401, "Unauthorized access!");
+    }
+
+    const isUserExists = await prisma.users.findFirst({
+      where: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+
+    if (!isUserExists) {
+      return ApiError(404, "User not found!");
     }
 
     // Check if product exists
@@ -24,20 +35,25 @@ export const GET = authGuard(
     }
 
     // check if user has access to the product
-    const hasAccess = await prisma.purchaseHistories.findFirst({
+    const purchaseHistory = await prisma.purchaseHistories.findFirst({
       where: {
         userId: user.id,
         productId: productId,
-        refundAt: null,
       },
     });
+
+    const hasAccess = purchaseHistory
+      ? !purchaseHistory?.refundAt || purchaseHistory?.refundAt === null
+        ? true
+        : false
+      : false;
 
     return sendResponse({
       status: 200,
       message: "User access checked successfully!",
       success: true,
       data: {
-        hasAccess: !!hasAccess,
+        hasAccess: hasAccess,
       },
     });
   }),

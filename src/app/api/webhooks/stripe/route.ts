@@ -91,9 +91,28 @@ const processStripeCheckout = async (
     return courseProduct.courseId;
   });
 
+  const userHasAccessToCourses = await prisma.userCourseAccess.findMany({
+    where: {
+      userId: userId,
+      courseId: {
+        in: courseIds,
+      },
+    },
+  });
+
+  const needToPurchaseCourses = courseIds.filter((courseId) => {
+    return !userHasAccessToCourses.some((userCourseAccess) => {
+      return userCourseAccess.courseId === courseId;
+    });
+  });
+
+  if (needToPurchaseCourses.length === 0) {
+    throw new Error("User already has access to all courses");
+  }
+
   await prisma.$transaction(async (trc: Prisma.TransactionClient) => {
     const userCourseAccess = await trc.userCourseAccess.createMany({
-      data: courseIds.map((courseId) => {
+      data: needToPurchaseCourses.map((courseId) => {
         return {
           userId: userId,
           courseId: courseId,
