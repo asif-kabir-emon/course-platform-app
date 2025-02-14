@@ -2,7 +2,7 @@ import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, UserRole } from "@prisma/client";
 import { stripeServerClient } from "@/helpers/stripe/stripeServer";
 import Stripe from "stripe";
 
@@ -145,6 +145,144 @@ export const GET = authGuard(
         },
         user: isUserExist,
       },
+    });
+  }),
+);
+
+export const PUT = authGuard(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  catchAsync(async (request: Request, context: any) => {
+    const params = await context.params;
+    const purchaseId = params.purchase;
+    const user = request.user;
+
+    // Check if user is authenticated or not
+    if (
+      !user ||
+      !user.id ||
+      !user.email ||
+      !user.role ||
+      user.role !== UserRole.admin ||
+      !purchaseId
+    ) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
+    const isPurchaseExist = await prisma.purchaseHistories.findFirst({
+      where: {
+        id: purchaseId,
+      },
+      include: {
+        product: {
+          include: {
+            courseProducts: {
+              select: {
+                courseId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!isPurchaseExist || isPurchaseExist.refundAt !== null) {
+      return ApiError(404, "Purchase not found!");
+    }
+
+    // If purchase is within 30 days then refund the purchase
+    const purchaseDate = new Date(isPurchaseExist.createdAt);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate.getTime() - purchaseDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 30) {
+      return ApiError(400, "Can't refund after 30 days of purchase!");
+    }
+
+    const otherPurchases = await prisma.purchaseHistories.findMany({
+      where: {
+        id: {
+          not: purchaseId,
+        },
+        refundAt: null,
+      },
+      include: {
+        product: {
+          include: {
+            courseProducts: {
+              select: {
+                courseId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const productRelatedCourseIds = isPurchaseExist.product.courseProducts.map(
+      (course) => course.courseId,
+    );
+
+    const otherPurchasesCourseIds =
+      otherPurchases.length > 0
+        ? otherPurchases.flatMap((purchase) =>
+            purchase.product.courseProducts.map((course) => course.courseId),
+          )
+        : [];
+
+    // Need to remove course access from user which is not related to other purchases
+
+    const needToRemoveCourseAccess = productRelatedCourseIds.filter(
+      (courseId) => !otherPurchasesCourseIds.includes(courseId),
+    );
+
+    // console.log("productRelatedCourseIds", productRelatedCourseIds);
+    // console.log("otherPurchasesCourseIds", otherPurchasesCourseIds);
+    // console.log("needToRemoveCourseAccess", needToRemoveCourseAccess);
+
+    const refund = await prisma.$transaction(
+      async (tsc: Prisma.TransactionClient) => {
+        const session = await stripeServerClient.checkout.sessions.retrieve(
+          isPurchaseExist.stripeSessionId,
+        );
+
+        if (!session.payment_intent) {
+          return ApiError(400, "Payment intent not found!");
+        }
+
+        await stripeServerClient.refunds.create({
+          payment_intent:
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent.id,
+        });
+
+        await tsc.purchaseHistories.update({
+          where: {
+            id: purchaseId,
+          },
+          data: {
+            refundAt: new Date(),
+          },
+        });
+
+        await tsc.userCourseAccess.deleteMany({
+          where: {
+            userId: isPurchaseExist.userId,
+            courseId: {
+              in: needToRemoveCourseAccess,
+            },
+          },
+        });
+
+        return session;
+      },
+    );
+
+    return sendResponse({
+      status: 200,
+      message: "Purchase refunded successfully!",
+      success: true,
+      data: refund,
     });
   }),
 );

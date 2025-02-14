@@ -4,9 +4,16 @@ const Route_URL = "/purchases";
 
 export const PurchasesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPurchaseHistory: build.query({
+    getMyPurchaseHistory: build.query({
       query: () => ({
-        url: `${Route_URL}`,
+        url: `${Route_URL}/my-purchases`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.purchases],
+    }),
+    getPurchaseHistories: build.query({
+      query: () => ({
+        url: `${Route_URL}/`,
         method: "GET",
       }),
       providesTags: [TagTypes.purchases],
@@ -18,8 +25,19 @@ export const PurchasesApi = baseApi.injectEndpoints({
       }),
       providesTags: [TagTypes.purchases],
     }),
+    refundPurchase: build.mutation({
+      query: (id: string) => ({
+        url: `${Route_URL}/${id}`,
+        method: "PUT",
+      }),
+      invalidatesTags: [TagTypes.purchases],
+    }),
   }),
 });
 
-export const { useGetPurchaseHistoryQuery, useGetPurchaseHistoryByIdQuery } =
-  PurchasesApi;
+export const {
+  useGetMyPurchaseHistoryQuery,
+  useGetPurchaseHistoriesQuery,
+  useGetPurchaseHistoryByIdQuery,
+  useRefundPurchaseMutation,
+} = PurchasesApi;

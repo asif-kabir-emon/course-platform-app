@@ -44,8 +44,18 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
   if (isLoading)
     return <LoadingSpinner className="my-6 md:my-28 size-16 mx-auto" />;
 
-  if (purchase.success === false || !purchase.data) {
-    return <div>Not found</div>;
+  if (
+    purchase.success === false ||
+    !purchase.data ||
+    purchase.data.length === 0
+  ) {
+    return (
+      <div className="container my-8">
+        <div className="border border-l-[5px] border-l-red-600 mb-4 px-4 py-4 rounded-r-md text-sm text-muted-foreground">
+          Failed to fetch data. Try to refresh the page.
+        </div>
+      </div>
+    );
   }
 
   return (

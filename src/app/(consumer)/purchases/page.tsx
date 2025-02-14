@@ -4,7 +4,7 @@ import UserPurchaseTable, {
 } from "@/components/features/UserPurchaseTable";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useGetPurchaseHistoryQuery } from "@/redux/api/purchaseApi";
+import { useGetMyPurchaseHistoryQuery } from "@/redux/api/purchaseApi";
 import Link from "next/link";
 import React, { Suspense } from "react";
 
@@ -22,7 +22,7 @@ const PurchasesPage = () => {
 export default PurchasesPage;
 
 const SuspenseBoundary = () => {
-  const { data: purchases, isLoading } = useGetPurchaseHistoryQuery({});
+  const { data: purchases, isLoading } = useGetMyPurchaseHistoryQuery({});
 
   if (isLoading) {
     return <UserPurchaseTableSkeleton />;
