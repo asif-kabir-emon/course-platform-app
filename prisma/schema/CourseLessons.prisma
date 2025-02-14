@@ -11,7 +11,7 @@ model CourseLessons {
   updatedAt   DateTime           @updatedAt
 
   section            CourseSections       @relation(fields: [sectionId], references: [id])
-  UserLessonComplete UserLessonComplete[]
+  userLessonComplete UserLessonComplete[]
 
   @@map("course_lessons")
 }

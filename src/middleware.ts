@@ -46,6 +46,7 @@ const isAdminRoutes = createRouteMatcher(["/admin(.*)"]);
 
 const isUserRoutes = createRouteMatcher([
   "/purchases(.*)",
+  "/courses(.*)",
   "/profile(.*)",
   "/products/purchase-failure",
   "/products/:productId/purchase",
