@@ -20,9 +20,16 @@ export const LessonApi = baseApi.injectEndpoints({
       providesTags: [TagTypes.lesson],
     }),
     getLessonById: build.query({
-      query: (id: string) => ({
-        url: `${Route_URL}/${id}`,
+      query: ({
+        courseId,
+        lessonId,
+      }: {
+        lessonId: string;
+        courseId: string;
+      }) => ({
+        url: `${Route_URL}/${lessonId}?courseId=${courseId}`,
         method: "GET",
+        data: { courseId },
       }),
       providesTags: [TagTypes.lesson],
     }),
@@ -49,6 +56,59 @@ export const LessonApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.course, TagTypes.lesson],
     }),
+
+    // API for completed lessons
+    getCompletedLessons: build.query({
+      query: () => ({
+        url: `${Route_URL}/completed`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.completedLesson],
+    }),
+    addCompletedLesson: build.mutation({
+      query: (lessonId: string) => ({
+        url: `${Route_URL}/completed`,
+        method: "POST",
+        data: { lessonId },
+      }),
+      invalidatesTags: [TagTypes.completedLesson, TagTypes.lesson],
+    }),
+
+    // API for previous lesson
+    getPreviousLesson: build.query({
+      query: ({
+        courseId,
+        lessonId,
+        order,
+        sectionId,
+      }: {
+        courseId: string;
+        lessonId: string;
+        order: number;
+        sectionId: string;
+      }) => ({
+        url: `${Route_URL}/lesson/previous?courseId=${courseId}&lessonId=${lessonId}&order=${order}&sectionId=${sectionId}`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lesson, TagTypes.course],
+    }),
+    getNextLesson: build.query({
+      query: ({
+        courseId,
+        lessonId,
+        order,
+        sectionId,
+      }: {
+        courseId: string;
+        lessonId: string;
+        order: number;
+        sectionId: string;
+      }) => ({
+        url: `${Route_URL}/lesson/next?courseId=${courseId}&lessonId=${lessonId}&order=${order}&sectionId=${sectionId}`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lesson, TagTypes.course],
+    }),
   }),
 });
 
@@ -59,4 +119,8 @@ export const {
   useUpdateLessonMutation,
   useDeleteLessonMutation,
   useReorderedLessonsMutation,
+  useGetCompletedLessonsQuery,
+  useAddCompletedLessonMutation,
+  useGetPreviousLessonQuery,
+  useGetNextLessonQuery,
 } = LessonApi;

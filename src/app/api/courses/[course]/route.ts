@@ -1,4 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  CourseLessonStatus,
+  CourseSectionStatus,
+  PrismaClient,
+} from "@prisma/client";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
@@ -8,7 +13,6 @@ import { UserRole } from "@/constants/UserRole.constant";
 const prisma = new PrismaClient();
 
 export const PUT = authGuard(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catchAsync(async (request: Request, context: any) => {
     const params = await context.params;
     const user = request.user;
@@ -61,7 +65,6 @@ export const PUT = authGuard(
 );
 
 export const DELETE = authGuard(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catchAsync(async (request: Request, context: any) => {
     const params = await context.params;
     const user = request.user;
@@ -110,36 +113,75 @@ export const DELETE = authGuard(
   }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const GET = catchAsync(async (request: Request, context: any) => {
-  const params = await context.params;
-  const courseId = params.course;
+export const GET = authGuard(
+  catchAsync(async (request: Request, context: any) => {
+    const params = await context.params;
+    const user = request.user;
+    const courseId = params.course;
 
-  // Check if course exists
-  const course = await prisma.courses.findUnique({
-    where: {
-      id: courseId,
-    },
-    include: {
-      sections: {
-        orderBy: { order: "asc" },
-        include: {
-          lessons: {
-            orderBy: { order: "asc" },
+    // Check if user is authenticated or not
+    if (!user || !user.id || !user.email || !user.role) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
+    const isUserExists = await prisma.users.findUnique({
+      where: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+    if (!isUserExists) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
+    // Check is user enrolled in the course or not
+    const isEnrolled = await prisma.userCourseAccess.findFirst({
+      where: {
+        userId: user.id,
+        courseId: courseId,
+      },
+    });
+
+    if (!isEnrolled) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
+    // Check if course exists
+    const course = await prisma.courses.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        sections: {
+          where: {
+            status: CourseSectionStatus.public,
+          },
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              where: {
+                status: {
+                  not: CourseLessonStatus.private,
+                },
+              },
+              orderBy: { order: "asc" },
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!course) {
-    return ApiError(404, "Course not found!");
-  }
+    if (!course) {
+      return ApiError(404, "Course not found!");
+    }
 
-  return sendResponse({
-    status: 200,
-    message: "Course fetched successfully!",
-    success: true,
-    data: course,
-  });
-});
+    return sendResponse({
+      status: 200,
+      message: "Course fetched successfully!",
+      success: true,
+      data: course,
+    });
+  }),
+);

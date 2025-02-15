@@ -61,7 +61,7 @@ export const GET = authGuard(
     const formattedData =
       userCourses.map((course) => {
         return {
-          id: course.id,
+          id: course.courses.id,
           name: course.courses.name,
           description: course.courses.description,
           sectionsCount: course.courses.sections.length,
