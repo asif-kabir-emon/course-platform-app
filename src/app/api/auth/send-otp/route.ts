@@ -52,7 +52,7 @@ export const POST = catchAsync(async (request: Request) => {
       role: isUserExist.role,
       verified: isUserExist.isVerified,
     };
-    const jwtSecret = String(process.env.JWT_SECRET) || "";
+    const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
     const jwtExpiresIn = "1h";
     const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
 
@@ -78,7 +78,7 @@ export const POST = catchAsync(async (request: Request) => {
         <p>This link is valid for <strong>1 hour</strong>. If you did not request a password reset, please ignore this email. No changes will be made to your account.</p>
         <br>
         <p>Best Regards,</p>
-        <p><strong>${process.env.APP_NAME} Support Team</strong></p>
+        <p><strong>${process.env.NEXT_PUBLIC_APP_NAME} Support Team</strong></p>
       </div>`,
     });
 
@@ -111,7 +111,7 @@ export const POST = catchAsync(async (request: Request) => {
         <p>If you did not request this verification, please ignore this email.</p>
         <br>
         <p>Best Regards,</p>
-        <p><strong>${process.env.APP_NAME} Support Team</strong></p>
+        <p><strong>${process.env.NEXT_PUBLIC_APP_NAME} Support Team</strong></p>
       </div>`,
     });
 

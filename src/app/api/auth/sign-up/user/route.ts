@@ -87,7 +87,7 @@ export const POST = catchAsync(async (request: Request) => {
     email: newUser.email,
     verified: newUser.isVerified,
   };
-  const jwtSecret = String(process.env.JWT_SECRET) || "";
+  const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
   const jwtExpiresIn = "1h";
   const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
 

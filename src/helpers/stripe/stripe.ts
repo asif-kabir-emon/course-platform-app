@@ -21,8 +21,7 @@ export async function getClientSessionSecret(
           product_data: {
             name: product.name,
             images: [
-              new URL(product.imageUrl, process.env.NEXT_PUBLIC_SERVER_URL)
-                .href,
+              new URL(product.imageUrl, process.env.NEXT_PUBLIC_APP_URL).href,
             ],
             description: product.description,
           },
@@ -32,7 +31,7 @@ export async function getClientSessionSecret(
     ],
     ui_mode: "embedded",
     mode: "payment",
-    return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/webhooks/stripe?stripeSessionId={CHECKOUT_SESSION_ID}`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/stripe?stripeSessionId={CHECKOUT_SESSION_ID}`,
     customer_email: user.email,
     payment_intent_data: {
       receipt_email: user.email,

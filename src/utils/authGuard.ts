@@ -16,7 +16,7 @@ export const authGuard = (handler: RequestHandler) => {
       }
 
       const token = authorization.split(" ")[1];
-      const jwtSecret = String(process.env.JWT_SECRET);
+      const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET);
 
       // Verify the token
       const decoded = await jwtVerify(

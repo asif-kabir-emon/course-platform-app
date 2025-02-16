@@ -30,7 +30,7 @@ export const GET = async (req: NextRequest) => {
   }
 
   return NextResponse.redirect(
-    new URL(redirectUrl, process.env.NEXT_PUBLIC_SERVER_URL),
+    new URL(redirectUrl, process.env.NEXT_PUBLIC_APP_URL),
   );
 };
 

@@ -98,7 +98,7 @@ export const POST = catchAsync(async (request: Request) => {
     role: isUserExist.role,
     verified: true,
   };
-  const jwtSecret = String(process.env.JWT_SECRET) || "";
+  const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
   const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";
   const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
 
