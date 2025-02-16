@@ -52,7 +52,7 @@ function Navbar() {
           <Badge>Admin</Badge>
         </div>
 
-        <>
+        <div className="hidden md:flex gap-2">
           <Link
             className="hover:bg-accent/10 px-2 flex items-center"
             href="/admin/courses"
@@ -75,7 +75,7 @@ function Navbar() {
           <Button className="self-center" onClick={handleSignOut}>
             Sign Out
           </Button>
-        </>
+        </div>
       </nav>
     </header>
   );
