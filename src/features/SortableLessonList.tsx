@@ -1,18 +1,18 @@
 "use client";
 import { CourseLessonStatus } from "@prisma/client";
 import React from "react";
-import { SortableItem, SortableList } from "../SortableList";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Trash2Icon, Video } from "lucide-react";
-import { DialogTrigger } from "../ui/dialog";
-import { ActionButton } from "../ActionButton";
+import { DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import LessonFormDialog from "./LessonFormDialog";
 import {
   useDeleteLessonMutation,
   useReorderedLessonsMutation,
 } from "@/redux/api/lessonApi";
+import { ActionButton } from "@/components/ActionButton";
+import { SortableItem, SortableList } from "@/components/SortableList";
 
 const SortableLessonList = ({
   sectionId,

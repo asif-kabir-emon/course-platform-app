@@ -8,7 +8,7 @@ import { useGetUserProfileQuery } from "@/redux/api/profileApi";
 import { notFound, redirect } from "next/navigation";
 import React, { Suspense, use } from "react";
 import PageHeader from "@/components/PageHeader";
-import StripeCheckoutForm from "@/components/features/StripeCheckoutForm";
+import StripeCheckoutForm from "@/features/StripeCheckoutForm";
 
 const PurchasePage = ({
   params,

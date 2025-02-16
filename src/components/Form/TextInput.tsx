@@ -1,6 +1,6 @@
 import { Controller, useFormContext } from "react-hook-form";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type TextInputProps = {
   name: string;

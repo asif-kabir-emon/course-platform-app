@@ -1,18 +1,18 @@
 "use client";
 import { CourseSectionStatus } from "@prisma/client";
 import React from "react";
-import { SortableItem, SortableList } from "../SortableList";
-import { Button } from "../ui/button";
+import { SortableItem, SortableList } from "@/components/SortableList";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Trash2Icon } from "lucide-react";
 import SectionFormDialog from "./SectionFormDialog";
-import { DialogTrigger } from "../ui/dialog";
-import { ActionButton } from "../ActionButton";
+import { DialogTrigger } from "@/components/ui/dialog";
 import {
   useDeleteSectionMutation,
   useReorderedSectionsMutation,
 } from "@/redux/api/sectionApi";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ActionButton";
 
 const SortableSectionList = ({
   courseId,

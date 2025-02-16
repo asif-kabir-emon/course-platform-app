@@ -4,16 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import React, { use } from "react";
-import CourseForm from "../../../../../components/features/CourseForm";
-import SectionFormDialog from "@/components/features/SectionFormDialog";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import SortableSectionList from "@/components/features/SortableSectionList";
 import { cn } from "@/lib/utils";
 import { CourseLessonStatus, CourseSectionStatus } from "@prisma/client";
-import LessonFormDialog from "@/components/features/LessonFormDialog";
-import SortableLessonList from "@/components/features/SortableLessonList";
+import SectionFormDialog from "@/features/SectionFormDialog";
+import SortableSectionList from "@/features/SortableSectionList";
+import LessonFormDialog from "@/features/LessonFormDialog";
+import SortableLessonList from "@/features/SortableLessonList";
+import CourseForm from "@/features/CourseForm";
 
 const CourseEditPage = ({
   params,

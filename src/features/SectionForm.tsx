@@ -5,14 +5,14 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Form } from "../Form/Form";
-import TextInput from "../Form/TextInput";
-import { Button } from "../ui/button";
+import { Form } from "@/components/Form/Form";
+import TextInput from "@/components/Form/TextInput";
+import { Button } from "@/components/ui/button";
 import {
   useAddSectionMutation,
   useUpdateSectionMutation,
 } from "@/redux/api/sectionApi";
-import SelectInput from "../Form/SelectInput";
+import SelectInput from "@/components/Form/SelectInput";
 
 const SectionForm = ({
   section,

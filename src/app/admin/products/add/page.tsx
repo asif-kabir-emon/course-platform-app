@@ -1,6 +1,6 @@
 "use client";
-import ProductForm from "@/components/features/ProductForm";
 import PageHeader from "@/components/PageHeader";
+import ProductForm from "@/features/ProductForm";
 import React from "react";
 
 const NewProductPage = () => {

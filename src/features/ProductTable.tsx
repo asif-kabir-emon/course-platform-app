@@ -13,7 +13,7 @@ import { EyeIcon, LockIcon, Trash2Icon } from "lucide-react";
 import { ActionButton } from "@/components/ActionButton";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { ProductStatus } from "@prisma/client";
 import {
   useDeleteProductMutation,

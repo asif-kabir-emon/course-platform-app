@@ -11,13 +11,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import SelectInput from "../Form/SelectInput";
 import {
   useAddProductMutation,
   useUpdateProductMutation,
 } from "@/redux/api/productApi";
-import MultiSelectInput from "../Form/MultiSelectInput";
+import MultiSelectInput from "@/components/Form/MultiSelectInput";
 import { useGetCoursesQuery } from "@/redux/api/courseApi";
+import SelectInput from "@/components/Form/SelectInput";
 
 const ProductForm = ({
   product,

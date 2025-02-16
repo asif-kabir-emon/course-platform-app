@@ -6,19 +6,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "@/components/ui/table";
 import Image from "next/image";
 import { formatDate, formatPlural, formatPrice } from "@/lib/formatter";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   SkeletonArray,
   SkeletonButton,
   SkeletonText,
 } from "@/components/Skeleton";
-import { ActionButton } from "../ActionButton";
 import { useRefundPurchaseMutation } from "@/redux/api/purchaseApi";
 import { toast } from "sonner";
+import { ActionButton } from "@/components/ActionButton";
 
 const PurchaseTable = ({
   purchases,

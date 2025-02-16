@@ -5,17 +5,17 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Form } from "../Form/Form";
-import TextInput from "../Form/TextInput";
-import { Button } from "../ui/button";
-import SelectInput from "../Form/SelectInput";
 import { lessonDefaultValues, lessonSchema } from "@/schema/lesson.schema";
 import {
   useAddLessonMutation,
   useUpdateLessonMutation,
 } from "@/redux/api/lessonApi";
-import TextAreaInput from "../Form/TextAreaInput";
-import YoutubeVideoPlayer from "../YoutubeVideoPlayer";
+import { Form } from "@/components/Form/Form";
+import TextInput from "@/components/Form/TextInput";
+import SelectInput from "@/components/Form/SelectInput";
+import TextAreaInput from "@/components/Form/TextAreaInput";
+import { Button } from "@/components/ui/button";
+import YoutubeVideoPlayer from "@/components/YoutubeVideoPlayer";
 
 const LessonForm = ({
   lesson,

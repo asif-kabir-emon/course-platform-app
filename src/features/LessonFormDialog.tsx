@@ -1,9 +1,13 @@
 "use client";
 import { CourseLessonStatus } from "@prisma/client";
 import React, { ReactNode, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import LessonForm from "./LessonForm";
-
 const LessonFormDialog = ({
   sectionId,
   lesson,

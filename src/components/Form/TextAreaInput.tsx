@@ -1,6 +1,6 @@
 import { Controller, useFormContext } from "react-hook-form";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type TextAreaInputProps = {
   name: string;
