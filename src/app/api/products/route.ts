@@ -4,6 +4,7 @@ import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { UserRole } from "@/constants/UserRole.constant";
+import { authVerification } from "@/utils/authVerification";
 
 const prisma = new PrismaClient();
 
@@ -94,12 +95,33 @@ export const POST = authGuard(
   }),
 );
 
-export const GET = catchAsync(async () => {
-  const products = await prisma.products.findMany({
-    include: {
-      PurchaseHistories: true,
-    },
+export const GET = catchAsync(async (request: Request) => {
+  const showAllProducts = new URLSearchParams(request.url.split("?")[1]).get(
+    "showAllProducts",
+  );
+
+  const authorization = await authVerification({
+    authorization: request.headers.get("authorization") || "",
   });
+
+  let products = [];
+
+  if (authorization?.success && showAllProducts === "true") {
+    products = await prisma.products.findMany({
+      include: {
+        PurchaseHistories: true,
+      },
+    });
+  } else {
+    products = await prisma.products.findMany({
+      where: {
+        status: ProductStatus.public,
+      },
+      include: {
+        PurchaseHistories: true,
+      },
+    });
+  }
 
   if (!products) {
     return ApiError(404, "No data found!");

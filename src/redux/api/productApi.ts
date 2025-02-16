@@ -13,8 +13,8 @@ export const ProductApi = baseApi.injectEndpoints({
       invalidatesTags: [TagTypes.product],
     }),
     getProducts: build.query({
-      query: () => ({
-        url: `${Route_URL}`,
+      query: ({ showAllProducts = false }: { showAllProducts?: boolean }) => ({
+        url: `${Route_URL}?showAllProducts=${showAllProducts}`,
         method: "GET",
       }),
       providesTags: [TagTypes.product],

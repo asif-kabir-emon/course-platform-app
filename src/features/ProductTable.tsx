@@ -21,7 +21,9 @@ import {
 } from "@/redux/api/productApi";
 
 const ProductTable = () => {
-  const { data: products, isLoading: isFetchingData } = useGetProductsQuery({});
+  const { data: products, isLoading: isFetchingData } = useGetProductsQuery({
+    showAllProducts: true,
+  });
   const [deleteProduct, { isLoading: isDeletingProduct }] =
     useDeleteProductMutation();
 
