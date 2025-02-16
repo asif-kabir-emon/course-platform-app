@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Course Platform App",
-  description: "A course platform app",
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} - Learning Platform`,
+  description: "A learning platform for everyone.",
 };
 
 export default function RootLayout({

@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AppName } from "@/constants/App.constant";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -92,7 +91,9 @@ const SignUpPage = () => {
       <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
           <h3 className="text-gray-500 text-2xl">Welcome</h3>
-          <h2 className="text-xl">Sign Up to {String(AppName)}</h2>
+          <h2 className="text-xl">
+            Sign Up to {String(process.env.NEXT_PUBLIC_APP_NAME || "KV App")}
+          </h2>
         </div>
 
         <hr />
