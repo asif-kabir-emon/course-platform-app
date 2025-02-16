@@ -2,7 +2,7 @@ model Products {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String
-  imageUrl     String
+  imageUrl      String
   priceInDollar Float         @default(0)
   status        ProductStatus @default(private)
   courseIds     String[]

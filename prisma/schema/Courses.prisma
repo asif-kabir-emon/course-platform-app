@@ -8,7 +8,7 @@ model Courses {
 
   courseProducts   CourseProducts[]
   userCourseAccess UserCourseAccess[]
-  sections   CourseSections[]
+  sections         CourseSections[]
 
   @@map("courses")
 }
