@@ -3,7 +3,6 @@ import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
 import { ReactNode, Suspense, use } from "react";
 import CoursePageClient, { CoursePageSkeleton } from "./_client";
-import { LockIcon } from "lucide-react";
 
 export default function CoursePageLayout({
   params,
@@ -28,12 +27,8 @@ export default function CoursePageLayout({
 
   if (course.success === false) {
     return (
-      <div className="container grid grid-cols-[300px,1fr] gap-8">
-        <div className="my-4 bg-secondary rounded-md flex flex-col justify-center items-center gap-1 text-red-500">
-          <LockIcon className="size-12" />
-          <div className="text-sm font-semibold">No access</div>
-        </div>
-        <div className="py-4">{children}</div>
+      <div className="container">
+        <div className="py-4 px-5 md:px-20">{children}</div>
       </div>
     );
   }

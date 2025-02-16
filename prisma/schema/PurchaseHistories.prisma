@@ -6,6 +6,7 @@ model PurchaseHistories {
   productId       String        @db.ObjectId
   stripeSessionId String        @unique
   refundAt        DateTime?
+  isRefunded      Boolean       @default(false)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

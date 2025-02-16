@@ -32,6 +32,21 @@ export const PurchasesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.purchases],
     }),
+
+    // Admin Dashboard
+    getAdminDashboardData: build.query({
+      query: () => ({
+        url: `/dashboard/admin`,
+        method: "GET",
+      }),
+      providesTags: [
+        TagTypes.purchases,
+        TagTypes.product,
+        TagTypes.course,
+        TagTypes.section,
+        TagTypes.lesson,
+      ],
+    }),
   }),
 });
 
@@ -40,4 +55,5 @@ export const {
   useGetPurchaseHistoriesQuery,
   useGetPurchaseHistoryByIdQuery,
   useRefundPurchaseMutation,
+  useGetAdminDashboardDataQuery,
 } = PurchasesApi;

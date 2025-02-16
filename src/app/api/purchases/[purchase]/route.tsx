@@ -204,6 +204,7 @@ export const PUT = authGuard(
           not: purchaseId,
         },
         refundAt: null,
+        isRefunded: false,
       },
       include: {
         product: {
@@ -262,6 +263,7 @@ export const PUT = authGuard(
           },
           data: {
             refundAt: new Date(),
+            isRefunded: true,
           },
         });
 
