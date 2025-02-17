@@ -109,10 +109,10 @@ function Navbar() {
           >
             Sales
           </Link>
+        </div>
 
-          <div className="self-center ml-1">
-            <ProfileMenu userInfo={getUserInfo} />
-          </div>
+        <div className="self-center ml-1">
+          <ProfileMenu userInfo={getUserInfo} />
         </div>
       </nav>
     </header>

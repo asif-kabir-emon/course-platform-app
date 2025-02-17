@@ -49,3 +49,38 @@ export const GET = authGuard(
     });
   }),
 );
+
+export const PUT = authGuard(
+  catchAsync(async (request: Request) => {
+    const user = request.user;
+    const { firstName, lastName, imageUrl } = await request.json();
+
+    // Check firstName, lastName, and imageUrl exist
+    if (!firstName || !lastName) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
+    // Update user profile
+    const updatedUser = await prisma.userProfiles.update({
+      where: {
+        userId: user?.id,
+      },
+      data: {
+        firstName: firstName,
+        lastName: lastName,
+        imageUrl: imageUrl || "",
+      },
+    });
+
+    if (!updatedUser) {
+      return ApiError(403, "User is deleted!");
+    }
+
+    return sendResponse({
+      status: 200,
+      message: "User access checked successfully!",
+      success: true,
+      data: updatedUser,
+    });
+  }),
+);

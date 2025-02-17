@@ -32,7 +32,7 @@ export const authGuard = (handler: RequestHandler) => {
 
       // Check if the user exists in the database
       const user = await prisma.users.findUnique({
-        where: { id: payload.id, email: payload.email },
+        where: { id: payload.id, email: payload.email, isDeleted: false },
       });
 
       if (!user) {

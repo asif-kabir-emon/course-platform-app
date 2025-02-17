@@ -24,7 +24,7 @@ export const handleSignOut = () => {
 const ProfileMenu = ({ userInfo }: { userInfo: UserInfo }) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hover:!bg-none focus:!bg-none">
+      <DropdownMenuTrigger className="hover:!bg-none focus:!bg-none hover:cursor-pointer">
         <Avatar className="border-[2px] hover:border-[3px] border-slate-200">
           <AvatarImage src={userInfo.imageUrl} />
           <AvatarFallback className="bg-accent text-white">

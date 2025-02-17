@@ -4,11 +4,10 @@ model UserProfiles {
   firstName       String?
   lastName        String?
   phone           String?
-  address         String?
   dateOfBirth     String?
   email           String   @unique
+  imageUrl        String?
   isEmailVerified Boolean  @default(false)
-  isPhoneVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
