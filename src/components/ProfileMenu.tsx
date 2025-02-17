@@ -55,14 +55,14 @@ const ProfileMenu = ({ userInfo }: { userInfo: UserInfo }) => {
         <div className="flex flex-col gap-3 border-t border-slate-300 py-4">
           <Link
             href="/profile"
-            className="bg-slate-100 hover:bg-accent/10 px-3 py-2 rounded-lg flex items-center text-base"
+            className="bg-slate-50 hover:bg-accent/10 px-4 py-2 rounded-lg flex items-center text-base"
           >
             <SettingsIcon className="size-5 mr-2" />
             Manage Account
           </Link>
           <div
             onClick={handleSignOut}
-            className="bg-gray-300 hover:bg-accent/50 hover:cursor-pointer px-3 py-2 rounded-lg flex items-center text-base"
+            className="bg-gray-300 hover:bg-accent/50 hover:cursor-pointer px-4 py-2 rounded-lg flex items-center text-base"
           >
             <LogOutIcon className="size-5 mr-2" />
             Sign Out

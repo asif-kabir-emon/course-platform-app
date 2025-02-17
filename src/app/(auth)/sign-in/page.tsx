@@ -8,6 +8,7 @@ import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
 import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
+import Link from "next/link";
 
 type TFormInput = {
   email: string;
@@ -109,7 +110,10 @@ const SignInPage = () => {
         <div className="flex flex-col justify-center items-center gap-1">
           <h3 className="text-gray-500 text-2xl">Welcome back!</h3>
           <h2 className="text-xl">
-            Sign in to {String(process.env.NEXT_PUBLIC_APP_NAME || "KV App")}
+            Sign in to{" "}
+            <Link href="/" className="hover:cursor-pointer">
+              {String(process.env.NEXT_PUBLIC_APP_NAME || "KV App")}
+            </Link>
           </h2>
         </div>
 
