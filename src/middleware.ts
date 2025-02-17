@@ -45,6 +45,7 @@ const isCannotAccessAfterAuthRoutes = createRouteMatcher([
 const isAdminRoutes = createRouteMatcher(["/admin(.*)"]);
 
 const isUserRoutes = createRouteMatcher([
+  "/profile(.*)",
   "/purchases(.*)",
   "/courses(.*)",
   "/profile(.*)",
@@ -97,9 +98,12 @@ export async function middleware(req: NextRequest) {
   if (isCannotAccessAfterAuthRoutes(pathname)) {
     // If user is already authenticated, redirect to home page
     if (isValid) {
-      return NextResponse.redirect(new URL("/not-found", req.nextUrl));
+      return NextResponse.redirect(new URL("/", req.nextUrl));
     }
   } else if (isAdminRoutes(pathname)) {
+    if (!token || !isValid) {
+      return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
+    }
     if (userRole !== "admin") {
       return NextResponse.redirect(new URL("/not-found", req.nextUrl));
     }

@@ -6,11 +6,7 @@ import Cookies from "js-cookie";
 import { decodedToken, validateToken } from "@/utils/validateToken";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogInIcon, LogOutIcon, Menu } from "lucide-react";
-
-const handleSignOut = () => {
-  Cookies.remove("accessToken");
-  window.location.href = "/";
-};
+import ProfileMenu, { handleSignOut, UserInfo } from "@/components/ProfileMenu";
 
 export default function ConsumerLayout({
   children,
@@ -26,6 +22,13 @@ export default function ConsumerLayout({
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [getUserInfo, setUserInfo] = useState<UserInfo>({
+    id: "",
+    email: "",
+    name: "",
+    role: "",
+    imageUrl: "",
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,6 +59,13 @@ function Navbar() {
 
       if (decodedTokenData.success && decodedTokenData.data?.role === "admin") {
         setIsAdmin(true);
+        setUserInfo({
+          id: decodedTokenData.data.id,
+          email: decodedTokenData.data.email,
+          role: decodedTokenData.data.role,
+          imageUrl: decodedTokenData.data.role || "",
+          name: decodedTokenData.data?.name || "",
+        });
       } else {
         setIsAdmin(false);
       }
@@ -113,9 +123,9 @@ function Navbar() {
         )}
 
         {isLoggedIn ? (
-          <Button className="self-center" onClick={handleSignOut}>
-            Sign Out
-          </Button>
+          <div className="self-center">
+            <ProfileMenu userInfo={getUserInfo} />
+          </div>
         ) : (
           <Button
             className="self-center"
@@ -139,7 +149,7 @@ const PhoneNavMenu = ({
   return (
     <div className="h-screen flex flex-col justify-between">
       {isLoggedIn && (
-        <div className="flex-grow flex-col gap-1 mt-5">
+        <div className="flex-grow flex-col gap-3 mt-5">
           {isAdmin && (
             <Link
               className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
