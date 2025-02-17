@@ -16,6 +16,8 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import Cookies from "js-cookie";
+import { authKey } from "@/constants/AuthKey.constant";
 
 const UpdateProfilePage = () => {
   const { data: profileInfo, isLoading } = useGetUserProfileQuery({});
@@ -80,9 +82,27 @@ const ProfileForm = ({
 
     try {
       const response = await updateProfile(payload).unwrap();
+      console.log(response);
 
       if (response.success) {
         toast.success(response.message, { id: toastId, duration: 2000 });
+        if (response.data.accessToken) {
+          Cookies.set(authKey, response.data.accessToken, {
+            path: "/",
+            secure: true,
+            sameSite: "strict",
+            expires: 28,
+          });
+
+          sessionStorage.setItem(
+            authKey,
+            JSON.stringify({
+              authKey: response.data.accessToken,
+              expiry: new Date().getTime() + 28 * 24 * 60 * 60 * 1000,
+              isVerified: response.data.isVerified,
+            }),
+          );
+        }
         router.push("/profile");
       } else {
         toast.error(response.message, { id: toastId, duration: 2000 });

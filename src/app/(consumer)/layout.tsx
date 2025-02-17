@@ -63,7 +63,7 @@ function Navbar() {
           id: decodedTokenData.data.id,
           email: decodedTokenData.data.email,
           role: decodedTokenData.data.role,
-          imageUrl: decodedTokenData.data.role || "",
+          imageUrl: decodedTokenData.data.imageUrl || "",
           name: decodedTokenData.data?.name || "",
         });
       } else {

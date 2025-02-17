@@ -3,6 +3,7 @@ import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { PrismaClient } from "@prisma/client";
+import { createToken } from "@/utils/jwtToken";
 
 const prisma = new PrismaClient();
 
@@ -60,6 +61,11 @@ export const PUT = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
+    // Check if user is authenticated or not
+    if (!user || !user.id || !user.email || !user.role) {
+      return ApiError(401, "Unauthorized access!");
+    }
+
     // Update user profile
     const updatedUser = await prisma.userProfiles.update({
       where: {
@@ -76,11 +82,33 @@ export const PUT = authGuard(
       return ApiError(403, "User is deleted!");
     }
 
+    // Generate JWT token for the user
+    const payload = {
+      id: user?.id,
+      email: user?.email,
+      role: user?.role,
+      verified: user?.verified,
+      name: `${
+        firstName === "" && lastName === "" ? "" : `${firstName} ${lastName}`
+      }`,
+      imageUrl: (updatedUser.imageUrl as string) || "",
+    };
+    const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
+    const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";
+    const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
+
+    if (!token) {
+      return ApiError(500, "Internal Server Error!");
+    }
+
     return sendResponse({
       status: 200,
-      message: "User access checked successfully!",
+      message: "User profile updated successfully!",
       success: true,
-      data: updatedUser,
+      data: {
+        ...payload,
+        accessToken: token,
+      },
     });
   }),
 );

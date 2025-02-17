@@ -33,7 +33,7 @@ const DesktopSideBar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <Link
         href="/profile"
         className={cn(

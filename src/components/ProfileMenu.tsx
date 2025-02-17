@@ -22,6 +22,7 @@ export const handleSignOut = () => {
 };
 
 const ProfileMenu = ({ userInfo }: { userInfo: UserInfo }) => {
+  console.log(userInfo.imageUrl);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:!bg-none focus:!bg-none hover:cursor-pointer">
