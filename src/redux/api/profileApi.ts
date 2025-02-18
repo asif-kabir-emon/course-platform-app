@@ -17,7 +17,7 @@ export const ProfileApi = baseApi.injectEndpoints({
         method: "PUT",
         data: data,
       }),
-      invalidatesTags: [TagTypes.auth],
+      invalidatesTags: [TagTypes.auth, TagTypes.profile],
     }),
   }),
 });
