@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authKey } from "./constants/AuthKey.constant";
 import { decodedToken, validateToken } from "./utils/validateToken";
-import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
-import { forbidden } from "next/navigation";
-import { setUserCountryHeader } from "./lib/userCountryHeader";
+// import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
+// import { forbidden } from "next/navigation";
+// import { setUserCountryHeader } from "./lib/userCountryHeader";
 
 export function createRouteMatcher(routes: string[]) {
   // Convert patterns to regular expressions
@@ -54,23 +54,23 @@ const isUserRoutes = createRouteMatcher([
   "/products/:productId/purchase/success",
 ]);
 
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    shield({
-      mode: "LIVE",
-    }),
-    detectBot({
-      mode: "LIVE",
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:MONITOR", "CATEGORY:PREVIEW"],
-    }),
-    slidingWindow({
-      mode: "LIVE",
-      interval: "1m",
-      max: 100,
-    }),
-  ],
-});
+// const aj = arcjet({
+//   key: process.env.ARCJET_KEY!,
+//   rules: [
+//     shield({
+//       mode: "LIVE",
+//     }),
+//     detectBot({
+//       mode: "LIVE",
+//       allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:MONITOR", "CATEGORY:PREVIEW"],
+//     }),
+//     slidingWindow({
+//       mode: "LIVE",
+//       interval: "1m",
+//       max: 100,
+//     }),
+//   ],
+// });
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -89,11 +89,11 @@ export async function middleware(req: NextRequest) {
 
   const userRole = decodedTokenData ? decodedTokenData.data?.role : null;
 
-  const decision = await aj.protect(req);
+  // const decision = await aj.protect(req);
 
-  if (decision.isDenied()) {
-    return forbidden();
-  }
+  // if (decision.isDenied()) {
+  //   return forbidden();
+  // }
 
   if (isCannotAccessAfterAuthRoutes(pathname)) {
     // If user is already authenticated, redirect to home page
@@ -115,12 +115,12 @@ export async function middleware(req: NextRequest) {
     console.log("Public route");
   }
 
-  if (!decision.ip.isVpn() && !decision.ip.isProxy()) {
-    const headers = new Headers(req.headers);
-    setUserCountryHeader(headers, decision.ip.country);
+  // if (!decision.ip.isVpn() && !decision.ip.isProxy()) {
+  //   const headers = new Headers(req.headers);
+  //   setUserCountryHeader(headers, decision.ip.country);
 
-    return NextResponse.next({ request: { headers } });
-  }
+  //   return NextResponse.next({ request: { headers } });
+  // }
 
   return NextResponse.next();
 }

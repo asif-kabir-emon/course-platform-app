@@ -33,7 +33,10 @@ function Navbar() {
               </SheetContent>
             </Sheet>
           </div>
-          <Link href="/" className="text-lg hover:underline flex items-center">
+          <Link
+            href="/admin"
+            className="text-lg hover:underline flex items-center"
+          >
             {process.env.NEXT_PUBLIC_APP_NAME || "Course Platform"}
           </Link>
           <Badge>Admin</Badge>

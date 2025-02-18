@@ -16,8 +16,8 @@ export default function CoursePageLayout({
 
   if (isLoading) {
     return (
-      <div className="container grid grid-cols-[300px,1fr] gap-8">
-        <div className="py-4">
+      <div className="lg:container grid grid-cols-[300px,1fr] gap-8">
+        <div className="py-4 hidden lg:block">
           <CoursePageSkeleton />
         </div>
         <div className="py-4">{children}</div>
@@ -34,8 +34,8 @@ export default function CoursePageLayout({
   }
 
   return (
-    <div className="container grid grid-cols-[300px,1fr] gap-8">
-      <div className="py-4">
+    <div className="lg:container grid lg:grid-cols-[300px,1fr] gap-8">
+      <div className="py-4 hidden lg:block">
         <div className="text-lg font-semibold">{course.data.name}</div>
         <Suspense
           fallback={
@@ -91,7 +91,7 @@ function SuspenseBoundary({
   );
 }
 
-const mapCourse = ({
+export const mapCourse = ({
   course,
   completedLessonIds,
 }: {

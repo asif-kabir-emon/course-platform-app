@@ -58,7 +58,7 @@ const ProductPage = ({
 
   return (
     <div className="container my-5 select-none">
-      <div className="flex justify-between items-center gap-16">
+      <div className="flex flex-col-reverse lg:flex-row justify-between lg:items-center gap-5 md:gap-8 lg:gap-16">
         <div className="flex flex-col items-start gap-6">
           <div className="flex flex-col gap-2">
             <div className="text-xl">
@@ -96,12 +96,22 @@ const ProductPage = ({
             )}
           </Suspense>
         </div>
-        <div className="relative aspect-video max-w-lg flex-grow">
+        <div className="hidden lg:relative aspect-video max-w-lg flex-grow">
           <Image
             src={product.data?.imageUrl}
             fill
             alt={product.data?.name}
+            sizes="(min-width: 1024px) 50vw, 100vw"
             className="object-contain rounded-xl"
+          />
+        </div>
+        <div>
+          <Image
+            src={product.data?.imageUrl}
+            alt={product.data?.name}
+            width={400}
+            height={400}
+            className="object-cover rounded-lg w-full md:w-[400px]"
           />
         </div>
       </div>
@@ -223,7 +233,11 @@ const PurchaseButton = ({ productId }: { productId: string }) => {
   }
 
   if (!isLoading && userAccess?.success === false) {
-    return null;
+    return (
+      <Button className="text-lg h-auto py-1 px-4 rounded-md">
+        <Link href="/sign-in">Login to purchase</Link>
+      </Button>
+    );
   }
 
   return (
@@ -241,20 +255,20 @@ const PurchaseButton = ({ productId }: { productId: string }) => {
 
 const ProductDetailSkeleton = () => {
   return (
-    <div className="container my-8 select-none">
-      <div className="flex justify-between items-center gap-16">
+    <div className="container my-8 select-none w-full">
+      <div className="flex flex-col-reverse lg:flex-row justify-between lg:items-center gap-5 md:gap-10 lg:gap-16">
         <div className="flex flex-col items-start gap-6">
           <div className="flex flex-col gap-2">
             <div className="w-24 h-6 bg-gray-300 rounded-lg animate-pulse"></div>
             <div className="w-60 h-8 bg-gray-300 rounded-lg animate-pulse"></div>
             <div className="w-40 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
           </div>
-          <div className="w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
-          <div className="w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
+          <div className="w-full md:w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
+          <div className="w-full md:w-96 h-4 bg-gray-300 rounded-lg animate-pulse"></div>
           <div className="w-28 h-12 bg-gray-300 rounded-lg animate-pulse"></div>
         </div>
-        <div className="relative aspect-video max-w-lg flex-grow">
-          <div className="w-full h-full bg-gray-300 rounded-xl animate-pulse"></div>
+        <div className="md:relative md:aspect-video md:max-w-lg md:flex-grow">
+          <div className="w-full h-40 md:h-full bg-gray-300 rounded-xl animate-pulse"></div>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 lg:mt-16 items-start w-full">
