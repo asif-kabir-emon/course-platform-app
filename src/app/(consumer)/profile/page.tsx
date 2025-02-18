@@ -46,8 +46,8 @@ const ProfileInfo = () => {
   return (
     <div>
       <div className="flex flex-col gap-7">
-        <div className="relative rounded-lg overflow-hidden">
-          {profileInfo.data.profile.imageUrl && (
+        {profileInfo.data.profile.imageUrl && (
+          <div className="relative rounded-lg overflow-hidden">
             <Image
               src={profileInfo.data.profile.imageUrl}
               alt="User"
@@ -55,8 +55,8 @@ const ProfileInfo = () => {
               width="400"
               height="400"
             />
-          )}
-        </div>
+          </div>
+        )}
         <div className="space-y-2">
           <div className="flex flex-col">
             <div className="text-sm">First Name</div>

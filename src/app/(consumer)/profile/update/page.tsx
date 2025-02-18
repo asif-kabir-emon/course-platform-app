@@ -82,7 +82,6 @@ const ProfileForm = ({
 
     try {
       const response = await updateProfile(payload).unwrap();
-      console.log(response);
 
       if (response.success) {
         toast.success(response.message, { id: toastId, duration: 2000 });

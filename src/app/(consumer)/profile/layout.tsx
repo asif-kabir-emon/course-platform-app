@@ -72,8 +72,16 @@ const MobileSideBar = () => {
           <SelectValue placeholder="" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="/profile">Your Profile</SelectItem>
-          <SelectItem value="/profile/change-password">
+          <SelectItem
+            value="/profile"
+            className="my-1 hover:!bg-slate-200 hover:!text-black hover:cursor-pointer data-[state=checked]:bg-neutral-800 data-[state=checked]:text-white"
+          >
+            Your Profile
+          </SelectItem>
+          <SelectItem
+            value="/profile/change-password"
+            className="my-1 hover:!bg-slate-200 hover:!text-black hover:cursor-pointer data-[state=checked]:bg-neutral-800 data-[state=checked]:text-white"
+          >
             Change Password
           </SelectItem>
         </SelectContent>
