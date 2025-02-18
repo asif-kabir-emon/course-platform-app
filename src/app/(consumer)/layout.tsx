@@ -22,6 +22,7 @@ export default function ConsumerLayout({
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -69,12 +70,19 @@ function Navbar() {
       <nav className="flex gap-4 container">
         <div className="flex items-center mr-auto">
           <div className="md:hidden">
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
-                <Menu className="size-5 cursor-pointer mr-3" />
+                <Menu
+                  className="size-5 cursor-pointer mr-3"
+                  onClick={() => setIsSheetOpen(!isSheetOpen)}
+                />
               </SheetTrigger>
               <SheetContent side="left" className="!w-screen">
-                <PhoneNavMenu isLoggedIn={isLoggedIn} isAdmin={isAdmin} />
+                <MobileNavMenu
+                  isLoggedIn={isLoggedIn}
+                  isAdmin={isAdmin}
+                  setOpen={setIsSheetOpen}
+                />
               </SheetContent>
             </Sheet>
           </div>
@@ -125,12 +133,14 @@ function Navbar() {
   );
 }
 
-const PhoneNavMenu = ({
+const MobileNavMenu = ({
   isLoggedIn = false,
   isAdmin = false,
+  setOpen,
 }: {
   isLoggedIn?: boolean;
   isAdmin?: boolean | null;
+  setOpen: (value: boolean) => void;
 }) => {
   return (
     <div className="h-screen flex flex-col justify-between">
@@ -140,6 +150,10 @@ const PhoneNavMenu = ({
             <Link
               className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
               href="/admin"
+              onClick={() => {
+                window.location.href = "/admin";
+                setOpen(false);
+              }}
             >
               Admin
             </Link>
@@ -147,12 +161,20 @@ const PhoneNavMenu = ({
           <Link
             className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
             href="/courses"
+            onClick={() => {
+              window.location.href = "/courses";
+              setOpen(false);
+            }}
           >
             My Courses
           </Link>
           <Link
             className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
             href="/purchases"
+            onClick={() => {
+              window.location.href = "/purchases";
+              setOpen(false);
+            }}
           >
             Purchased History
           </Link>
@@ -161,7 +183,13 @@ const PhoneNavMenu = ({
 
       {isLoggedIn && (
         <div className="mt-10 mb-10 md:mb-20">
-          <Button className="py-5 px-7" onClick={handleSignOut}>
+          <Button
+            className="py-5 px-7"
+            onClick={() => {
+              handleSignOut();
+              setOpen(false);
+            }}
+          >
             <LogOutIcon className="size-5 mr-1" />
             Sign Out
           </Button>
@@ -172,7 +200,10 @@ const PhoneNavMenu = ({
         <div className="my-auto mx-auto">
           <Button
             className="py-5 px-7"
-            onClick={() => (window.location.href = "/sign-in")}
+            onClick={() => {
+              window.location.href = "/sign-in";
+              setOpen(false);
+            }}
           >
             <LogInIcon className="size-5 mr-1" />
             Sign In

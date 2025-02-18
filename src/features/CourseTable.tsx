@@ -26,6 +26,10 @@ const CourseTable = () => {
     return <div>Loading...</div>;
   }
 
+  if (courses?.success === false) {
+    return null;
+  }
+
   const handleDeleteCourse = async (id: string) => {
     const toastId = toast.loading("Deleting course...", {
       duration: 2000,
@@ -48,7 +52,7 @@ const CourseTable = () => {
     <div>
       <Table>
         <TableRow>
-          <TableHead>
+          <TableHead className="min-w-[250px]">
             {formatPlural(
               courses?.data?.length,
               {

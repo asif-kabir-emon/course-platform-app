@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { CheckCircle2, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const CoursePageClient = ({
   course,
@@ -30,17 +30,25 @@ const CoursePageClient = ({
   };
 }) => {
   const { lessonId } = useParams();
-  const defaultValue =
-    typeof lessonId === "string"
-      ? course.sections.find((section) =>
-          section.lessons.find((lesson) => lesson.id === lessonId),
-        )
-      : course.sections[0];
+  const [openSection, setOpenSection] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (typeof lessonId === "string") {
+      const section = course.sections.find((section) =>
+        section.lessons.some((lesson) => lesson.id === lessonId),
+      );
+      setOpenSection(section ? section.id : undefined);
+    } else {
+      setOpenSection(course.sections[0]?.id || undefined);
+    }
+  }, [lessonId, course.sections]);
 
   return (
     <Accordion
-      type="multiple"
-      defaultValue={defaultValue ? [defaultValue.id] : undefined}
+      type="single"
+      collapsible
+      value={openSection}
+      onValueChange={setOpenSection}
     >
       {course.sections.map((section) => (
         <AccordionItem key={section.id} value={section.id}>

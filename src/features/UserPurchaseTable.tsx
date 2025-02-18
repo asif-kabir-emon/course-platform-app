@@ -37,7 +37,7 @@ const UserPurchaseTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Product</TableHead>
+          <TableHead className="min-w-[300px]">Product</TableHead>
           <TableHead>Amount</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>

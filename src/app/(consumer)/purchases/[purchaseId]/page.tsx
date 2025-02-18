@@ -59,19 +59,36 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
   }
 
   return (
-    <div className="container my-5">
+    <div className="my-5">
       <PageHeader title="Purchase Details">
         {purchase.data.stripe.receiptUrl && (
-          <Button variant="outline" className="hover:bg-neutral-800" asChild>
+          <Button
+            variant="outline"
+            className="hover:bg-neutral-800 hidden md:block"
+            asChild
+          >
             <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
               View Receipt
             </Link>
           </Button>
-        )}{" "}
+        )}
       </PageHeader>
+
+      {purchase.data.stripe.receiptUrl && (
+        <Button
+          variant="outline"
+          className="hover:bg-neutral-800 md:hidden mb-5 mt-[-80px]"
+          asChild
+        >
+          <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
+            View Receipt
+          </Link>
+        </Button>
+      )}
+
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex justify-between items-start gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="flex flex-col gap-1">
               <CardTitle>Receipt</CardTitle>
               <CardDescription>ID: {purchase.data.id}</CardDescription>
@@ -81,7 +98,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="pb-4 grid grid-cols-2 gap-8 border-t pt-4">
+        <CardContent className="pb-4 grid md:grid-cols-2 gap-8 border-t pt-4">
           <div>
             <label className="text-sm text-muted-foreground">Date</label>
             <div>{formatDate(purchase.data.createdAt)}</div>

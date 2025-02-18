@@ -31,6 +31,10 @@ const ProductTable = () => {
     return <div>Loading...</div>;
   }
 
+  if (products.success === false) {
+    return null;
+  }
+
   const handleDeleteProduct = async (id: string) => {
     const toastId = toast.loading("Deleting product...", {
       duration: 2000,
@@ -53,7 +57,7 @@ const ProductTable = () => {
     <div>
       <Table>
         <TableRow>
-          <TableHead>
+          <TableHead className="min-w-[300px]">
             {formatPlural(
               products?.data?.length,
               {

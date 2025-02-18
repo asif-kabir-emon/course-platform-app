@@ -77,7 +77,7 @@ const PurchaseTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>
+          <TableHead className="min-w-[500px]">
             {formatPlural(
               purchases.length,
               {
