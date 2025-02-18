@@ -1,13 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { LogOutIcon, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ProfileMenu, { handleSignOut, UserInfo } from "@/components/ProfileMenu";
-import { decodedToken, validateToken } from "@/utils/validateToken";
-import Cookies from "js-cookie";
+import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
 
 export default function AdminLayout({
   children,
@@ -21,55 +19,6 @@ export default function AdminLayout({
 }
 
 function Navbar() {
-  const [getUserInfo, setUserInfo] = useState<UserInfo>({
-    id: "",
-    email: "",
-    name: "",
-    role: "",
-    imageUrl: "",
-  });
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = Cookies.get("accessToken");
-
-      if (!token) {
-        handleSignOut();
-        return;
-      }
-
-      const isValidToken = await validateToken(
-        token as string,
-        process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      );
-
-      if (!token || !isValidToken) {
-        handleSignOut();
-        return;
-      }
-
-      const decodedTokenData = await decodedToken(
-        token,
-        process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      );
-
-      if (decodedTokenData.success && decodedTokenData.data?.role === "admin") {
-        setUserInfo({
-          id: decodedTokenData.data.id,
-          email: decodedTokenData.data.email,
-          role: decodedTokenData.data.role,
-          imageUrl: decodedTokenData.data.imageUrl || "",
-          name: decodedTokenData.data?.name || "",
-        });
-      } else {
-        handleSignOut();
-        return;
-      }
-    };
-
-    checkAuth();
-  }, []);
-
   return (
     <header className="flex h-12 shadow bg-background z-1 select-none">
       <nav className="flex gap-4 container">
@@ -112,7 +61,7 @@ function Navbar() {
         </div>
 
         <div className="self-center ml-1">
-          <ProfileMenu userInfo={getUserInfo} />
+          <ProfileMenu />
         </div>
       </nav>
     </header>

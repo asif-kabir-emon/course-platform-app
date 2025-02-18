@@ -45,6 +45,8 @@ export const authGuard = (handler: RequestHandler) => {
         email: user.email,
         verified: user.isVerified,
         role: user.role,
+        name: payload.name ?? "",
+        imageUrl: payload.imageUrl ?? "",
       };
 
       // Proceed to the original handler

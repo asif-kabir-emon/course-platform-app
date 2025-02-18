@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 import { decodedToken, validateToken } from "@/utils/validateToken";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogInIcon, LogOutIcon, Menu } from "lucide-react";
-import ProfileMenu, { handleSignOut, UserInfo } from "@/components/ProfileMenu";
+import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
 
 export default function ConsumerLayout({
   children,
@@ -22,13 +22,6 @@ export default function ConsumerLayout({
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [getUserInfo, setUserInfo] = useState<UserInfo>({
-    id: "",
-    email: "",
-    name: "",
-    role: "",
-    imageUrl: "",
-  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -59,13 +52,6 @@ function Navbar() {
 
       if (decodedTokenData.success && decodedTokenData.data?.role === "admin") {
         setIsAdmin(true);
-        setUserInfo({
-          id: decodedTokenData.data.id,
-          email: decodedTokenData.data.email,
-          role: decodedTokenData.data.role,
-          imageUrl: decodedTokenData.data.imageUrl || "",
-          name: decodedTokenData.data?.name || "",
-        });
       } else {
         setIsAdmin(false);
       }
@@ -124,7 +110,7 @@ function Navbar() {
 
         {isLoggedIn ? (
           <div className="self-center">
-            <ProfileMenu userInfo={getUserInfo} />
+            <ProfileMenu />
           </div>
         ) : (
           <Button
