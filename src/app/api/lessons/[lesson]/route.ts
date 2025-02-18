@@ -55,7 +55,6 @@ export const PUT = authGuard(
         name: name || isLessonExist.name,
         description: description || isLessonExist.description || "",
         youtubeVideoId: youtubeVideoId || isLessonExist.youtubeVideoId || "",
-        status: status || isLessonExist.status,
       },
     });
 
@@ -145,16 +144,6 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     return ApiError(404, "Lesson not found!");
   }
 
-  //  --- If lesson is in preview mode, then response directly ---
-  if (lesson.status === CourseLessonStatus.preview) {
-    return sendResponse({
-      status: 200,
-      message: "Fetched successfully!",
-      success: true,
-      data: lesson,
-    });
-  }
-
   // --- If lesson is not in preview mode, then verify user access ---
   const authorization = await authVerification({
     authorization: request.headers.get("authorization") || "",
@@ -165,6 +154,16 @@ export const GET = catchAsync(async (request: Request, context: any) => {
   }
 
   const user = authorization.user;
+
+  if (!user && lesson.status === CourseLessonStatus.preview) {
+    //  --- If lesson is in preview mode, then response directly ---
+    return sendResponse({
+      status: 200,
+      message: "Fetched successfully!",
+      success: true,
+      data: lesson,
+    });
+  }
 
   // Check if user is authenticated or not
   if (!user || !user.id || !user.email || !user.role || !courseId) {
@@ -178,6 +177,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
       lessonId,
     },
   });
+  console.log(isLessonCompleted);
 
   // --- If user's role is admin, then response directly ---
   if (user.role === UserRole.admin) {

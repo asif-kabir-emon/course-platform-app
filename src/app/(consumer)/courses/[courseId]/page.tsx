@@ -111,7 +111,7 @@ const ProductSkeleton = () => {
       </div>
       <div className="flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, index) => (
-          <div className="rounded-lg bg-slate-100 p-4" key={index}>
+          <div className="rounded-lg bg-slate-100 p-4 w-full" key={index}>
             <div className="flex-1 space-y-2 py-1">
               <SkeletonText className="h-4 bg-slate-200 rounded w-40" />
               <div className="space-y-[1px]">

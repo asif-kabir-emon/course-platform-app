@@ -8,7 +8,7 @@ import {
   useGetNextLessonQuery,
   useGetPreviousLessonQuery,
 } from "@/redux/api/lessonApi";
-import { CheckCircle, LockIcon } from "lucide-react";
+import { CheckCircle, ChevronLeft, LockIcon } from "lucide-react";
 import Link from "next/link";
 import React, { ReactNode, Suspense, use } from "react";
 import { toast } from "sonner";
@@ -113,6 +113,12 @@ const SuspenseBoundary = ({
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="lg:hidden">
+        <Button variant="outline" className="hover:bg-black">
+          <ChevronLeft className="size-6" />
+          <Link href={`/courses/${courseId}`}>Back to Lesson List</Link>
+        </Button>
+      </div>
       <div className="aspect-video">
         <YoutubeVideoPlayer
           videoId={lesson.youtubeVideoId}
@@ -121,7 +127,9 @@ const SuspenseBoundary = ({
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
-          <h1 className="text-2xl font-semibold">{lesson.name}</h1>
+          <h1 className="text-2xl font-semibold hidden md:block">
+            {lesson.name}
+          </h1>
           <div className="flex gap-2 justify-end">
             <Suspense fallback={<SkeletonButton />}>
               {!isFetchingPreviousLessonId &&
@@ -182,6 +190,7 @@ const SuspenseBoundary = ({
           </div>
         </div>
       </div>
+      <h1 className="text-2xl font-semibold md:hidden">{lesson.name}</h1>
       <div className="text-lg">{lesson.description}</div>
     </div>
   );

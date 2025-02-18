@@ -52,6 +52,7 @@ const LessonForm = ({
             youtubeVideoId: values.youtubeVideoId,
             status: values.status,
             sectionId: sectionId,
+            description: values.description,
           }
         : {
             id: lesson?.id,
@@ -60,6 +61,7 @@ const LessonForm = ({
               youtubeVideoId: values.youtubeVideoId,
               status: values.status,
               sectionId: sectionId,
+              description: values.description,
             },
           };
 
