@@ -77,7 +77,7 @@ const PurchaseTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="min-w-[500px]">
+          <TableHead className="min-w-[320px]">
             {formatPlural(
               purchases.length,
               {
@@ -89,9 +89,9 @@ const PurchaseTable = ({
               },
             )}
           </TableHead>
-          <TableHead>Customer Name</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="min-w-[200px]">Customer Name</TableHead>
+          <TableHead className="min-w-[100px]">Amount</TableHead>
+          <TableHead className="min-w-[120px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

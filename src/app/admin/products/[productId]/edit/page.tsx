@@ -14,10 +14,8 @@ const ProductEditPage = ({
     useGetProductByIdQuery(productId);
 
   if (isDataFetching) {
-    return <div>Loading...</div>;
+    return <div className="container my-5">Loading...</div>;
   }
-
-  console.log(products);
 
   return (
     <div className="container my-5">

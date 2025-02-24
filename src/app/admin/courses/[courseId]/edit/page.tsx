@@ -25,7 +25,7 @@ const CourseEditPage = ({
     useGetCourseByIdQuery(courseId);
 
   if (isDataFetching) {
-    return <div>Loading...</div>;
+    return <div className="container my-5">Loading...</div>;
   }
 
   return (

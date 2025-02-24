@@ -9,6 +9,7 @@ import { authKey } from "@/constants/AuthKey.constant";
 import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
+import { UserRole } from "@prisma/client";
 
 type TFormInput = {
   email: string;
@@ -93,7 +94,11 @@ const SignInPage = () => {
       );
 
       // Redirect to the home page
-      router.push("/");
+      if (responseData.data.role === UserRole.admin) {
+        router.push("/admin");
+      } else if (responseData.data.role === UserRole.user) {
+        router.push("/courses");
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {

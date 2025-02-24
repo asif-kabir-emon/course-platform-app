@@ -114,7 +114,7 @@ const SuspenseBoundary = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="lg:hidden">
-        <Button variant="outline" className="hover:bg-black">
+        <Button variant="outline" className="hover:bg-black w-full sm:w-auto">
           <ChevronLeft className="size-6" />
           <Link href={`/courses/${courseId}`}>Back to Lesson List</Link>
         </Button>
@@ -125,27 +125,13 @@ const SuspenseBoundary = ({
           onFinishedVideo={undefined}
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col flex-grow gap-2">
         <div className="flex justify-between items-start gap-2">
           <h1 className="text-2xl font-semibold hidden md:block">
             {lesson.name}
           </h1>
-          <div className="flex gap-2 justify-end">
+          <div className="flex flex-wrap gap-2 justify-end">
             <Suspense fallback={<SkeletonButton />}>
-              {!isFetchingPreviousLessonId &&
-              previousLesson?.success === true ? (
-                <ToLessonButton
-                  courseId={courseId}
-                  lessonId={previousLesson.data.previousLessonId}
-                  isDisabled={isFetchingLessonData}
-                >
-                  Previous
-                </ToLessonButton>
-              ) : (
-                <Button variant="outline" disabled={true}>
-                  Previous
-                </Button>
-              )}
               <div className="flex items-center gap-2">
                 {lesson.isCompleted ? (
                   <>
@@ -168,11 +154,26 @@ const SuspenseBoundary = ({
                       }
                       className="hover:bg-black"
                     >
+                      <CheckCircle />
                       <span>Complete the Lesson</span>
                     </Button>
                   </>
                 )}
               </div>
+              {!isFetchingPreviousLessonId &&
+              previousLesson?.success === true ? (
+                <ToLessonButton
+                  courseId={courseId}
+                  lessonId={previousLesson.data.previousLessonId}
+                  isDisabled={isFetchingLessonData}
+                >
+                  Previous
+                </ToLessonButton>
+              ) : (
+                <Button variant="outline" disabled={true}>
+                  Previous
+                </Button>
+              )}
               {!isFetchingNextLessonId && nextLesson?.success === true ? (
                 <ToLessonButton
                   courseId={courseId}
@@ -191,7 +192,7 @@ const SuspenseBoundary = ({
         </div>
       </div>
       <h1 className="text-2xl font-semibold md:hidden">{lesson.name}</h1>
-      <div className="text-lg">{lesson.description}</div>
+      <div className="text-base sm:text-lg">{lesson.description}</div>
     </div>
   );
 };
@@ -200,9 +201,9 @@ const LessonSkeleton = () => {
   return (
     <div className="container my-5 flex flex-col gap-4">
       <SkeletonText className="w-full h-36 md:h-36 lg:h-80" />
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-2">
         <SkeletonText className="w-32 h-8" />
-        <div className="flex gap-3">
+        <div className="flex flex-grow gap-3">
           <SkeletonButton />
           <SkeletonButton />
           <SkeletonButton />
