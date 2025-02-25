@@ -1,7 +1,7 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import CourseTable from "@/features/CourseTable";
+import CourseTable from "@/features/course/CourseTable";
 import Link from "next/link";
 import React from "react";
 

@@ -2,7 +2,7 @@
 import PageHeader from "@/components/PageHeader";
 import React, { use } from "react";
 import { useGetProductByIdQuery } from "@/redux/api/productApi";
-import ProductForm from "@/features/ProductForm";
+import ProductForm from "@/features/product/ProductForm";
 
 const ProductEditPage = ({
   params,

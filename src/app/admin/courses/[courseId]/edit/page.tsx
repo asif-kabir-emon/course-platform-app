@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CourseLessonStatus, CourseSectionStatus } from "@prisma/client";
-import SectionFormDialog from "@/features/SectionFormDialog";
-import SortableSectionList from "@/features/SortableSectionList";
-import LessonFormDialog from "@/features/LessonFormDialog";
-import SortableLessonList from "@/features/SortableLessonList";
-import CourseForm from "@/features/CourseForm";
+import SectionFormDialog from "@/features/section/SectionFormDialog";
+import SortableSectionList from "@/features/section/SortableSectionList";
+import LessonFormDialog from "@/features/lesson/LessonFormDialog";
+import SortableLessonList from "@/features/lesson/SortableLessonList";
+import CourseForm from "@/features/course/CourseForm";
 
 const CourseEditPage = ({
   params,
@@ -26,6 +26,17 @@ const CourseEditPage = ({
 
   if (isDataFetching) {
     return <div className="container my-5">Loading...</div>;
+  }
+
+  if (courses.success === false) {
+    return (
+      <div className="container my-8">
+        <div className="border border-l-[5px] border-l-red-600 mb-4 px-4 py-4 rounded-r-md text-sm text-muted-foreground">
+          <span>Failed to fetch data. </span>
+          <span>{courses.message}</span>
+        </div>
+      </div>
+    );
   }
 
   return (

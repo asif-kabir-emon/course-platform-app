@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatNumber, formatPrice } from "@/lib/formatter";
+import { formatNumber } from "@/lib/formatter";
 import { useGetAdminDashboardDataQuery } from "@/redux/api/purchaseApi";
 import React, { ReactNode } from "react";
 
@@ -31,15 +31,9 @@ const AdminPage = () => {
   return (
     <div className="container my-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <StatCard title="Net Sales">
-          {formatPrice(dashboard.data.netSales, {
-            showZeroAsNumber: true,
-          })}
-        </StatCard>
+        <StatCard title="Net Sales">${dashboard.data.netSales}</StatCard>
         <StatCard title="Refunded Sales">
-          {formatPrice(dashboard.data.refundedSales, {
-            showZeroAsNumber: true,
-          })}
+          ${dashboard.data.refundedSales}
         </StatCard>
         <StatCard title="Un-Refunded Purchases">
           {formatNumber(dashboard.data.totalUnRefundedPPurchases)}
@@ -48,10 +42,14 @@ const AdminPage = () => {
           {formatNumber(dashboard.data.totalRefundedPurchases)}
         </StatCard>
         <StatCard title="Purchases Per User">
+          $
           {formatNumber(dashboard.data.averageNetSales, {
             maximumFractionDigits: 2,
           })}
         </StatCard>
+      </div>
+      <hr className="my-5 border-t-[1px]" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <StatCard title="Students">
           {formatNumber(dashboard.data.totalStudents)}
         </StatCard>

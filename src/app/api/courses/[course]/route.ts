@@ -124,18 +124,6 @@ export const GET = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
-    const isUserExists = await prisma.users.findUnique({
-      where: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
-    });
-
-    if (!isUserExists) {
-      return ApiError(401, "Unauthorized access!");
-    }
-
     // Check is user enrolled in the course or not
     const isEnrolled = await prisma.userCourseAccess.findFirst({
       where: {
@@ -144,7 +132,7 @@ export const GET = authGuard(
       },
     });
 
-    if (!isEnrolled) {
+    if (!isEnrolled && user.role !== UserRole.admin) {
       return ApiError(401, "Unauthorized access!");
     }
 

@@ -1,6 +1,6 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
-import ProductCard, { ProductSkeleton } from "@/features/ProductCard";
+import ProductCard, { ProductSkeleton } from "@/features/product/ProductCard";
 import { useGetProductsQuery } from "@/redux/api/productApi";
 import React from "react";
 

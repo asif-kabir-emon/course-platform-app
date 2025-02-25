@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import LessonForm from "./LessonForm";
+import LessonForm from "../course/LessonForm";
 const LessonFormDialog = ({
   sectionId,
   lesson,

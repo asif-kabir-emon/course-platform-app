@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import UserPurchaseTable, {
   UserPurchaseTableSkeleton,
-} from "@/features/UserPurchaseTable";
+} from "@/features/purchase/UserPurchaseTable";
 import { useGetMyPurchaseHistoryQuery } from "@/redux/api/purchaseApi";
 import Link from "next/link";
 import React, { Suspense } from "react";

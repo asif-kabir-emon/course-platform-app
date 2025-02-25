@@ -1,6 +1,8 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
-import PurchaseTable, { PurchaseTableSkeleton } from "@/features/PurchaseTable";
+import PurchaseTable, {
+  PurchaseTableSkeleton,
+} from "@/features/purchase/PurchaseTable";
 import { useGetPurchaseHistoriesQuery } from "@/redux/api/purchaseApi";
 import React from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
-import CourseForm from "@/features/CourseForm";
+import CourseForm from "@/features/course/CourseForm";
 import React from "react";
 
 const NewCoursePage = () => {
