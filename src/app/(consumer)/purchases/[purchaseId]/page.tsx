@@ -1,5 +1,4 @@
 "use client";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,9 +25,7 @@ const PurchasePage = ({
 
   return (
     <div className="container my-5">
-      <Suspense
-        fallback={<LoadingSpinner className="my-6 md:my-28 size-16 mx-auto" />}
-      >
+      <Suspense fallback={<div className="container my-5">Loading...</div>}>
         <SuspenseBoundary purchaseId={purchaseId} />
       </Suspense>
     </div>
@@ -41,8 +38,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
   const { data: purchase, isLoading } =
     useGetPurchaseHistoryByIdQuery(purchaseId);
 
-  if (isLoading)
-    return <LoadingSpinner className="my-6 md:my-28 size-16 mx-auto" />;
+  if (isLoading) return <div className="container my-5">Loading...</div>;
 
   if (
     purchase.success === false ||

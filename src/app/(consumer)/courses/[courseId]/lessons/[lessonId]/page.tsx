@@ -130,9 +130,9 @@ const SuspenseBoundary = ({
           <h1 className="text-2xl font-semibold hidden md:block">
             {lesson.name}
           </h1>
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap gap-2 md:justify-end">
             <Suspense fallback={<SkeletonButton />}>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ">
                 {lesson.isCompleted ? (
                   <>
                     <Button
@@ -201,9 +201,9 @@ const LessonSkeleton = () => {
   return (
     <div className="container my-5 flex flex-col gap-4">
       <SkeletonText className="w-full h-36 md:h-36 lg:h-80" />
-      <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-2">
         <SkeletonText className="w-32 h-8" />
-        <div className="flex flex-grow gap-3">
+        <div className="flex flex-grow md:justify-end gap-3">
           <SkeletonButton />
           <SkeletonButton />
           <SkeletonButton />

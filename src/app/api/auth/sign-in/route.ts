@@ -72,6 +72,7 @@ export const POST = catchAsync(async (request: Request) => {
     data: {
       accessToken: token,
       isVerified: isUserExist.isVerified,
+      role: isUserExist.role,
     },
   });
 });
