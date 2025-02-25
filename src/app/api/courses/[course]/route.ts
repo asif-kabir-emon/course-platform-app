@@ -136,30 +136,50 @@ export const GET = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
+    let course;
+
     // Check if course exists
-    const course = await prisma.courses.findUnique({
-      where: {
-        id: courseId,
-      },
-      include: {
-        sections: {
-          where: {
-            status: CourseSectionStatus.public,
-          },
-          orderBy: { order: "asc" },
-          include: {
-            lessons: {
-              where: {
-                status: {
-                  not: CourseLessonStatus.private,
-                },
+    if (user.role === UserRole.admin) {
+      course = await prisma.courses.findUnique({
+        where: {
+          id: courseId,
+        },
+        include: {
+          sections: {
+            orderBy: { order: "asc" },
+            include: {
+              lessons: {
+                orderBy: { order: "asc" },
               },
-              orderBy: { order: "asc" },
             },
           },
         },
-      },
-    });
+      });
+    } else {
+      course = await prisma.courses.findUnique({
+        where: {
+          id: courseId,
+        },
+        include: {
+          sections: {
+            where: {
+              status: CourseSectionStatus.public,
+            },
+            orderBy: { order: "asc" },
+            include: {
+              lessons: {
+                where: {
+                  status: {
+                    not: CourseLessonStatus.private,
+                  },
+                },
+                orderBy: { order: "asc" },
+              },
+            },
+          },
+        },
+      });
+    }
 
     if (!course) {
       return ApiError(404, "Course not found!");
