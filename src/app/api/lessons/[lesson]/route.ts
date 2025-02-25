@@ -55,6 +55,7 @@ export const PUT = authGuard(
         name: name || isLessonExist.name,
         description: description || isLessonExist.description || "",
         youtubeVideoId: youtubeVideoId || isLessonExist.youtubeVideoId || "",
+        status: status || isLessonExist.status,
       },
     });
 
