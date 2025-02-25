@@ -126,7 +126,7 @@ const SuspenseBoundary = ({
         />
       </div>
       <div className="flex flex-col flex-grow gap-2">
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-2">
           <h1 className="text-2xl font-semibold hidden md:block">
             {lesson.name}
           </h1>
