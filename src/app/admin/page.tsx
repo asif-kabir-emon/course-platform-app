@@ -73,39 +73,47 @@ const AdminPage = () => {
       <div className="my-12">
         {/* // Last 5 purchases */}
         <h2 className="text-xl font-bold">Last 5 Purchases</h2>
-        <div className="overflow-x-auto">
-          <Table className="w-full mt-4 table-auto">
-            <TableRow>
-              <TableHead className="min-w-[280px]">Product</TableHead>
-              <TableHead className="min-w-[280px]">User</TableHead>
-              <TableHead className="min-w-[60px]">Price</TableHead>
-              <TableHead className="min-w-[90px]">Refunded</TableHead>
-              <TableHead className="min-w-[150px]">Date</TableHead>
-            </TableRow>
-            <TableBody>
-              {dashboard.data.last5Purchases.map(
-                (purchase: {
-                  id: string;
-                  product: { name: string };
-                  user: { email: string };
-                  pricePaidInCent: number;
-                  isRefunded: boolean;
-                  createdAt: string;
-                }) => (
-                  <TableRow key={purchase.id}>
-                    <TableCell>{purchase.product.name}</TableCell>
-                    <TableCell>{purchase.user.email}</TableCell>
-                    <TableCell>${purchase.pricePaidInCent / 100}</TableCell>
-                    <TableCell>{purchase.isRefunded ? "Yes" : "No"}</TableCell>
-                    <TableCell>
-                      {new Date(purchase.createdAt).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ),
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        {dashboard.data.last5Purchases.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table className="w-full mt-4 table-auto">
+              <TableRow>
+                <TableHead className="min-w-[280px]">Product</TableHead>
+                <TableHead className="min-w-[280px]">User</TableHead>
+                <TableHead className="min-w-[60px]">Price</TableHead>
+                <TableHead className="min-w-[90px]">Refunded</TableHead>
+                <TableHead className="min-w-[150px]">Date</TableHead>
+              </TableRow>
+              <TableBody>
+                {dashboard.data.last5Purchases.map(
+                  (purchase: {
+                    id: string;
+                    product: { name: string };
+                    user: { email: string };
+                    pricePaidInCent: number;
+                    isRefunded: boolean;
+                    createdAt: string;
+                  }) => (
+                    <TableRow key={purchase.id}>
+                      <TableCell>{purchase.product.name}</TableCell>
+                      <TableCell>{purchase.user.email}</TableCell>
+                      <TableCell>${purchase.pricePaidInCent / 100}</TableCell>
+                      <TableCell>
+                        {purchase.isRefunded ? "Yes" : "No"}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(purchase.createdAt).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ),
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="mt-2">
+            <p className="text-muted-foreground">No purchases found.</p>
+          </div>
+        )}
       </div>
     </div>
   );
