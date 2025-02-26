@@ -126,72 +126,72 @@ const SuspenseBoundary = ({
         />
       </div>
       <div className="flex flex-col flex-grow gap-2">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-2">
-          <h1 className="text-2xl font-semibold hidden md:block">
-            {lesson.name}
-          </h1>
-          <div className="flex flex-wrap gap-2 md:justify-end">
-            <Suspense fallback={<SkeletonButton />}>
-              <div className="flex items-center gap-2 ">
-                {lesson.isCompleted ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      disabled={true}
-                      className="disabled:opacity-100 text-green-600 border-green-600"
-                    >
-                      <CheckCircle />
-                      <span>Completed</span>
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleMarkLessonAsComplete(lesson.id)}
-                      disabled={
-                        isMarkingCompletedLesson || isFetchingLessonData
-                      }
-                      className="hover:bg-black"
-                    >
-                      <CheckCircle />
-                      <span>Complete the Lesson</span>
-                    </Button>
-                  </>
-                )}
-              </div>
-              {!isFetchingPreviousLessonId &&
-              previousLesson?.success === true ? (
-                <ToLessonButton
-                  courseId={courseId}
-                  lessonId={previousLesson.data.previousLessonId}
-                  isDisabled={isFetchingLessonData}
-                >
-                  Previous
-                </ToLessonButton>
+        <div className="flex flex-wrap gap-2 justify-start md:mt-5">
+          <Suspense fallback={<SkeletonButton />}>
+            <div className="flex items-center gap-2 ">
+              {lesson.isCompleted ? (
+                <>
+                  <Button
+                    variant="outline"
+                    disabled={true}
+                    className="disabled:opacity-100 text-green-600 border-green-600"
+                  >
+                    <CheckCircle />
+                    <span>Completed</span>
+                  </Button>
+                </>
               ) : (
-                <Button variant="outline" disabled={true}>
-                  Previous
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleMarkLessonAsComplete(lesson.id)}
+                    disabled={isMarkingCompletedLesson || isFetchingLessonData}
+                    className="hover:bg-black"
+                  >
+                    <CheckCircle />
+                    <span>Complete the Lesson</span>
+                  </Button>
+                </>
               )}
-              {!isFetchingNextLessonId && nextLesson?.success === true ? (
-                <ToLessonButton
-                  courseId={courseId}
-                  lessonId={nextLesson.data.nextLessonId}
-                  isDisabled={isFetchingLessonData}
-                >
-                  Next
-                </ToLessonButton>
-              ) : (
-                <Button variant="outline" disabled={true}>
-                  Next
-                </Button>
-              )}
-            </Suspense>
-          </div>
+            </div>
+            {!isFetchingPreviousLessonId && previousLesson?.success === true ? (
+              <ToLessonButton
+                courseId={courseId}
+                lessonId={previousLesson.data.previousLessonId}
+                isDisabled={isFetchingLessonData}
+              >
+                Previous
+              </ToLessonButton>
+            ) : (
+              <Button
+                variant="outline"
+                className="cursor-not-allowed"
+                disabled={true}
+              >
+                Previous
+              </Button>
+            )}
+            {!isFetchingNextLessonId && nextLesson?.success === true ? (
+              <ToLessonButton
+                courseId={courseId}
+                lessonId={nextLesson.data.nextLessonId}
+                isDisabled={isFetchingLessonData}
+              >
+                Next
+              </ToLessonButton>
+            ) : (
+              <Button
+                variant="outline"
+                className="cursor-not-allowed"
+                disabled={true}
+              >
+                Next
+              </Button>
+            )}
+          </Suspense>
         </div>
       </div>
-      <h1 className="text-2xl font-semibold md:hidden">{lesson.name}</h1>
+      <h1 className="text-2xl font-semibold md:mt-5">{lesson.name}</h1>
       <div className="text-base sm:text-lg">{lesson.description}</div>
     </div>
   );

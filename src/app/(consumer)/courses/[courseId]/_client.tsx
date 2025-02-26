@@ -52,7 +52,7 @@ const CoursePageClient = ({
     >
       {course.sections.map((section) => (
         <AccordionItem key={section.id} value={section.id}>
-          <AccordionTrigger className="text-lg">
+          <AccordionTrigger className="text-base">
             {section.name}
           </AccordionTrigger>
           <AccordionContent className="flex flex-col gap-1">
@@ -71,9 +71,11 @@ const CoursePageClient = ({
                   href={`/courses/${course.id}/lessons/${lesson.id}`}
                   className="justify-between"
                 >
-                  <div className="flex items-center gap-2">
-                    <VideoIcon />
-                    {lesson.name}
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <VideoIcon className="flex-shrink-0" />
+                    <div className="whitespace-wrap" title={lesson.name}>
+                      {lesson.name}
+                    </div>
                   </div>
                   {lesson.isComplete && <CheckCircle2 />}
                 </Link>
