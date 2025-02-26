@@ -41,90 +41,96 @@ const CourseEditPage = ({
 
   return (
     <div className="container my-5">
-      <PageHeader title={courses.data.name} />
-      <Tabs defaultValue="lessons">
-        <TabsList>
-          <TabsTrigger value="lessons">Lessons</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-        </TabsList>
-        <TabsContent value="lessons" className="flex flex-col gap-2">
-          <Card>
-            <CardHeader className="flex flex-row justify-between items-center">
-              <CardTitle>Sections</CardTitle>
-              <SectionFormDialog courseId={courseId}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="hover:bg-black hover:text-white"
-                  >
-                    <PlusIcon />
-                    Add Section
-                  </Button>
-                </DialogTrigger>
-              </SectionFormDialog>
-            </CardHeader>
-            <CardContent>
-              <SortableSectionList
-                courseId={courseId}
-                sections={courses.data.sections}
-              />
-            </CardContent>
-          </Card>
-          {courses.data.sections.length > 0 && <hr className="my-2" />}
-          {courses.data.sections.map(
-            (section: {
-              id: string;
-              name: string;
-              status: CourseSectionStatus;
-              lessons: {
+      <div className="lg:hidden flex justify-center items-center h-96 text-muted-foreground">
+        Open this page on a larger screen to edit course details.
+      </div>
+
+      <div className="hidden lg:block">
+        <PageHeader title={courses.data.name} />
+        <Tabs defaultValue="lessons">
+          <TabsList>
+            <TabsTrigger value="lessons">Lessons</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+          </TabsList>
+          <TabsContent value="lessons" className="flex flex-col gap-2">
+            <Card>
+              <CardHeader className="flex flex-row justify-between items-center">
+                <CardTitle>Sections</CardTitle>
+                <SectionFormDialog courseId={courseId}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="hover:bg-black hover:text-white"
+                    >
+                      <PlusIcon />
+                      Add Section
+                    </Button>
+                  </DialogTrigger>
+                </SectionFormDialog>
+              </CardHeader>
+              <CardContent>
+                <SortableSectionList
+                  courseId={courseId}
+                  sections={courses.data.sections}
+                />
+              </CardContent>
+            </Card>
+            {courses.data.sections.length > 0 && <hr className="my-2" />}
+            {courses.data.sections.map(
+              (section: {
                 id: string;
                 name: string;
-                description: string;
-                youtubeVideoId: string;
-                status: CourseLessonStatus;
-              }[];
-            }) => (
-              <Card key={section.id}>
-                <CardHeader className="flex flex-row justify-between items-center gap-4">
-                  <CardTitle
-                    className={cn(
-                      "flex items-center gap-1",
-                      section.status === CourseSectionStatus.private &&
-                        "text-muted-foreground",
-                    )}
-                  >
-                    <span className="mx-2">{section.name}</span>
-                  </CardTitle>
-                  <LessonFormDialog sectionId={section.id}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="hover:bg-black hover:text-white"
-                      >
-                        <PlusIcon />
-                        New Lesson
-                      </Button>
-                    </DialogTrigger>
-                  </LessonFormDialog>
-                </CardHeader>
-                <CardContent>
-                  <SortableLessonList
-                    sectionId={section.id}
-                    lessons={section.lessons}
-                  />
-                </CardContent>
-              </Card>
-            ),
-          )}
-        </TabsContent>
-        <TabsContent value="details">
-          <Card>
-            <CardHeader>
-              <CourseForm course={courses.data} />
-            </CardHeader>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                status: CourseSectionStatus;
+                lessons: {
+                  id: string;
+                  name: string;
+                  description: string;
+                  youtubeVideoId: string;
+                  status: CourseLessonStatus;
+                }[];
+              }) => (
+                <Card key={section.id}>
+                  <CardHeader className="flex flex-row justify-between items-center gap-4">
+                    <CardTitle
+                      className={cn(
+                        "flex items-center gap-1",
+                        section.status === CourseSectionStatus.private &&
+                          "text-muted-foreground",
+                      )}
+                    >
+                      <span className="mx-2">{section.name}</span>
+                    </CardTitle>
+                    <LessonFormDialog sectionId={section.id}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="hover:bg-black hover:text-white"
+                        >
+                          <PlusIcon />
+                          New Lesson
+                        </Button>
+                      </DialogTrigger>
+                    </LessonFormDialog>
+                  </CardHeader>
+                  <CardContent>
+                    <SortableLessonList
+                      sectionId={section.id}
+                      lessons={section.lessons}
+                    />
+                  </CardContent>
+                </Card>
+              ),
+            )}
+          </TabsContent>
+          <TabsContent value="details">
+            <Card>
+              <CardHeader>
+                <CourseForm course={courses.data} />
+              </CardHeader>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

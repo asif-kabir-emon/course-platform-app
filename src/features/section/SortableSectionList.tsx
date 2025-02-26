@@ -96,10 +96,11 @@ const SortableSectionList = ({
           >
             <div
               className={cn(
-                "contents",
+                "contents truncate max-w-[200px] overflow-hidden whitespace-nowrap",
                 section.status === CourseSectionStatus.private &&
                   "text-muted-foreground",
               )}
+              title={section.name}
             >
               {section.status === CourseSectionStatus.public && (
                 <Eye className="size-4" />
