@@ -1,4 +1,5 @@
 "use client";
+import PageHeader from "@/components/PageHeader";
 import { SkeletonText } from "@/components/Skeleton";
 import {
   Card,
@@ -37,6 +38,7 @@ const AdminPage = () => {
 
   return (
     <div className="container my-5">
+      <PageHeader title="Dashboard" />
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <StatCard title="Net Sales">${dashboard.data.netSales}</StatCard>
         <StatCard title="Refunded Sales">
@@ -72,7 +74,7 @@ const AdminPage = () => {
       </div>
       <div className="my-12">
         {/* // Last 5 purchases */}
-        <h2 className="text-xl font-bold">Last 5 Purchases</h2>
+        <h2 className="text-lg font-semibold">Last 5 Purchases</h2>
         {dashboard.data.last5Purchases.length > 0 ? (
           <div className="overflow-x-auto">
             <Table className="w-full mt-4 table-auto">
