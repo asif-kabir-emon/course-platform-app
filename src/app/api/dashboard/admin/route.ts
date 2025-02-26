@@ -59,6 +59,32 @@ export const GET = authGuard(
     // Total lessons count
     const totalLessons = await prisma.courseLessons.count();
 
+    // Get last 5 purchases
+    const last5Purchases = await prisma.purchaseHistories.findMany({
+      take: 5,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        pricePaidInCent: true,
+        isRefunded: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
     const formattedData = {
       netSales: (salesData?._sum.pricePaidInCent ?? 0) / 100,
       refundedSales: (refundedData?._sum.pricePaidInCent ?? 0) / 100,
@@ -73,6 +99,7 @@ export const GET = authGuard(
       totalProducts: totalProducts,
       totalSections: totalSections,
       totalLessons: totalLessons,
+      last5Purchases: last5Purchases,
     };
 
     return sendResponse({

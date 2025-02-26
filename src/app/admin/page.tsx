@@ -6,6 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
 import { formatNumber } from "@/lib/formatter";
 import { useGetAdminDashboardDataQuery } from "@/redux/api/purchaseApi";
 import React, { ReactNode } from "react";
@@ -47,9 +54,6 @@ const AdminPage = () => {
             maximumFractionDigits: 2,
           })}
         </StatCard>
-      </div>
-      <hr className="my-5 border-t-[1px]" />
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <StatCard title="Students">
           {formatNumber(dashboard.data.totalStudents)}
         </StatCard>
@@ -65,6 +69,43 @@ const AdminPage = () => {
         <StatCard title="Lessons">
           {formatNumber(dashboard.data.totalLessons)}
         </StatCard>
+      </div>
+      <div className="my-12">
+        {/* // Last 5 purchases */}
+        <h2 className="text-xl font-bold">Last 5 Purchases</h2>
+        <div className="overflow-x-auto">
+          <Table className="w-full mt-4 table-auto">
+            <TableRow>
+              <TableHead className="min-w-[280px]">Product</TableHead>
+              <TableHead className="min-w-[280px]">User</TableHead>
+              <TableHead className="min-w-[60px]">Price</TableHead>
+              <TableHead className="min-w-[90px]">Refunded</TableHead>
+              <TableHead className="min-w-[150px]">Date</TableHead>
+            </TableRow>
+            <TableBody>
+              {dashboard.data.last5Purchases.map(
+                (purchase: {
+                  id: string;
+                  product: { name: string };
+                  user: { email: string };
+                  pricePaidInCent: number;
+                  isRefunded: boolean;
+                  createdAt: string;
+                }) => (
+                  <TableRow key={purchase.id}>
+                    <TableCell>{purchase.product.name}</TableCell>
+                    <TableCell>{purchase.user.email}</TableCell>
+                    <TableCell>${purchase.pricePaidInCent / 100}</TableCell>
+                    <TableCell>{purchase.isRefunded ? "Yes" : "No"}</TableCell>
+                    <TableCell>
+                      {new Date(purchase.createdAt).toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                ),
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
