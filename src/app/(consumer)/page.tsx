@@ -43,7 +43,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="container my-5">
+    <div className="container my-5 select-none">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
         {products?.data?.map(
           (product: {
