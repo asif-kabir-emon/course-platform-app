@@ -31,7 +31,7 @@ const LessonPage = ({
 
   if (lesson.success === false) {
     return (
-      <div className="flex flex-col items-center justify-center my-5 py-10 md:py-20 lg:py-28 rounded-xl bg-slate-100 text-slate-500 h-full w-full">
+      <div className="container my-5 flex flex-col items-center justify-center py-10 md:py-20 lg:py-28 rounded-xl bg-slate-100 text-slate-500 h-full w-full">
         <LockIcon className="size-16" />
         <p className="text-sm mt-4">Unauthorized access</p>
       </div>
