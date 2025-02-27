@@ -24,6 +24,7 @@ const VerifyOtpPage = () => {
         router.push("/");
       } else {
         setEmailAddress(email);
+        handleResendOtp();
         router.replace(`/verify-otp?email=${email}`);
       }
     } else {

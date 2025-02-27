@@ -31,7 +31,7 @@ const LessonPage = ({
 
   if (lesson.success === false) {
     return (
-      <div className="container my-5 flex flex-col items-center justify-center py-10 md:py-20 lg:py-28 rounded-xl bg-slate-100 text-slate-500 h-full w-full">
+      <div className="flex flex-col items-center justify-center py-10 md:py-20 lg:py-28 rounded-xl bg-slate-100 text-slate-500 h-full w-full">
         <LockIcon className="size-16" />
         <p className="text-sm mt-4">Unauthorized access</p>
       </div>
@@ -199,7 +199,7 @@ const SuspenseBoundary = ({
 
 const LessonSkeleton = () => {
   return (
-    <div className="container my-5 flex flex-col gap-4">
+    <div className="container flex flex-col gap-4">
       <SkeletonText className="w-full h-36 md:h-36 lg:h-80" />
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-2">
         <SkeletonText className="w-32 h-8" />

@@ -26,11 +26,7 @@ export default function CoursePageLayout({
   }
 
   if (course.success === false) {
-    return (
-      <div className="container">
-        <div className="py-4 px-5 md:px-20">{children}</div>
-      </div>
-    );
+    return <div className="container my-5">{children}</div>;
   }
 
   return (
