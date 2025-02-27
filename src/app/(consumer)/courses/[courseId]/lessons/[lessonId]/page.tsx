@@ -10,6 +10,7 @@ import {
 } from "@/redux/api/lessonApi";
 import { CheckCircle, ChevronLeft, LockIcon } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import React, { ReactNode, Suspense, use } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +20,8 @@ const LessonPage = ({
   params: Promise<{ courseId: string; lessonId: string }>;
 }) => {
   const { courseId, lessonId } = use(params);
+  const searchParams = useSearchParams();
+  console.log(searchParams.get("preview"));
 
   const { data: lesson, isLoading } = useGetLessonByIdQuery({
     courseId,

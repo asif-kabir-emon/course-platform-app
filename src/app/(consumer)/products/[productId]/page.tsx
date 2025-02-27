@@ -198,8 +198,9 @@ const ProductPage = ({
                             />
                             {lesson.status === CourseLessonStatus.preview ? (
                               <Link
-                                href={`/courses/${courseProduct.course.id}/lessons/${lesson.id}`}
+                                href={`/courses/${courseProduct.course.id}/lessons/${lesson.id}?preview=true`}
                                 className="underline"
+                                target="_blank"
                               >
                                 {lesson.name}
                               </Link>
@@ -246,7 +247,9 @@ const PurchaseButton = ({ productId }: { productId: string }) => {
         <div>You already own this product!</div>
       ) : (
         <Button className="text-lg h-auto py-1 px-6 rounded-lg" asChild>
-          <Link href={`/products/${productId}/purchase`}>Get Now</Link>
+          <Link href={`/products/${productId}/purchase`} target="_blank">
+            Get Now
+          </Link>
         </Button>
       )}
     </div>
