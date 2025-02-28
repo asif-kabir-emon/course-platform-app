@@ -30,23 +30,27 @@ export default function CoursePageLayout({
   }
 
   return (
-    <div className="lg:container grid lg:grid-cols-[300px,1fr] gap-8 my-5">
+    <div className="lg:container grid lg:grid-cols-[340px,1fr] gap-8 my-5">
       <div className="py-4 hidden lg:block">
-        <div className="text-lg font-semibold">{course.data.name}</div>
-        <Suspense
-          fallback={
-            <CoursePageClient
-              course={mapCourse({
-                course: course.data,
-                completedLessonIds: [],
-              })}
-            />
-          }
-        >
-          <SuspenseBoundary course={course.data} />
-        </Suspense>
+        <div className="text-lg font-semibold pr-5">{course.data.name}</div>
+        <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-5">
+          <Suspense
+            fallback={
+              <CoursePageClient
+                course={mapCourse({
+                  course: course.data,
+                  completedLessonIds: [],
+                })}
+              />
+            }
+          >
+            <SuspenseBoundary course={course.data} />
+          </Suspense>
+        </div>
       </div>
-      <div className="py-4">{children}</div>
+      <div className="py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
+        {children}
+      </div>
     </div>
   );
 }
