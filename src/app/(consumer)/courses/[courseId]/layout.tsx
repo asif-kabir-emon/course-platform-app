@@ -30,7 +30,7 @@ export default function CoursePageLayout({
   }
 
   return (
-    <div className="lg:container grid lg:grid-cols-[300px,1fr] gap-8">
+    <div className="lg:container grid lg:grid-cols-[300px,1fr] gap-8 my-5">
       <div className="py-4 hidden lg:block">
         <div className="text-lg font-semibold">{course.data.name}</div>
         <Suspense
