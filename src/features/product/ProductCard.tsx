@@ -36,7 +36,7 @@ const ProductCard = ({
         </CardDescription>
         <CardTitle className="text-xl">{name}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="mt-auto">
         <p className="line-clamp-3">{description}</p>
       </CardContent>
       <CardFooter className="mt-auto">

@@ -38,7 +38,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
   const { data: purchase, isLoading } =
     useGetPurchaseHistoryByIdQuery(purchaseId);
 
-  if (isLoading) return <div className="container my-5">Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   if (
     purchase.success === false ||

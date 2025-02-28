@@ -161,13 +161,32 @@ export const GET = catchAsync(async (request: Request, context: any) => {
 
   const user = authorization.user;
 
+  let hasAccess;
+  if (user) {
+    const hasAccessToCourse = await prisma.userCourseAccess.findFirst({
+      where: {
+        userId: user?.id,
+        courseId,
+      },
+    });
+
+    hasAccess = hasAccessToCourse ? true : false;
+  }
+
   //  --- If lesson is in preview mode, then response directly ---
-  if ((!user || user) && lesson.status === CourseLessonStatus.preview) {
+  if (
+    (!user || user) &&
+    lesson.status === CourseLessonStatus.preview &&
+    !hasAccess
+  ) {
     return sendResponse({
       status: 200,
       message: "Fetched successfully!",
       success: true,
-      data: lesson,
+      data: {
+        ...lesson,
+        hasAccess,
+      },
     });
   }
 
@@ -193,6 +212,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
       data: {
         ...lesson,
         isCompleted: isLessonCompleted ? true : false,
+        hasAccess: true,
       },
     });
   }
@@ -256,6 +276,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     data: {
       ...lesson,
       isCompleted: isLessonCompleted ? true : false,
+      hasAccess: true,
     },
   });
 });

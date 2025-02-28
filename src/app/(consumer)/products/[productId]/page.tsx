@@ -198,7 +198,7 @@ const ProductPage = ({
                             />
                             {lesson.status === CourseLessonStatus.preview ? (
                               <Link
-                                href={`/courses/${courseProduct.course.id}/lessons/${lesson.id}?preview=true`}
+                                href={`/courses/${courseProduct.course.id}/lessons/${lesson.id}`}
                                 className="underline"
                                 target="_blank"
                               >
