@@ -39,7 +39,7 @@ const LessonPage = ({
   }
 
   return (
-    <div className="container my-5">
+    <div className="container">
       <Suspense fallback={<LessonSkeleton />}>
         <SuspenseBoundary
           lesson={lesson.data}
@@ -114,12 +114,14 @@ const SuspenseBoundary = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="lg:hidden">
-        <Button variant="outline" className="hover:bg-black w-full sm:w-auto">
-          <ChevronLeft className="size-6" />
-          <Link href={`/courses/${courseId}`}>Back to Lesson List</Link>
-        </Button>
-      </div>
+      {lesson.hasAccess && (
+        <div className="lg:hidden">
+          <Button variant="outline" className="hover:bg-black w-full sm:w-auto">
+            <ChevronLeft className="size-6" />
+            <Link href={`/courses/${courseId}`}>Back to Lesson List</Link>
+          </Button>
+        </div>
+      )}
       <div className="aspect-video">
         <YoutubeVideoPlayer
           videoId={lesson.youtubeVideoId}
