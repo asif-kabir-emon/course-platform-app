@@ -145,16 +145,6 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     return ApiError(404, "Lesson not found!");
   }
 
-  // if (lesson.status === CourseLessonStatus.preview) {
-  //   return sendResponse({
-  //     status: 200,
-  //     message: "Fetched successfully!",
-  //     success: true,
-  //     data: lesson,
-  //   });
-  // }
-
-  // --- If lesson is not in preview mode, then verify user access ---
   const authorization = await authVerification({
     authorization: request.headers.get("authorization") || "",
   });
@@ -173,7 +163,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     hasAccess = hasAccessToCourse ? true : false;
   }
 
-  //  --- If lesson is in preview mode, then response directly ---
+  //  --- If lesson is in preview mode and don't have access to course, then response directly ---
   if (
     (!user || user) &&
     lesson.status === CourseLessonStatus.preview &&
@@ -203,24 +193,8 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     },
   });
 
-  // --- If user's role is admin, then response directly ---
-  if (user.role === UserRole.admin) {
-    return sendResponse({
-      status: 200,
-      message: "Fetched successfully!",
-      success: true,
-      data: {
-        ...lesson,
-        isCompleted: isLessonCompleted ? true : false,
-        hasAccess: true,
-      },
-    });
-  }
-
-  // --- If user's is general user, then verify have access or not ---
-
   if (
-    user.role === UserRole.admin ||
+    user.role !== UserRole.admin &&
     lesson.status === CourseLessonStatus.private
   ) {
     return ApiError(400, "Unauthorized access!");
@@ -276,7 +250,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     data: {
       ...lesson,
       isCompleted: isLessonCompleted ? true : false,
-      hasAccess: true,
+      hasAccess,
     },
   });
 });
