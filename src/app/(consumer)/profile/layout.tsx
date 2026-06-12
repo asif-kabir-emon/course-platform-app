@@ -37,9 +37,9 @@ const DesktopSideBar = () => {
       <Link
         href="/profile"
         className={cn(
-          "bg-slate-100 hover:bg-slate-200 px-5 py-2 rounded-lg flex items-center text-base",
+          "flex items-center rounded-xl border border-transparent bg-card px-5 py-3 text-base font-medium text-muted-foreground shadow-sm hover:border-primary/15 hover:bg-primary/5 hover:text-primary",
           pathname === "/profile" &&
-            "bg-neutral-800 text-white hover:bg-neutral-700",
+            "border-primary/20 bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:bg-primary/90 hover:text-primary-foreground",
         )}
       >
         Your Profile
@@ -47,9 +47,9 @@ const DesktopSideBar = () => {
       <Link
         href="/profile/change-password"
         className={cn(
-          "bg-slate-100 hover:bg-slate-200 px-5 py-2 rounded-lg flex items-center text-base",
+          "flex items-center rounded-xl border border-transparent bg-card px-5 py-3 text-base font-medium text-muted-foreground shadow-sm hover:border-primary/15 hover:bg-primary/5 hover:text-primary",
           pathname === "/profile/change-password" &&
-            "bg-neutral-800 text-white hover:bg-neutral-700",
+            "border-primary/20 bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:bg-primary/90 hover:text-primary-foreground",
         )}
       >
         Change Password
@@ -74,13 +74,13 @@ const MobileSideBar = () => {
         <SelectContent>
           <SelectItem
             value="/profile"
-            className="my-1 hover:!bg-slate-200 hover:!text-black hover:cursor-pointer data-[state=checked]:bg-neutral-800 data-[state=checked]:text-white"
+            className="my-1 cursor-pointer hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           >
             Your Profile
           </SelectItem>
           <SelectItem
             value="/profile/change-password"
-            className="my-1 hover:!bg-slate-200 hover:!text-black hover:cursor-pointer data-[state=checked]:bg-neutral-800 data-[state=checked]:text-white"
+            className="my-1 cursor-pointer hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           >
             Change Password
           </SelectItem>

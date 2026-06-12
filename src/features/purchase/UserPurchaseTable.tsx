@@ -72,7 +72,7 @@ const UserPurchaseTable = ({
               )}
             </TableCell>
             <TableCell>
-              <Button variant="outline" className="hover:bg-black" asChild>
+              <Button variant="outline" asChild>
                 <Link href={`/purchases/${purchase.id}`}>Details</Link>
               </Button>
             </TableCell>

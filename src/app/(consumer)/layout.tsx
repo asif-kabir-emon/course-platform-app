@@ -7,6 +7,8 @@ import { decodedToken, validateToken } from "@/utils/validateToken";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogInIcon, LogOutIcon, Menu } from "lucide-react";
 import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function ConsumerLayout({
   children,
@@ -20,6 +22,7 @@ export default function ConsumerLayout({
 }
 
 function Navbar() {
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -66,8 +69,8 @@ function Navbar() {
   if (isLoggedIn === null) return null;
 
   return (
-    <header className="flex h-12 shadow bg-background z-10 select-none">
-      <nav className="flex gap-4 container">
+    <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
+      <nav className="container flex gap-4">
         <div className="flex items-center mr-auto">
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -86,7 +89,13 @@ function Navbar() {
               </SheetContent>
             </Sheet>
           </div>
-          <Link href="/" className="text-lg hover:underline flex items-center">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary"
+          >
+            <span className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-sm text-white shadow-sm">
+              {(process.env.NEXT_PUBLIC_APP_NAME || "C").charAt(0)}
+            </span>
             {process.env.NEXT_PUBLIC_APP_NAME || "Course Platform"}
           </Link>
         </div>
@@ -95,20 +104,31 @@ function Navbar() {
           <div className="hidden md:flex gap-2">
             {isAdmin && (
               <Link
-                className="hover:bg-accent/10 px-2 flex items-center"
+                className={cn(
+                  "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                  pathname.startsWith("/admin") && "bg-primary/10 text-primary",
+                )}
                 href="/admin"
               >
                 Admin
               </Link>
             )}
             <Link
-              className="hover:bg-accent/10 px-2 flex items-center"
+              className={cn(
+                "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                pathname.startsWith("/courses") &&
+                  "bg-primary/10 text-primary",
+              )}
               href="/courses"
             >
               My Courses
             </Link>
             <Link
-              className="hover:bg-accent/10 px-2 flex items-center"
+              className={cn(
+                "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                pathname.startsWith("/purchases") &&
+                  "bg-primary/10 text-primary",
+              )}
               href="/purchases"
             >
               Purchased History
@@ -148,7 +168,7 @@ const MobileNavMenu = ({
         <div className="flex-grow flex-col gap-3 mt-5">
           {isAdmin && (
             <Link
-              className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+              className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
               href="/admin"
               onClick={() => {
                 window.location.href = "/admin";
@@ -159,7 +179,7 @@ const MobileNavMenu = ({
             </Link>
           )}
           <Link
-            className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+            className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
             href="/courses"
             onClick={() => {
               window.location.href = "/courses";
@@ -169,7 +189,7 @@ const MobileNavMenu = ({
             My Courses
           </Link>
           <Link
-            className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+            className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
             href="/purchases"
             onClick={() => {
               window.location.href = "/purchases";

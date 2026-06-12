@@ -11,7 +11,7 @@ const SalesPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container my-8">
+      <div className="page-shell">
         <PageHeader title="Sales" />
         <PurchaseTableSkeleton />
       </div>
@@ -20,9 +20,9 @@ const SalesPage = () => {
 
   if (purchases.success === false) {
     return (
-      <div className="container my-8">
+      <div className="page-shell">
         <PageHeader title="Sales" />
-        <div className="border border-l-[5px] border-l-red-600 mb-4 px-4 py-4 rounded-r-md text-sm text-muted-foreground">
+        <div className="error-panel">
           Failed to fetch data. Try to refresh the page.
         </div>
       </div>
@@ -31,15 +31,20 @@ const SalesPage = () => {
 
   if (!purchases.data || purchases.data.length === 0) {
     return (
-      <div className="container my-8">
+      <div className="page-shell">
         <PageHeader title="Sales" />
-        <div>No Purchase History found.</div>
+        <div className="surface-panel px-6 py-10 text-center">
+          <p className="font-medium">No sales recorded yet.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Completed purchases will appear here.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container my-5">
+    <div className="page-shell">
       <PageHeader title="Sales" />
       <PurchaseTable purchases={purchases.data} />
     </div>

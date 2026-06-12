@@ -61,7 +61,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
         {purchase.data.stripe.receiptUrl && (
           <Button
             variant="outline"
-            className="hover:bg-neutral-800 hidden md:block"
+            className="hidden md:flex"
             asChild
           >
             <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
@@ -74,7 +74,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
       {purchase.data.stripe.receiptUrl && (
         <Button
           variant="outline"
-          className="hover:bg-neutral-800 md:hidden mb-5 mt-[-80px]"
+          className="mb-5 mt-[-80px] md:hidden"
           asChild
         >
           <Link target="_blank" href={purchase.data.stripe.receiptUrl}>

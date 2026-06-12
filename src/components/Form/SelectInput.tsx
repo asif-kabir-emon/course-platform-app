@@ -44,7 +44,7 @@ const SelectInput = ({
                   <SelectItem
                     key={item.value}
                     value={item.value}
-                    className="my-1 hover:!bg-slate-200 hover:cursor-pointer hover:!text-black data-[state=checked]:bg-black data-[state=checked]:text-white"
+                    className="my-1 cursor-pointer hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                   >
                     {item.label}
                   </SelectItem>

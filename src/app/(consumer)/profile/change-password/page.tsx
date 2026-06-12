@@ -82,7 +82,7 @@ const ChangePasswordPage = () => {
       <Form schema={updatePasswordSchema} {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 rounded-xl border bg-white p-4 sm:p-6 shadow-sm"
+          className="space-y-4 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm sm:p-6"
         >
           {oldPassword === newPassword && oldPassword !== "" && (
             <div>

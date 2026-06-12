@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { LogOutIcon, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function AdminLayout({
   children,
@@ -20,10 +22,11 @@ export default function AdminLayout({
 
 function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <header className="flex h-12 shadow bg-background z-1 select-none">
-      <nav className="flex gap-4 container">
+    <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
+      <nav className="container flex gap-4">
         <div className="flex items-center gap-2 mr-auto">
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -40,8 +43,11 @@ function Navbar() {
           </div>
           <Link
             href="/admin"
-            className="text-lg hover:underline flex items-center"
+            className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary"
           >
+            <span className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-sm text-white shadow-sm">
+              {(process.env.NEXT_PUBLIC_APP_NAME || "C").charAt(0)}
+            </span>
             {process.env.NEXT_PUBLIC_APP_NAME || "Course Platform"}
           </Link>
           <Badge>Admin</Badge>
@@ -49,19 +55,29 @@ function Navbar() {
 
         <div className="hidden md:flex gap-3">
           <Link
-            className="hover:bg-accent/10 px-2 flex items-center"
+            className={cn(
+              "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+              pathname.startsWith("/admin/courses") && "font-bold text-primary",
+            )}
             href="/admin/courses"
           >
             Courses
           </Link>
           <Link
-            className="hover:bg-accent/10 px-2 flex items-center"
+            className={cn(
+              "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+              pathname.startsWith("/admin/products") &&
+                "font-bold text-primary",
+            )}
             href="/admin/products"
           >
             Products
           </Link>
           <Link
-            className="hover:bg-accent/10 px-2 flex items-center"
+            className={cn(
+              "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+              pathname.startsWith("/admin/sales") && "font-bold text-primary",
+            )}
             href="/admin/sales"
           >
             Sales
@@ -81,7 +97,7 @@ const PhoneNavMenu = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
     <div className="h-full flex flex-col justify-between">
       <div className="flex-col gap-1 mt-5">
         <Link
-          className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+          className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
           href="/admin/courses"
           onClick={() => {
             window.location.href = "/admin/courses";
@@ -91,7 +107,7 @@ const PhoneNavMenu = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
           Courses
         </Link>
         <Link
-          className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+          className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
           href="/admin/products"
           onClick={() => {
             window.location.href = "/admin/products";
@@ -101,7 +117,7 @@ const PhoneNavMenu = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
           Products
         </Link>
         <Link
-          className="hover:bg-accent/10 px-3 py-1 rounded-lg flex items-center"
+          className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
           href="/admin/sales"
           onClick={() => {
             window.location.href = "/admin/sales";

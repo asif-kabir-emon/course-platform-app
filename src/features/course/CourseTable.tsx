@@ -126,7 +126,7 @@ const CourseTable = () => {
                     >
                       <Button
                         variant="outline"
-                        className="border-red-500 hover:bg-red-500 text-red-500"
+                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                       >
                         <Trash2Icon />
                         <span className="sr-only">Delete</span>

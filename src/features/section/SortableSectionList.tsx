@@ -115,7 +115,7 @@ const SortableSectionList = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hover:bg-black hover:text-white ml-auto"
+                  className="ml-auto hover:bg-primary/5 hover:text-primary"
                 >
                   Edit
                 </Button>
@@ -130,7 +130,7 @@ const SortableSectionList = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-red-500 hover:bg-red-500 text-red-500"
+                className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 <Trash2Icon />
                 <span className="sr-only">Delete</span>

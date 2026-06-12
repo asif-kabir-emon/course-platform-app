@@ -76,82 +76,111 @@ const PurchaseTable = ({
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="min-w-[320px]">
-            {formatPlural(
-              purchases.length,
-              {
-                singular: "Purchase",
-                plural: "Purchases",
-              },
-              {
-                includeCount: true,
-              },
-            )}
-          </TableHead>
-          <TableHead className="min-w-[200px]">Customer Name</TableHead>
-          <TableHead className="min-w-[100px]">Amount</TableHead>
-          <TableHead className="min-w-[120px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {purchases.map((purchase) => (
-          <TableRow key={purchase.id}>
-            <TableCell>
-              <div className="flex items-center gap-4">
-                <Image
-                  className="object-cover rounded size-12"
-                  src={purchase.productDetails.imageUrls}
-                  alt={purchase.productDetails.name}
-                  width={192}
-                  height={192}
-                />
-                <div className="flex flex-col gap-1">
-                  <div className="font-semibold">
-                    {purchase.productDetails.name}
-                  </div>
-                  <div className="text-muted-foreground">
-                    {formatDate(purchase.createdAt)}
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[300px]">
+              {formatPlural(
+                purchases.length,
+                {
+                  singular: "Purchase",
+                  plural: "Purchases",
+                },
+                {
+                  includeCount: true,
+                },
+              )}
+            </TableHead>
+            <TableHead className="min-w-[220px]">Customer</TableHead>
+            <TableHead className="min-w-[110px]">Amount</TableHead>
+            <TableHead className="min-w-[110px]">Status</TableHead>
+            <TableHead className="min-w-[120px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {purchases.map((purchase) => (
+            <TableRow key={purchase.id}>
+              <TableCell>
+                <div className="flex items-center gap-4">
+                  <Image
+                    className="size-12 rounded-lg object-cover"
+                    src={purchase.productDetails.imageUrls}
+                    alt={purchase.productDetails.name}
+                    width={192}
+                    height={192}
+                  />
+                  <div className="flex flex-col gap-1">
+                    <div className="font-semibold">
+                      {purchase.productDetails.name}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatDate(purchase.createdAt)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </TableCell>
-            <TableCell>
-              {purchase.user.profile.firstName || purchase.user.profile.lastName
-                ? `${purchase.user.profile.firstName} ${purchase.user.profile.lastName}`
-                : purchase.user.email.split("@")[0]}
-            </TableCell>
-            <TableCell>
-              {purchase.refundAt ? (
-                <Badge variant="outline">Refunded</Badge>
-              ) : (
-                formatPrice(purchase.pricePaidInCent / 100)
-              )}
-            </TableCell>
-            <TableCell>
-              {(purchase.refundAt === null || !purchase.refundAt) &&
-                purchase.pricePaidInCent > 0 && (
-                  <ActionButton
-                    action={(closeDialog: () => void) => {
-                      void handleRefund(purchase.id, closeDialog);
-                    }}
-                    tryAction={isLoading}
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">
+                    {purchase.user.profile.firstName ||
+                    purchase.user.profile.lastName
+                      ? `${purchase.user.profile.firstName} ${purchase.user.profile.lastName}`
+                      : purchase.user.email.split("@")[0]}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {purchase.user.email}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell className="font-medium">
+                {formatPrice(purchase.pricePaidInCent / 100)}
+              </TableCell>
+              <TableCell>
+                {purchase.refundAt ? (
+                  <Badge
+                    variant="outline"
+                    className="border-destructive/20 bg-destructive/10 text-destructive"
                   >
-                    <Button
-                      variant="outline"
-                      className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
-                    >
-                      Refund
-                    </Button>
-                  </ActionButton>
+                    Refunded
+                  </Badge>
+                ) : (
+                  <Badge className="bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15">
+                    Paid
+                  </Badge>
                 )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center">
+                  {(purchase.refundAt === null || !purchase.refundAt) &&
+                    purchase.pricePaidInCent > 0 && (
+                      <ActionButton
+                        action={(closeDialog: () => void) => {
+                          void handleRefund(purchase.id, closeDialog);
+                        }}
+                        tryAction={isLoading}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          Refund
+                        </Button>
+                      </ActionButton>
+                    )}
+                  {purchase.refundAt && (
+                    <span className="text-sm text-muted-foreground">
+                      No action required
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
@@ -164,8 +193,9 @@ export function PurchaseTableSkeleton() {
         <TableHeader>
           <TableRow>
             <TableHead>Purchase</TableHead>
-            <TableHead>Customer Name</TableHead>
+            <TableHead>Customer</TableHead>
             <TableHead>Amount</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -186,6 +216,9 @@ export function PurchaseTableSkeleton() {
               </TableCell>
               <TableCell>
                 <SkeletonText className="w-12" />
+              </TableCell>
+              <TableCell>
+                <SkeletonText className="h-6 w-16 rounded-full" />
               </TableCell>
               <TableCell>
                 <SkeletonButton />

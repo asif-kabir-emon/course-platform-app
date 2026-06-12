@@ -120,14 +120,17 @@ const ProductTable = () => {
                 </TableCell>
                 <TableCell>{product.customersCount}</TableCell>
                 <TableCell>
-                  <Badge className="inline-flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className={getStatusClassName(product.status)}
+                  >
                     {getStatusIcon(product.status)}
-                    {product.status}
+                    <span className="capitalize">{product.status}</span>
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button>
+                    <Button asChild>
                       <Link href={`/admin/products/${product.id}/edit`}>
                         Edit
                       </Link>
@@ -140,7 +143,7 @@ const ProductTable = () => {
                     >
                       <Button
                         variant="outline"
-                        className="border-red-500 hover:bg-red-500 text-red-500"
+                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                       >
                         <Trash2Icon />
                         <span className="sr-only">Delete</span>
@@ -165,5 +168,16 @@ const getStatusIcon = (status: ProductStatus) => {
     [ProductStatus.private]: LockIcon,
   }[status];
 
-  return <Icon size={16} />;
+  return <Icon className="size-3.5" aria-hidden="true" />;
+};
+
+const getStatusClassName = (status: ProductStatus) => {
+  const classes = {
+    [ProductStatus.public]:
+      "inline-flex items-center gap-1.5 rounded-full border-emerald-200 bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 hover:bg-emerald-50",
+    [ProductStatus.private]:
+      "inline-flex items-center gap-1.5 rounded-full border-amber-200 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700 hover:bg-amber-50",
+  };
+
+  return classes[status];
 };

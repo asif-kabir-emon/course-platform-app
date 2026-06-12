@@ -62,7 +62,7 @@ const CourseEditPage = ({
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className="hover:bg-black hover:text-white"
+                      className="hover:bg-primary/5 hover:text-primary"
                     >
                       <PlusIcon />
                       Add Section
@@ -106,7 +106,7 @@ const CourseEditPage = ({
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
-                          className="hover:bg-black hover:text-white"
+                          className="hover:bg-primary/5 hover:text-primary"
                         >
                           <PlusIcon />
                           New Lesson

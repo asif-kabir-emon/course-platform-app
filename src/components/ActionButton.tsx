@@ -41,7 +41,7 @@ export function ActionButton({
                 onClick={() => {
                   setIsOpened(false);
                 }}
-                className="hover:bg-black"
+                className="hover:bg-primary/5 hover:text-primary"
               >
                 Cancel
               </Button>
@@ -52,7 +52,7 @@ export function ActionButton({
                 disabled={tryAction}
               >
                 {tryAction ? (
-                  <Loader2 className="w-10 h-10 animate-spin text-gray-500" />
+                  <Loader2 className="w-10 h-10 animate-spin text-primary" />
                 ) : (
                   "Yes"
                 )}

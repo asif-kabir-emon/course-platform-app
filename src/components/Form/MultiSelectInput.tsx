@@ -52,7 +52,7 @@ const MultiSelectInput = ({
               <Button
                 variant="outline"
                 disabled={isDisabled}
-                className="w-full h-[40px] mt-2 mb-0.5 justify-between hover:bg-white hover:text-black hover:border-2 hover:border-black"
+                className="mt-2 mb-0.5 h-10 w-full justify-between hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
               >
                 <div className="flex gap-1 flex-wrap">
                   {field.value.length > 0 ? (
@@ -87,7 +87,7 @@ const MultiSelectInput = ({
                             : [...field.value, item.value];
                           field.onChange(newValue);
                         }}
-                        className="pr-5 md:pr-6 hover:!bg-slate-200 hover:cursor-pointer data-[selected]:bg-white data-[selected]:text-black"
+                        className="cursor-pointer pr-5 hover:!bg-primary/10 hover:!text-primary data-[selected]:bg-primary/5 data-[selected]:text-primary md:pr-6"
                       >
                         <Check
                           className={`mr-2 h-4 w-4 ${

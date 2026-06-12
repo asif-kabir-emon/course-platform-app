@@ -26,21 +26,29 @@ const ProductCard = ({
   priceInDollar: number;
 }) => {
   return (
-    <Card className="overflow-hidden flex flex-col w-full max-w-[500px] mx-auto">
+    <Card className="group overflow-hidden flex flex-col w-full max-w-[500px] mx-auto hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/10">
       <div className="relative aspect-video w-full">
-        <Image src={imageUrl} alt={name} fill className="object-cover" />
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 to-transparent" />
       </div>
       <CardHeader className="space-y-0">
         <CardDescription>
-          <div className="mb-2 text-base">{formatPrice(priceInDollar)}</div>
+          <div className="mb-2 inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            {formatPrice(priceInDollar)}
+          </div>
         </CardDescription>
         <CardTitle className="text-xl">{name}</CardTitle>
       </CardHeader>
       <CardContent className="mt-auto">
-        <p className="line-clamp-3">{description}</p>
+        <p className="line-clamp-3 text-muted-foreground">{description}</p>
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button className="w-full text-md py-6" asChild>
+        <Button className="w-full py-6 text-base" asChild>
           <Link href={`/products/${id}`}>View Course</Link>
         </Button>
       </CardFooter>
@@ -54,19 +62,19 @@ export const ProductSkeleton = () => {
   return (
     <Card className="overflow-hidden flex flex-col w-full max-w-[500px] mx-auto">
       <div className="relative aspect-video w-full">
-        <div className="bg-gray-200 animate-pulse w-full h-60" />
+        <div className="bg-secondary animate-pulse w-full h-60" />
       </div>
       <CardHeader className="space-y-0">
         <CardDescription>
-          <div className="mb-2 text-base bg-gray-200 animate-pulse h-6 w-20" />
+          <div className="mb-2 text-base bg-secondary animate-pulse h-6 w-20 rounded-full" />
         </CardDescription>
-        <CardTitle className="text-xl bg-gray-200 animate-pulse h-6 w-40" />
+        <CardTitle className="text-xl bg-secondary animate-pulse h-6 w-40 rounded" />
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-3 bg-gray-200 animate-pulse h-6 w-full" />
+        <p className="line-clamp-3 bg-secondary animate-pulse h-6 w-full rounded" />
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button className="w-full text-md py-6 bg-gray-200 animate-pulse" />
+        <Button className="w-full text-md py-6 bg-secondary animate-pulse" />
       </CardFooter>
     </Card>
   );
