@@ -1,4 +1,4 @@
-import { ProductStatus } from "@prisma/client";
+import { ProductStatus } from "@/constants/ProductStatus.constant";
 import { z } from "zod";
 
 export const productSchema = z.object({

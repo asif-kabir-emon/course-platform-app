@@ -1,5 +1,5 @@
 "use client";
-import { CourseSectionStatus } from "@prisma/client";
+import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
 import React from "react";
 import { SortableItem, SortableList } from "@/components/SortableList";
 import { Button } from "@/components/ui/button";

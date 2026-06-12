@@ -6,10 +6,10 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
+import { UserRole } from "@/constants/UserRole.constant";
 import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
-import { UserRole } from "@prisma/client";
 
 type TFormInput = {
   email: string;

@@ -1,4 +1,5 @@
-import { OTPType, PrismaClient } from "@prisma/client";
+import { OTPType } from "@/constants/OTPType.constant";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";

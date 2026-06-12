@@ -1,6 +1,6 @@
 import { sectionDefaultValues, sectionSchema } from "@/schema/section.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CourseSectionStatus } from "@prisma/client";
+import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

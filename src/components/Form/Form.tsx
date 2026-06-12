@@ -1,11 +1,15 @@
-import { FormProvider, UseFormReturn } from "react-hook-form";
+import { FieldValues, FormProvider, UseFormReturn } from "react-hook-form";
 
-type FormProps = {
+type FormProps<TFieldValues extends FieldValues> = {
   children: React.ReactNode;
   schema: unknown;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} & UseFormReturn<any>;
+} & UseFormReturn<TFieldValues>;
 
-export const Form = ({ children, ...form }: FormProps) => {
+export const Form = <TFieldValues extends FieldValues>({
+  children,
+  schema: _schema,
+  ...form
+}: FormProps<TFieldValues>) => {
+  void _schema;
   return <FormProvider {...form}>{children}</FormProvider>;
 };

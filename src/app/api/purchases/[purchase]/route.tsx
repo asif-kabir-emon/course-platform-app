@@ -2,7 +2,8 @@ import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { Prisma, PrismaClient, UserRole } from "@prisma/client";
+import { UserRole } from "@/constants/UserRole.constant";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { stripeServerClient } from "@/helpers/stripe/stripeServer";
 import Stripe from "stripe";
 

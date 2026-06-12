@@ -5,7 +5,7 @@ import TextInput from "@/components/Form/TextInput";
 import { Button } from "@/components/ui/button";
 import { productDefaultValues, productSchema } from "@/schema/product.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProductStatus } from "@prisma/client";
+import { ProductStatus } from "@/constants/ProductStatus.constant";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";

@@ -1,4 +1,5 @@
-import { CourseSectionStatus, PrismaClient } from "@prisma/client";
+import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
+import { PrismaClient } from "@prisma/client";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";

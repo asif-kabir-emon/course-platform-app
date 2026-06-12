@@ -1,4 +1,4 @@
-import { CourseSectionStatus } from "@prisma/client";
+import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
 import { z } from "zod";
 
 export const sectionSchema = z.object({

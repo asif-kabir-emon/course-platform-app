@@ -5,9 +5,9 @@ import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
 import React, { use } from "react";
-import { mapCourse } from "./layout";
 import { cn } from "@/lib/utils";
 import { SkeletonText } from "@/components/Skeleton";
+import { mapCourse } from "./courseMapper";
 
 const CoursePage = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const { courseId } = use(params);

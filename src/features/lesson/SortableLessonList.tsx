@@ -1,5 +1,5 @@
 "use client";
-import { CourseLessonStatus } from "@prisma/client";
+import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

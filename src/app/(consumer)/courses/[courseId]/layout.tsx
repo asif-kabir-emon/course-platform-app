@@ -3,6 +3,7 @@ import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
 import { ReactNode, Suspense, use } from "react";
 import CoursePageClient, { CoursePageSkeleton } from "./_client";
+import { mapCourse } from "./courseMapper";
 
 export default function CoursePageLayout({
   params,
@@ -90,33 +91,3 @@ function SuspenseBoundary({
     />
   );
 }
-
-export const mapCourse = ({
-  course,
-  completedLessonIds,
-}: {
-  course: {
-    id: string;
-    name: string;
-    sections: {
-      id: string;
-      name: string;
-      lessons: {
-        id: string;
-        name: string;
-      }[];
-    }[];
-  };
-  completedLessonIds: string[];
-}) => {
-  return {
-    ...course,
-    sections: course.sections.map((section) => ({
-      ...section,
-      lessons: section.lessons.map((lesson) => ({
-        ...lesson,
-        isComplete: completedLessonIds.includes(lesson.id),
-      })),
-    })),
-  };
-};

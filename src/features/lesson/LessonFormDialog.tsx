@@ -1,5 +1,5 @@
 "use client";
-import { CourseLessonStatus } from "@prisma/client";
+import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
 import React, { ReactNode, useState } from "react";
 import {
   Dialog,

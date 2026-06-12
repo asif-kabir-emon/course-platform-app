@@ -1,9 +1,7 @@
-import {
-  CourseLessonStatus,
-  CourseSectionStatus,
-  PrismaClient,
-  UserRole,
-} from "@prisma/client";
+import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
+import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
+import { UserRole } from "@/constants/UserRole.constant";
+import { PrismaClient } from "@prisma/client";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";

@@ -21,7 +21,7 @@ import {
   useCheckUserAccessQuery,
   useGetProductByIdQuery,
 } from "@/redux/api/productApi";
-import { CourseLessonStatus } from "@prisma/client";
+import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
 import { VideoIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
