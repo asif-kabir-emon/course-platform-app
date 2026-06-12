@@ -4,6 +4,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { formatPlural } from "@/lib/formatter";
@@ -16,6 +17,7 @@ import React from "react";
 import { Trash2Icon } from "lucide-react";
 import { ActionButton } from "@/components/ActionButton";
 import { toast } from "sonner";
+import { TableSkeleton } from "@/components/Skeleton";
 
 const CourseTable = () => {
   const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({});
@@ -23,7 +25,7 @@ const CourseTable = () => {
     useDeleteCourseMutation();
 
   if (isFetchingData) {
-    return <div>Loading...</div>;
+    return <TableSkeleton columns={3} />;
   }
 
   if (courses?.success === false) {
@@ -49,24 +51,26 @@ const CourseTable = () => {
   };
 
   return (
-    <div>
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <Table>
-        <TableRow>
-          <TableHead className="min-w-[250px]">
-            {formatPlural(
-              courses?.data?.length,
-              {
-                singular: "course",
-                plural: "courses",
-              },
-              {
-                includeCount: false,
-              },
-            )}
-          </TableHead>
-          <TableHead>Students</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[250px]">
+              {formatPlural(
+                courses?.data?.length,
+                {
+                  singular: "course",
+                  plural: "courses",
+                },
+                {
+                  includeCount: false,
+                },
+              )}
+            </TableHead>
+            <TableHead>Students</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           {courses?.data?.map(
             (course: {

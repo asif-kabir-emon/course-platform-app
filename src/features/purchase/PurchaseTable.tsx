@@ -44,7 +44,7 @@ const PurchaseTable = ({
 }) => {
   const [refundPurchase, { isLoading }] = useRefundPurchaseMutation();
 
-  const handleRefund = async (id: string) => {
+  const handleRefund = async (id: string, closeDialog: () => void) => {
     const toasterId = toast.loading("Refunding purchase...", {
       position: "top-center",
       duration: 2000,
@@ -60,7 +60,7 @@ const PurchaseTable = ({
           duration: 2000,
         });
       } else {
-        toast.error("Failed to refund. Please try again.", {
+        toast.error(response.message || "Failed to refund. Please try again.", {
           id: toasterId,
           duration: 2000,
         });
@@ -70,6 +70,8 @@ const PurchaseTable = ({
         id: toasterId,
         duration: 2000,
       });
+    } finally {
+      closeDialog();
     }
   };
 
@@ -132,8 +134,8 @@ const PurchaseTable = ({
               {(purchase.refundAt === null || !purchase.refundAt) &&
                 purchase.pricePaidInCent > 0 && (
                   <ActionButton
-                    action={() => {
-                      handleRefund(purchase.id);
+                    action={(closeDialog: () => void) => {
+                      void handleRefund(purchase.id, closeDialog);
                     }}
                     tryAction={isLoading}
                   >
@@ -157,39 +159,41 @@ export default PurchaseTable;
 
 export function PurchaseTableSkeleton() {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Purchase</TableHead>
-          <TableHead>Customer Name</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <SkeletonArray amount={3}>
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell>
-              <div className="flex items-center gap-4">
-                <div className="size-12 bg-secondary animate-pulse rounded" />
-                <div className="flex flex-col gap-1">
-                  <SkeletonText className="w-36" />
-                  <SkeletonText className="w-3/4" />
-                </div>
-              </div>
-            </TableCell>
-            <TableCell>
-              <SkeletonText className="w-12" />
-            </TableCell>
-            <TableCell>
-              <SkeletonText className="w-12" />
-            </TableCell>
-            <TableCell>
-              <SkeletonButton />
-            </TableCell>
+            <TableHead>Purchase</TableHead>
+            <TableHead>Customer Name</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
-        </SkeletonArray>
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          <SkeletonArray amount={3}>
+            <TableRow>
+              <TableCell>
+                <div className="flex items-center gap-4">
+                  <div className="size-12 bg-secondary animate-pulse rounded" />
+                  <div className="flex flex-col gap-1">
+                    <SkeletonText className="w-36" />
+                    <SkeletonText className="w-3/4" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <SkeletonText className="w-12" />
+              </TableCell>
+              <TableCell>
+                <SkeletonText className="w-12" />
+              </TableCell>
+              <TableCell>
+                <SkeletonButton />
+              </TableCell>
+            </TableRow>
+          </SkeletonArray>
+        </TableBody>
+      </Table>
+    </div>
   );
 }

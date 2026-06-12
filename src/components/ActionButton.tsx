@@ -17,7 +17,7 @@ export function ActionButton({
   tryAction,
   children,
 }: {
-  action: () => void;
+  action: (closeDialog: () => void) => void;
   tryAction: boolean;
   children: ReactNode;
 }) {
@@ -47,7 +47,7 @@ export function ActionButton({
               </Button>
               <Button
                 onClick={() => {
-                  action();
+                  action(() => setIsOpened(false));
                 }}
                 disabled={tryAction}
               >

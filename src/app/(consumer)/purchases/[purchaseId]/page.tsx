@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useGetPurchaseHistoryByIdQuery } from "@/redux/api/purchaseApi";
 import Link from "next/link";
 import React, { Fragment, Suspense, use } from "react";
+import { DetailPageSkeleton } from "@/components/Skeleton";
 
 const PurchasePage = ({
   params,
@@ -25,7 +26,7 @@ const PurchasePage = ({
 
   return (
     <div className="container my-5">
-      <Suspense fallback={<div className="container my-5">Loading...</div>}>
+      <Suspense fallback={<DetailPageSkeleton />}>
         <SuspenseBoundary purchaseId={purchaseId} />
       </Suspense>
     </div>
@@ -38,7 +39,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
   const { data: purchase, isLoading } =
     useGetPurchaseHistoryByIdQuery(purchaseId);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <DetailPageSkeleton />;
 
   if (
     purchase.success === false ||

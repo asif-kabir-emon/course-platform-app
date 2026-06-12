@@ -3,6 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import React, { use } from "react";
 import { useGetProductByIdQuery } from "@/redux/api/productApi";
 import ProductForm from "@/features/product/ProductForm";
+import { FormPageSkeleton } from "@/components/Skeleton";
 
 const ProductEditPage = ({
   params,
@@ -14,7 +15,7 @@ const ProductEditPage = ({
     useGetProductByIdQuery(productId);
 
   if (isDataFetching) {
-    return <div className="container my-5">Loading...</div>;
+    return <FormPageSkeleton fields={6} />;
   }
 
   return (

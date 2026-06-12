@@ -111,11 +111,13 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="p-2 w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
+    <div className="w-full max-w-md">
+      <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6 sm:space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
-          <h3 className="text-gray-500 text-2xl mx-auto">Welcome!</h3>
-          <h2 className="text-xl">Recovery Password</h2>
+          <h3 className="text-gray-500 text-xl sm:text-2xl mx-auto">
+            Welcome!
+          </h3>
+          <h2 className="text-lg sm:text-xl text-center">Recover Password</h2>
         </div>
 
         <hr />
@@ -130,7 +132,8 @@ const ForgotPasswordPage = () => {
           <div>
             <label className="text-gray-700">Email address</label>
             <Input
-              type="text"
+              type="email"
+              autoComplete="email"
               placeholder="Enter your email address"
               {...register("email", {
                 required: "Email is required",
@@ -139,7 +142,7 @@ const ForgotPasswordPage = () => {
                   message: "Invalid email address",
                 },
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
@@ -151,7 +154,7 @@ const ForgotPasswordPage = () => {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full text-md py-2 mt-1"
+            className="w-full min-h-11 h-auto py-2 text-base mt-1 whitespace-normal"
             disabled={isButtonDisabled}
           >
             {isButtonDisabled && timeLeft > 0

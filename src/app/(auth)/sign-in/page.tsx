@@ -10,6 +10,7 @@ import { UserRole } from "@/constants/UserRole.constant";
 import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
+import PasswordInput from "@/components/Form/PasswordInput";
 
 type TFormInput = {
   email: string;
@@ -110,11 +111,11 @@ const SignInPage = () => {
   };
 
   return (
-    <div className="p-2 w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
+    <div className="w-full max-w-md">
+      <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6 sm:space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
-          <h3 className="text-gray-500 text-2xl">Welcome back!</h3>
-          <h2 className="text-xl">
+          <h3 className="text-gray-500 text-xl sm:text-2xl">Welcome back!</h3>
+          <h2 className="text-lg sm:text-xl text-center">
             Sign in to{" "}
             <Link href="/" className="hover:cursor-pointer">
               {String(process.env.NEXT_PUBLIC_APP_NAME || "KV App")}
@@ -129,7 +130,8 @@ const SignInPage = () => {
           <div>
             <label className="text-gray-700">Email address</label>
             <Input
-              type="text"
+              type="email"
+              autoComplete="email"
               placeholder="Enter your email address"
               {...register("email", {
                 required: "Email is required",
@@ -150,8 +152,8 @@ const SignInPage = () => {
           {/* Password Field */}
           <div>
             <label className="text-gray-700">Password</label>
-            <Input
-              type="password"
+            <PasswordInput
+              autoComplete="current-password"
               placeholder="Enter your password"
               {...register("password", {
                 required: "Password is required",
@@ -160,7 +162,7 @@ const SignInPage = () => {
                   message: "Password must be at least 6 characters long",
                 },
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
@@ -171,16 +173,16 @@ const SignInPage = () => {
 
           {/* Forgot Password */}
           <div>
-            <a
+            <Link
               href="/forgot-password"
-              className="text-sm text-gray-700 underline"
+              className="text-sm font-medium text-gray-700 underline underline-offset-4 hover:text-black"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full text-md py-2 mt-1">
+          <Button type="submit" className="w-full h-11 text-base mt-1">
             Sign In
           </Button>
         </form>
@@ -190,9 +192,9 @@ const SignInPage = () => {
         <div>
           <p className="text-gray-700 text-center">
             Don&apos;t have an account?{" "}
-            <a href="/sign-up" className="font-bold hover:underline">
+            <Link href="/sign-up" className="font-bold hover:underline">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </div>

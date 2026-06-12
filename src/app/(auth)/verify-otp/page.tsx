@@ -165,11 +165,13 @@ const VerifyOtpPage = () => {
   };
 
   return (
-    <div className="p-2 w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
+    <div className="w-full max-w-md">
+      <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6 sm:space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
-          <h3 className="text-gray-500 text-2xl">Welcome</h3>
-          <h2 className="text-xl">Try to verify your Account</h2>
+          <h3 className="text-gray-500 text-xl sm:text-2xl">Welcome</h3>
+          <h2 className="text-lg sm:text-xl text-center">
+            Verify Your Account
+          </h2>
         </div>
 
         <hr />
@@ -184,7 +186,7 @@ const VerifyOtpPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* 6 - digit Otp input box */}
-            <div className="flex justify-center items-center gap-2 my-5">
+            <div className="grid grid-cols-6 gap-1.5 sm:gap-2 my-5">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -194,8 +196,11 @@ const VerifyOtpPage = () => {
                   onChange={(e) => handleOtpChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)} // Handling Backspace
                   onPaste={handlePaste}
+                  inputMode="numeric"
+                  autoComplete={index === 0 ? "one-time-code" : "off"}
+                  aria-label={`OTP digit ${index + 1}`}
                   maxLength={1}
-                  className="w-10 h-10 text-center text-lg border-2 border-gray-300 rounded-md"
+                  className="w-full min-w-0 aspect-square text-center text-lg border-2 border-gray-300 rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               ))}
             </div>
@@ -226,7 +231,7 @@ const VerifyOtpPage = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full text-md py-2 mt-5"
+              className="w-full h-11 text-base mt-5"
               disabled={otp.some((digit) => digit === "")}
             >
               Verify Account

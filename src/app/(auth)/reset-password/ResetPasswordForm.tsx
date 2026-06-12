@@ -1,11 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import PasswordInput from "@/components/Form/PasswordInput";
+import PasswordStrength from "@/components/Form/PasswordStrength";
 
 type TFormInput = {
   password: string;
@@ -85,11 +86,13 @@ const ResetPasswordForm = () => {
   };
 
   return (
-    <div className="p-2 w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
+    <div className="w-full max-w-md">
+      <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6 sm:space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
-          <h3 className="text-gray-500 text-2xl">Welcome back!</h3>
-          <h2 className="text-xl">Try to Reset Your Password</h2>
+          <h3 className="text-gray-500 text-xl sm:text-2xl">Welcome back!</h3>
+          <h2 className="text-lg sm:text-xl text-center">
+            Reset Your Password
+          </h2>
         </div>
 
         <hr />
@@ -102,8 +105,8 @@ const ResetPasswordForm = () => {
 
           <div>
             <label className="text-gray-700">Password</label>
-            <Input
-              type="password"
+            <PasswordInput
+              autoComplete="new-password"
               placeholder="Enter your password"
               {...register("password", {
                 required: "Password is required",
@@ -112,8 +115,9 @@ const ResetPasswordForm = () => {
                   message: "Password must be at least 8 characters long",
                 },
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
+            <PasswordStrength password={watch("password")} />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.password.message}
@@ -123,15 +127,15 @@ const ResetPasswordForm = () => {
 
           <div>
             <label className="text-gray-700">Confirm Password</label>
-            <Input
-              type="password"
+            <PasswordInput
+              autoComplete="new-password"
               placeholder="Re-enter your password"
               {...register("confirmPassword", {
                 required: "Confirm password is required",
                 validate: (value) =>
                   value === watch("password") || "Passwords do not match",
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm mt-1">
@@ -142,7 +146,7 @@ const ResetPasswordForm = () => {
 
           <Button
             type="submit"
-            className="w-full text-md py-2 mt-1"
+            className="w-full h-11 text-base mt-1"
             disabled={
               watch("password") !== watch("confirmPassword") ||
               watch("password").length < 8

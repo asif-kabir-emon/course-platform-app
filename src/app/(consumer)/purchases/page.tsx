@@ -25,7 +25,7 @@ const SuspenseBoundary = () => {
   const { data: purchases, isLoading } = useGetMyPurchaseHistoryQuery({});
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <UserPurchaseTableSkeleton />;
   }
 
   if (purchases.data.length === 0) {

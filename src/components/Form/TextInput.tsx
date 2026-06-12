@@ -1,6 +1,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PasswordInput from "@/components/Form/PasswordInput";
 
 type TextInputProps = {
   name: string;
@@ -27,27 +28,36 @@ const TextInput = ({
       <Controller
         control={control}
         name={name}
-        render={({ field, fieldState: { error } }) => (
-          <>
-            <Input
-              type={type}
-              id={name}
-              placeholder={placeholder}
-              className={`w-full py-2 px-3 focus:outline-none mt-2 mb-0.5 focus:border-primary ${
-                error ? "border-red-400" : ""
-              }`}
-              {...field}
-              onChange={(e) => {
-                field.onChange(
-                  type === "number" ? Number(e.target.value) : e.target.value,
-                );
-              }}
-            />
-            {error && (
-              <span className="text-red-500 text-sm">{error.message}</span>
-            )}
-          </>
-        )}
+        render={({ field, fieldState: { error } }) => {
+          const inputProps = {
+            id: name,
+            placeholder,
+            className: `w-full py-2 px-3 focus:outline-none mt-2 mb-0.5 focus:border-primary ${
+              error ? "border-red-400" : ""
+            }`,
+            ...field,
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+              field.onChange(
+                type === "number"
+                  ? Number(event.target.value)
+                  : event.target.value,
+              );
+            },
+          };
+
+          return (
+            <>
+              {type === "password" ? (
+                <PasswordInput {...inputProps} />
+              ) : (
+                <Input type={type} {...inputProps} />
+              )}
+              {error && (
+                <span className="text-red-500 text-sm">{error.message}</span>
+              )}
+            </>
+          );
+        }}
       />
     </div>
   );

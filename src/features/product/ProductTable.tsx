@@ -4,6 +4,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { formatPlural, formatPrice } from "@/lib/formatter";
@@ -19,6 +20,7 @@ import {
   useDeleteProductMutation,
   useGetProductsQuery,
 } from "@/redux/api/productApi";
+import { TableSkeleton } from "@/components/Skeleton";
 
 const ProductTable = () => {
   const { data: products, isLoading: isFetchingData } = useGetProductsQuery({
@@ -28,7 +30,7 @@ const ProductTable = () => {
     useDeleteProductMutation();
 
   if (isFetchingData) {
-    return <div>Loading...</div>;
+    return <TableSkeleton columns={4} withMedia />;
   }
 
   if (products.success === false) {
@@ -54,25 +56,27 @@ const ProductTable = () => {
   };
 
   return (
-    <div>
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <Table>
-        <TableRow>
-          <TableHead className="min-w-[300px]">
-            {formatPlural(
-              products?.data?.length,
-              {
-                singular: "product",
-                plural: "products",
-              },
-              {
-                includeCount: false,
-              },
-            )}
-          </TableHead>
-          <TableHead>Customers</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[300px]">
+              {formatPlural(
+                products?.data?.length,
+                {
+                  singular: "product",
+                  plural: "products",
+                },
+                {
+                  includeCount: false,
+                },
+              )}
+            </TableHead>
+            <TableHead>Customers</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           {products?.data?.map(
             (product: {

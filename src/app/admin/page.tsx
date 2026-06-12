@@ -1,6 +1,7 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
-import { SkeletonText } from "@/components/Skeleton";
+import { SkeletonText, TableSkeleton } from "@/components/Skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardDescription,
@@ -12,6 +13,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { formatNumber } from "@/lib/formatter";
@@ -78,13 +80,15 @@ const AdminPage = () => {
         {dashboard.data.last5Purchases.length > 0 ? (
           <div className="overflow-x-auto">
             <Table className="w-full mt-4 table-auto">
-              <TableRow>
-                <TableHead className="min-w-[280px]">Product</TableHead>
-                <TableHead className="min-w-[280px]">User</TableHead>
-                <TableHead className="min-w-[60px]">Price</TableHead>
-                <TableHead className="min-w-[90px]">Refunded</TableHead>
-                <TableHead className="min-w-[150px]">Date</TableHead>
-              </TableRow>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[280px]">Product</TableHead>
+                  <TableHead className="min-w-[280px]">User</TableHead>
+                  <TableHead className="min-w-[60px]">Price</TableHead>
+                  <TableHead className="min-w-[90px]">Refunded</TableHead>
+                  <TableHead className="min-w-[150px]">Date</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {dashboard.data.last5Purchases.map(
                   (purchase: {
@@ -142,22 +146,21 @@ const StatCard = ({
 
 const DashboardSkeleton = () => {
   return (
-    <div className="container my-5">
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {[1, 2, 3, 4, 5].map((item) => (
-          <div key={item}>
-            <Card>
-              <CardHeader className="text-center">
-                <CardDescription>
-                  <SkeletonText />
-                </CardDescription>
-                <CardTitle className="font-bold text-2xl">
-                  <SkeletonText className="h-8" />
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+    <div className="container my-5 space-y-10" aria-label="Loading dashboard">
+      <Skeleton className="h-8 w-40" />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {Array.from({ length: 10 }).map((_, item) => (
+          <Card key={item}>
+            <CardHeader className="space-y-3 text-center">
+              <SkeletonText className="mx-auto w-20" />
+              <SkeletonText className="mx-auto h-8 w-16" />
+            </CardHeader>
+          </Card>
         ))}
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-44" />
+        <TableSkeleton columns={5} rows={5} />
       </div>
     </div>
   );

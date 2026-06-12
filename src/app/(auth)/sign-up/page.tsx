@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import PasswordInput from "@/components/Form/PasswordInput";
+import PasswordStrength from "@/components/Form/PasswordStrength";
 
 type TFormInput = {
   firstName: string;
@@ -21,6 +23,7 @@ const SignUpPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<TFormInput>({
     defaultValues: {
       firstName: "",
@@ -88,11 +91,11 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="p-2 w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-xl shadow-2xl border-2 space-y-7">
+    <div className="w-full max-w-lg">
+      <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6 sm:space-y-7">
         <div className="flex flex-col justify-center items-center gap-1">
-          <h3 className="text-gray-500 text-2xl">Welcome</h3>
-          <h2 className="text-xl">
+          <h3 className="text-gray-500 text-xl sm:text-2xl">Welcome</h3>
+          <h2 className="text-lg sm:text-xl text-center">
             Sign Up to{" "}
             <Link href="/" className="hover:cursor-pointer">
               {String(process.env.NEXT_PUBLIC_APP_NAME || "KV App")}
@@ -103,55 +106,58 @@ const SignUpPage = () => {
         <hr />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* FirstName Field */}
-          <div>
-            <label className="text-gray-700">First Name</label>
-            <Input
-              type="text"
-              placeholder="Enter your first name"
-              {...register("firstName", {
-                required: "First Name is required",
-                minLength: {
-                  value: 3,
-                  message: "First Name must be at least 3 characters long",
-                },
-              })}
-              className="mt-1"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {String(errors.email.message)}
-              </p>
-            )}
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-gray-700">First Name</label>
+              <Input
+                type="text"
+                autoComplete="given-name"
+                placeholder="Enter your first name"
+                {...register("firstName", {
+                  required: "First Name is required",
+                  minLength: {
+                    value: 3,
+                    message: "First Name must be at least 3 characters long",
+                  },
+                })}
+                className="mt-1 h-11"
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {String(errors.firstName.message)}
+                </p>
+              )}
+            </div>
 
-          {/* lastName Field */}
-          <div>
-            <label className="text-gray-700">Last Name</label>
-            <Input
-              type="text"
-              placeholder="Enter your last name"
-              {...register("lastName", {
-                required: "Last Name is required",
-                minLength: {
-                  value: 3,
-                  message: "Last Name must be at least 3 characters long",
-                },
-              })}
-              className="mt-1"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {String(errors.email.message)}
-              </p>
-            )}
+            <div>
+              <label className="text-gray-700">Last Name</label>
+              <Input
+                type="text"
+                autoComplete="family-name"
+                placeholder="Enter your last name"
+                {...register("lastName", {
+                  required: "Last Name is required",
+                  minLength: {
+                    value: 3,
+                    message: "Last Name must be at least 3 characters long",
+                  },
+                })}
+                className="mt-1 h-11"
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {String(errors.lastName.message)}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Email Field */}
           <div>
             <label className="text-gray-700">Email address</label>
             <Input
-              type="text"
+              type="email"
+              autoComplete="email"
               placeholder="Enter your email address"
               {...register("email", {
                 required: "Email is required",
@@ -160,7 +166,7 @@ const SignUpPage = () => {
                   message: "Invalid email address",
                 },
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
@@ -172,8 +178,8 @@ const SignUpPage = () => {
           {/* Password Field */}
           <div>
             <label className="text-gray-700">Password</label>
-            <Input
-              type="password"
+            <PasswordInput
+              autoComplete="new-password"
               placeholder="Enter your password"
               {...register("password", {
                 required: "Password is required",
@@ -182,8 +188,9 @@ const SignUpPage = () => {
                   message: "Password must be at least 8 characters long",
                 },
               })}
-              className="mt-1"
+              className="mt-1 h-11"
             />
+            <PasswordStrength password={watch("password")} />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
                 {String(errors.password.message)}
@@ -192,7 +199,7 @@ const SignUpPage = () => {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full text-md py-2 mt-1">
+          <Button type="submit" className="w-full h-11 text-base mt-1">
             Sign Up
           </Button>
         </form>
@@ -202,9 +209,9 @@ const SignUpPage = () => {
         <div>
           <p className="text-gray-700 text-center">
             Already have an account?{" "}
-            <a href="/sign-in" className="font-bold hover:underline">
+            <Link href="/sign-in" className="font-bold hover:underline">
               Sign In
-            </a>
+            </Link>
           </p>
         </div>
       </div>

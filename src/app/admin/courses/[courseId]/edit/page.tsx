@@ -15,6 +15,7 @@ import SortableSectionList from "@/features/section/SortableSectionList";
 import LessonFormDialog from "@/features/lesson/LessonFormDialog";
 import SortableLessonList from "@/features/lesson/SortableLessonList";
 import CourseForm from "@/features/course/CourseForm";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CourseEditPage = ({
   params,
@@ -26,7 +27,7 @@ const CourseEditPage = ({
     useGetCourseByIdQuery(courseId);
 
   if (isDataFetching) {
-    return <div className="container my-5">Loading...</div>;
+    return <CourseEditSkeleton />;
   }
 
   if (courses.success === false) {
@@ -137,3 +138,34 @@ const CourseEditPage = ({
 };
 
 export default CourseEditPage;
+
+const CourseEditSkeleton = () => {
+  return (
+    <div className="container my-5 space-y-6" aria-label="Loading course editor">
+      <Skeleton className="h-8 w-64" />
+      <div className="flex gap-2">
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+      {[1, 2, 3].map((item) => (
+        <Card key={item}>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-9 w-28" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[1, 2, 3].map((row) => (
+              <div
+                key={row}
+                className="flex items-center justify-between rounded-lg border p-3"
+              >
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};

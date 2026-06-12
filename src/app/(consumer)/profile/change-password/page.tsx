@@ -9,6 +9,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import PasswordStrength from "@/components/Form/PasswordStrength";
 
 const updatePasswordSchema = z.object({
   oldPassword: z
@@ -76,10 +77,13 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <div>
+    <div className="max-w-2xl">
       <PageHeader title="Change Password" />
       <Form schema={updatePasswordSchema} {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="space-y-4 rounded-xl border bg-white p-4 sm:p-6 shadow-sm"
+        >
           {oldPassword === newPassword && oldPassword !== "" && (
             <div>
               <p className="border border-l-[5px] border-l-red-600 mb-4 px-4 py-4 rounded-r-md text-sm text-muted-foreground">
@@ -101,18 +105,22 @@ const ChangePasswordPage = () => {
           <TextInput
             name="oldPassword"
             label="Old Password"
+            type="password"
             placeholder="Enter your old password"
             required
           />
           <TextInput
             name="newPassword"
             label="New Password"
+            type="password"
             placeholder="Enter your new password"
             required
           />
+          <PasswordStrength password={newPassword} />
           <TextInput
             name="confirmPassword"
             label="Confirm Password"
+            type="password"
             placeholder="Confirm your new password"
             required
           />
@@ -126,7 +134,7 @@ const ChangePasswordPage = () => {
               oldPassword === newPassword ||
               newPassword !== confirmPassword
             }
-            className="px-6"
+            className="w-full sm:w-auto px-6"
           >
             Save
           </Button>
