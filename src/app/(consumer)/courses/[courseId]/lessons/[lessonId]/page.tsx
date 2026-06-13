@@ -8,7 +8,14 @@ import {
   useGetNextLessonQuery,
   useGetPreviousLessonQuery,
 } from "@/redux/api/lessonApi";
-import { CheckCircle, ChevronLeft, LockIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  ChevronLeft,
+  LockIcon,
+  PlayCircle,
+} from "lucide-react";
 import Link from "next/link";
 import React, { ReactNode, Suspense, use } from "react";
 import { toast } from "sonner";
@@ -31,15 +38,18 @@ const LessonPage = ({
 
   if (lesson.success === false) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 md:py-20 lg:py-28 rounded-xl bg-slate-100 text-slate-500 h-full w-full">
+      <div className="surface-panel flex min-h-80 w-full flex-col items-center justify-center px-5 py-12 text-center text-muted-foreground">
         <LockIcon className="size-16" />
-        <p className="text-sm mt-4">Unauthorized access</p>
+        <h1 className="mt-4 text-xl font-semibold text-foreground">
+          This lesson is locked
+        </h1>
+        <p className="mt-1 text-sm">You do not have access to this lesson.</p>
       </div>
     );
   }
 
   return (
-    <div className="container">
+    <div>
       <Suspense fallback={<LessonSkeleton />}>
         <SuspenseBoundary
           lesson={lesson.data}
@@ -113,114 +123,123 @@ const SuspenseBoundary = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-5">
       {lesson.hasAccess && (
         <div className="lg:hidden">
-          <Button variant="outline" className="hover:bg-black w-full sm:w-auto">
-            <ChevronLeft className="size-6" />
-            <Link href={`/courses/${courseId}`}>Back to Lesson List</Link>
+          <Button variant="outline" className="w-full sm:w-auto" asChild>
+            <Link href={`/courses/${courseId}`}>
+              <ChevronLeft className="size-6" />
+              Course content
+            </Link>
           </Button>
         </div>
       )}
-      <div className="aspect-video">
-        <YoutubeVideoPlayer
-          videoId={lesson.youtubeVideoId}
-          onFinishedVideo={undefined}
-        />
-      </div>
-      <div className="flex flex-col flex-grow gap-2">
+      <section className="surface-panel overflow-hidden">
+        <div className="aspect-video bg-black">
+          <YoutubeVideoPlayer
+            videoId={lesson.youtubeVideoId}
+            onFinishedVideo={undefined}
+          />
+        </div>
         {lesson.hasAccess && (
-          <div className="flex flex-wrap gap-2 justify-start md:mt-5">
+          <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
             <Suspense fallback={<SkeletonButton />}>
-              <div className="flex items-center gap-2 ">
+              <div>
                 {lesson.isCompleted ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      disabled={true}
-                      className="disabled:opacity-100 text-green-600 border-green-600"
-                    >
-                      <CheckCircle />
-                      <span>Completed</span>
-                    </Button>
-                  </>
+                  <Button
+                    variant="outline"
+                    disabled
+                    className="w-full border-emerald-500/30 bg-emerald-500/5 text-emerald-700 disabled:opacity-100 sm:w-auto"
+                  >
+                    <CheckCircle2 />
+                    <span>Lesson completed</span>
+                  </Button>
                 ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleMarkLessonAsComplete(lesson.id)}
-                      disabled={
-                        isMarkingCompletedLesson || isFetchingLessonData
-                      }
-                      className="hover:bg-black"
-                    >
-                      <CheckCircle />
-                      <span>Complete the Lesson</span>
-                    </Button>
-                  </>
+                  <Button
+                    onClick={() => handleMarkLessonAsComplete(lesson.id)}
+                    disabled={
+                      isMarkingCompletedLesson || isFetchingLessonData
+                    }
+                    className="w-full sm:w-auto"
+                  >
+                    <CheckCircle2 />
+                    <span>Mark as complete</span>
+                  </Button>
                 )}
               </div>
-              {!isFetchingPreviousLessonId &&
-              previousLesson?.success === true ? (
-                <ToLessonButton
-                  courseId={courseId}
-                  lessonId={previousLesson.data.previousLessonId}
-                  isDisabled={isFetchingLessonData}
-                >
-                  Previous
-                </ToLessonButton>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="cursor-not-allowed"
-                  disabled={true}
-                >
-                  Previous
-                </Button>
-              )}
-              {!isFetchingNextLessonId && nextLesson?.success === true ? (
-                <ToLessonButton
-                  courseId={courseId}
-                  lessonId={nextLesson.data.nextLessonId}
-                  isDisabled={isFetchingLessonData}
-                >
-                  Next
-                </ToLessonButton>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="cursor-not-allowed"
-                  disabled={true}
-                >
-                  Next
-                </Button>
-              )}
+              <div className="grid grid-cols-2 gap-2 sm:flex">
+                {!isFetchingPreviousLessonId &&
+                previousLesson?.success === true ? (
+                  <ToLessonButton
+                    courseId={courseId}
+                    lessonId={previousLesson.data.previousLessonId}
+                    isDisabled={isFetchingLessonData}
+                  >
+                    <ArrowLeft />
+                    Previous
+                  </ToLessonButton>
+                ) : (
+                  <Button variant="outline" disabled>
+                    <ArrowLeft />
+                    Previous
+                  </Button>
+                )}
+                {!isFetchingNextLessonId && nextLesson?.success === true ? (
+                  <ToLessonButton
+                    courseId={courseId}
+                    lessonId={nextLesson.data.nextLessonId}
+                    isDisabled={isFetchingLessonData}
+                  >
+                    Next
+                    <ArrowRight />
+                  </ToLessonButton>
+                ) : (
+                  <Button variant="outline" disabled>
+                    Next
+                    <ArrowRight />
+                  </Button>
+                )}
+              </div>
             </Suspense>
           </div>
         )}
-      </div>
-      <h1 className="text-2xl font-semibold md:mt-5">{lesson.name}</h1>
-      <div className="text-base sm:text-lg">{lesson.description}</div>
+      </section>
+
+      <section className="surface-panel p-5 sm:p-6">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
+          <PlayCircle className="size-4" />
+          Current lesson
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          {lesson.name}
+        </h1>
+        <p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">
+          {lesson.description}
+        </p>
+      </section>
     </div>
   );
 };
 
 const LessonSkeleton = () => {
   return (
-    <div className="container flex flex-col gap-4">
-      <SkeletonText className="w-full h-36 md:h-36 lg:h-80" />
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-2">
-        <SkeletonText className="w-32 h-8" />
-        <div className="flex flex-grow md:justify-end gap-3">
+    <div className="space-y-5">
+      <div className="surface-panel overflow-hidden">
+        <SkeletonText className="aspect-video w-full rounded-none" />
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:justify-between">
           <SkeletonButton />
-          <SkeletonButton />
-          <SkeletonButton />
+          <div className="flex gap-2">
+            <SkeletonButton />
+            <SkeletonButton />
+          </div>
         </div>
       </div>
-      <div className="space-y-2">
+      <div className="surface-panel space-y-3 p-6">
+        <SkeletonText className="h-5 w-28" />
+        <SkeletonText className="h-8 w-2/3" />
         <SkeletonText className="w-full" />
         <SkeletonText className="w-full" />
-        <SkeletonText className="w-full" />
+        <SkeletonText className="w-1/2" />
       </div>
     </div>
   );
@@ -240,7 +259,7 @@ const ToLessonButton = ({
   return (
     <Button
       variant="outline"
-      className="hover:bg-black"
+      className="w-full sm:w-auto"
       disabled={isDisabled}
       asChild
     >

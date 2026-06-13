@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, VideoIcon } from "lucide-react";
+import { CheckCircle2, Circle, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -49,35 +49,47 @@ const CoursePageClient = ({
       collapsible
       value={openSection}
       onValueChange={setOpenSection}
+      className="w-full"
     >
       {course.sections.map((section) => (
-        <AccordionItem key={section.id} value={section.id}>
-          <AccordionTrigger className="text-base">
-            {section.name}
+        <AccordionItem
+          key={section.id}
+          value={section.id}
+          className="border-border/70 last:border-b-0"
+        >
+          <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">
+            <span className="pr-2 text-left">{section.name}</span>
           </AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-1">
+          <AccordionContent className="flex flex-col gap-1 pb-3">
             {section.lessons.map((lesson) => (
               <Button
                 key={lesson.id}
                 variant="ghost"
                 asChild
                 className={cn(
-                  "justify-start hover:bg-neutral-800",
+                  "h-auto min-h-10 justify-start rounded-lg px-3 py-2 text-left",
                   lesson.id === lessonId &&
-                    "bg-neutral-700 text-accent-foreground",
+                    "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
                 )}
               >
                 <Link
                   href={`/courses/${course.id}/lessons/${lesson.id}`}
-                  className="justify-between"
+                  className="justify-between gap-3"
                 >
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <VideoIcon className="flex-shrink-0" />
-                    <div className="whitespace-wrap" title={lesson.name}>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <VideoIcon className="size-4 flex-shrink-0" />
+                    <div
+                      className="whitespace-normal leading-snug"
+                      title={lesson.name}
+                    >
                       {lesson.name}
                     </div>
                   </div>
-                  {lesson.isComplete && <CheckCircle2 />}
+                  {lesson.isComplete ? (
+                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <Circle className="size-3 shrink-0 text-muted-foreground/50" />
+                  )}
                 </Link>
               </Button>
             ))}

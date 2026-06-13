@@ -1,12 +1,12 @@
 "use client";
-import PageHeader from "@/components/PageHeader";
+import { SkeletonText } from "@/components/Skeleton";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
-import { CheckCircle } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import React, { use } from "react";
-import { cn } from "@/lib/utils";
-import { SkeletonText } from "@/components/Skeleton";
 import { mapCourse } from "./courseMapper";
 
 const CoursePage = ({ params }: { params: Promise<{ courseId: string }> }) => {
@@ -31,16 +31,57 @@ const CoursePage = ({ params }: { params: Promise<{ courseId: string }> }) => {
     );
   }
 
+  const mappedCourse = mapCourse({
+    course: course.data,
+    completedLessonIds: completedLessons.data,
+  });
+  const lessonCount = mappedCourse.sections.reduce(
+    (total, section) => total + section.lessons.length,
+    0,
+  );
+  const completedCount = mappedCourse.sections.reduce(
+    (total, section) =>
+      total + section.lessons.filter((lesson) => lesson.isComplete).length,
+    0,
+  );
+
   return (
-    <div className="container my-5 w-full">
-      <PageHeader title={course.data.name} className="mb-2" />
-      <p className="text-muted-foreground">{course.data.description}</p>
-      <CourseDetailWithSessionLesson
-        course={mapCourse({
-          course: course.data,
-          completedLessonIds: completedLessons.data,
-        })}
-      />
+    <div className="space-y-6">
+      <section className="surface-panel overflow-hidden">
+        <div className="bg-gradient-to-br from-primary/10 via-card to-accent/10 p-5 sm:p-7">
+          <Badge variant="secondary" className="mb-3">
+            Course overview
+          </Badge>
+          <h1 className="max-w-3xl text-2xl font-bold tracking-tight sm:text-3xl">
+            {course.data.name}
+          </h1>
+          <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
+            {course.data.description}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <span className="flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1.5">
+              <BookOpen className="size-4 text-primary" />
+              {mappedCourse.sections.length} sections
+            </span>
+            <span className="flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1.5">
+              <PlayCircle className="size-4 text-primary" />
+              {lessonCount} lessons
+            </span>
+            <span className="flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1.5">
+              <CheckCircle2 className="size-4 text-emerald-600" />
+              {completedCount} completed
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <div>
+        <h2 className="text-xl font-semibold">Course curriculum</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Select a lesson to continue learning.
+        </p>
+      </div>
+      <CourseDetailWithSessionLesson course={mappedCourse} />
     </div>
   );
 };
@@ -65,7 +106,7 @@ const CourseDetailWithSessionLesson = ({
   };
 }) => {
   return (
-    <div className="space-y-3 my-5">
+    <div className="space-y-4">
       {course.sections.map(
         (sections: {
           id: string;
@@ -76,25 +117,36 @@ const CourseDetailWithSessionLesson = ({
             isComplete: boolean;
           }[];
         }) => (
-          <div key={sections.id} className="rounded-lg bg-slate-100 p-4">
-            <h2 className="text-lg font-semibold mb-1.5">{sections.name}</h2>
-            <div>
+          <section key={sections.id} className="surface-panel p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h3 className="font-semibold">{sections.name}</h3>
+              <Badge variant="secondary">
+                {sections.lessons.length} lessons
+              </Badge>
+            </div>
+            <div className="space-y-2">
               {sections.lessons.map((lesson) => (
-                <div key={lesson.id} className="space-y-3">
-                  <Link
-                    href={`/courses/${course.id}/lessons/${lesson.id}`}
-                    className={cn(
-                      "flex items-center gap-2 hover:underline my-1",
-                      lesson.isComplete && "text-green-700",
-                    )}
-                  >
-                    <CheckCircle size={16} />
-                    <div>{lesson.name}</div>
-                  </Link>
-                </div>
+                <Link
+                  key={lesson.id}
+                  href={`/courses/${course.id}/lessons/${lesson.id}`}
+                  className={cn(
+                    "group flex items-center gap-3 rounded-xl border border-transparent bg-muted/50 px-3 py-3 hover:border-primary/15 hover:bg-primary/5",
+                    lesson.isComplete && "bg-emerald-500/5",
+                  )}
+                >
+                  {lesson.isComplete ? (
+                    <CheckCircle2 className="size-5 shrink-0 text-emerald-600" />
+                  ) : (
+                    <Circle className="size-5 shrink-0 text-muted-foreground" />
+                  )}
+                  <span className="min-w-0 flex-1 font-medium group-hover:text-primary">
+                    {lesson.name}
+                  </span>
+                  <PlayCircle className="size-4 shrink-0 text-muted-foreground group-hover:text-primary" />
+                </Link>
               ))}
             </div>
-          </div>
+          </section>
         ),
       )}
     </div>
@@ -103,25 +155,23 @@ const CourseDetailWithSessionLesson = ({
 
 const ProductSkeleton = () => {
   return (
-    <div className="container my-5 space-y-2">
-      <SkeletonText className="rounded-lg bg-slate-200 h-7 w-1/2 mb-1.5" />
-      <div className="space-y-2 pb-3">
-        <SkeletonText className="rounded-lg bg-slate-200 h-2 w-full" />
-        <SkeletonText className="rounded-lg bg-slate-200 h-2 w-1/2" />
+    <div className="space-y-6">
+      <div className="surface-panel space-y-3 p-6">
+        <SkeletonText className="h-6 w-32" />
+        <SkeletonText className="h-8 w-2/3" />
+        <SkeletonText className="h-4 w-full" />
+        <SkeletonText className="h-4 w-1/2" />
       </div>
       <div className="flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, index) => (
-          <div className="rounded-lg bg-slate-100 p-4 w-full" key={index}>
+          <div className="surface-panel w-full p-4" key={index}>
             <div className="flex-1 space-y-2 py-1">
-              <SkeletonText className="h-4 bg-slate-200 rounded w-40" />
-              <div className="space-y-[1px]">
+              <SkeletonText className="h-5 w-40" />
+              <div className="space-y-2">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div className="flex items-center gap-2" key={index}>
-                    <CheckCircle
-                      size={16}
-                      className="animate-pulse text-slate-200 font-semibold"
-                    />
-                    <SkeletonText className="h-2 bg-slate-200 rounded w-28" />
+                  <div className="flex items-center gap-3" key={index}>
+                    <SkeletonText className="size-5 rounded-full" />
+                    <SkeletonText className="h-4 w-48" />
                   </div>
                 ))}
               </div>

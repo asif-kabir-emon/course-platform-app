@@ -106,7 +106,7 @@ function Navbar() {
               <Link
                 className={cn(
                   "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
-                  pathname.startsWith("/admin") && "bg-primary/10 text-primary",
+                  pathname.startsWith("/admin") && "font-bold text-primary",
                 )}
                 href="/admin"
               >
@@ -116,8 +116,7 @@ function Navbar() {
             <Link
               className={cn(
                 "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
-                pathname.startsWith("/courses") &&
-                  "bg-primary/10 text-primary",
+                pathname.startsWith("/courses") && "font-bold text-primary",
               )}
               href="/courses"
             >
@@ -126,8 +125,7 @@ function Navbar() {
             <Link
               className={cn(
                 "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
-                pathname.startsWith("/purchases") &&
-                  "bg-primary/10 text-primary",
+                pathname.startsWith("/purchases") && "font-bold text-primary",
               )}
               href="/purchases"
             >
