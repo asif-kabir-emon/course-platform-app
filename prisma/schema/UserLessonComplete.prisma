@@ -9,5 +9,6 @@ model UserLessonComplete {
   lesson CourseLessons @relation(fields: [lessonId], references: [id])
 
   @@unique([userId, lessonId])
+  @@index([lessonId])
   @@map("user_lesson_complete")
 }

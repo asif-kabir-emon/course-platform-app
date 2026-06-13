@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import PaginationControls from "@/components/PaginationControls";
 import {
   Table,
   TableBody,
@@ -8,50 +9,62 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatPlural } from "@/lib/formatter";
-import {
-  useDeleteCourseMutation,
-  useGetCoursesQuery,
-} from "@/redux/api/courseApi";
+import { useGetCoursesQuery } from "@/redux/api/courseApi";
 import Link from "next/link";
-import React from "react";
-import { Trash2Icon } from "lucide-react";
-import { ActionButton } from "@/components/ActionButton";
+import React, { useState } from "react";
+import { BookOpen, Copy, Ellipsis, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { TableSkeleton } from "@/components/Skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 const CourseTable = () => {
-  const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({});
-  const [deleteCourse, { isLoading: isDeletingCourse }] =
-    useDeleteCourseMutation();
+  const pageSize = 10;
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({
+    paginate: true,
+    page,
+    pageSize,
+    search,
+  });
 
   if (isFetchingData) {
     return <TableSkeleton columns={3} />;
   }
 
-  if (courses?.success === false) {
+  if (!courses || courses.success === false) {
     return null;
   }
 
-  const handleDeleteCourse = async (id: string) => {
-    const toastId = toast.loading("Deleting course...", {
-      duration: 2000,
-    });
-    try {
-      const response = await deleteCourse(id).unwrap();
-
-      if (response.success) {
-        toast.success(response.message, { id: toastId, duration: 2000 });
-      } else {
-        toast.error(response.message, { id: toastId, duration: 2000 });
-      } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete course!", { id: toastId, duration: 2000 });
-    }
-  };
-
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-      <Table>
+    <div className="space-y-4">
+      <form
+        className="surface-panel flex flex-col gap-3 p-4 sm:flex-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setPage(1);
+          setSearch(searchInput.trim());
+        }}
+      >
+        <Input
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="Search courses..."
+          aria-label="Search courses"
+          className="sm:max-w-md"
+        />
+        <Button type="submit">Search</Button>
+      </form>
+      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="min-w-[250px]">
@@ -111,33 +124,56 @@ const CourseTable = () => {
                 </TableCell>
                 <TableCell>{course.studentCount}</TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Button>
-                      <Link href={`/admin/courses/${course.id}/edit`}>
-                        Edit
-                      </Link>
-                    </Button>
-                    <ActionButton
-                      action={() => {
-                        handleDeleteCourse(course.id);
-                      }}
-                      tryAction={isDeletingCourse}
-                    >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label={`Open actions for ${course.name}`}
                       >
-                        <Trash2Icon />
-                        <span className="sr-only">Delete</span>
+                        <Ellipsis />
                       </Button>
-                    </ActionButton>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuLabel>Course actions</DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/courses/${course.id}/edit`}>
+                          <Pencil />
+                          Manage curriculum
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/courses/${course.id}`}>
+                          <BookOpen />
+                          Open learner view
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          void navigator.clipboard.writeText(course.id);
+                          toast.success("Course ID copied.");
+                        }}
+                      >
+                        <Copy />
+                        Copy course ID
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ),
           )}
         </TableBody>
-      </Table>
+        </Table>
+        <PaginationControls
+          page={courses.meta.page}
+          totalPages={courses.meta.totalPages}
+          total={courses.meta.total}
+          pageSize={courses.meta.pageSize}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 };

@@ -90,11 +90,11 @@ const SortableLessonList = ({
           <SortableItem
             key={lesson.id}
             id={lesson.id}
-            className="flex items-center gap-1"
+            className="flex min-w-0 items-center gap-2"
           >
             <div
               className={cn(
-                "contents",
+                "flex min-w-0 flex-1 items-center gap-2",
                 lesson.status === CourseLessonStatus.private &&
                   "text-muted-foreground",
               )}
@@ -108,14 +108,16 @@ const SortableLessonList = ({
               {lesson.status === CourseLessonStatus.preview && (
                 <Video className="size-4" />
               )}
-              {lesson.name}
+              <span className="truncate text-sm font-medium">
+                {lesson.name}
+              </span>
             </div>
             <LessonFormDialog sectionId={sectionId} lesson={lesson}>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="ml-auto hover:bg-primary/5 hover:text-primary"
+                  className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
                 >
                   Edit
                 </Button>

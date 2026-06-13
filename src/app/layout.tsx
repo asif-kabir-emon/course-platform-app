@@ -17,6 +17,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} - Learning Platform`,
   description: "A learning platform for everyone.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

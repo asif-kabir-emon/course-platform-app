@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 
-const prisma = new PrismaClient();
 
 export const GET = authGuard(
   catchAsync(async (request: Request) => {

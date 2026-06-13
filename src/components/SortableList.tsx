@@ -88,12 +88,12 @@ export const SortableItem = ({
         transition,
       }}
       className={cn(
-        "flex gap-1 items-center bg-background rounded-lg p-2",
+        "flex gap-1 items-center bg-background rounded-xl border border-transparent p-2.5 transition-colors",
         isActive && "z-10 border shadow-md",
       )}
     >
       <GripVerticalIcon
-        className="text-muted-foreground size-6 p-1"
+        className="size-7 shrink-0 cursor-grab touch-none rounded-md p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
         {...attributes}
         {...listeners}
       />

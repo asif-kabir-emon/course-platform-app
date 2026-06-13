@@ -2,10 +2,9 @@ import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
-import { PrismaClient } from "@prisma/client";
+import { isAdminRole } from "@/constants/UserRole.constant";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 
 export const GET = authGuard(
   catchAsync(async (request: Request) => {
@@ -17,7 +16,7 @@ export const GET = authGuard(
       !user.id ||
       !user.email ||
       !user.role ||
-      user.role !== UserRole.admin
+      !isAdminRole(user.role)
     ) {
       return ApiError(401, "Unauthorized access!");
     }
@@ -89,7 +88,7 @@ export const GET = authGuard(
     const formattedData = {
       netSales: (salesData?._sum.pricePaidInCent ?? 0) / 100,
       refundedSales: (refundedData?._sum.pricePaidInCent ?? 0) / 100,
-      totalUnRefundedPPurchases: refundedData?._count.id ?? 0,
+      totalUnRefundedPPurchases: salesData?._count.id ?? 0,
       totalRefundedPurchases: refundedData?._count.id ?? 0,
       averageNetSales:
         (salesData?._sum.pricePaidInCent ?? 0) /

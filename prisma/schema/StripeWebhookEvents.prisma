@@ -1,0 +1,20 @@
+model StripeWebhookEvents {
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  eventId     String             @unique
+  eventType   String
+  status      WebhookEventStatus @default(processing)
+  attempts    Int                @default(1)
+  lastError   String?
+  processedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@map("stripe_webhook_events")
+}
+
+enum WebhookEventStatus {
+  processing
+  processed
+  failed
+}

@@ -6,6 +6,9 @@ export enum TagTypes {
   purchases = "purchases",
   profile = "profile",
   completedLesson = "completedLesson",
+  lessonLearning = "lessonLearning",
+  courseReview = "courseReview",
+  lessonQuiz = "lessonQuiz",
   auth = "auth",
 }
 
@@ -17,5 +20,8 @@ export const tagTypesList = [
   TagTypes.purchases,
   TagTypes.profile,
   TagTypes.completedLesson,
+  TagTypes.lessonLearning,
+  TagTypes.courseReview,
+  TagTypes.lessonQuiz,
   TagTypes.auth,
 ];

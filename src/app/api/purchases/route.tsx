@@ -2,10 +2,10 @@ import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
-import { PrismaClient } from "@prisma/client";
+import { isAdminRole } from "@/constants/UserRole.constant";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 export const GET = authGuard(
   catchAsync(async (request: Request) => {
@@ -17,7 +17,7 @@ export const GET = authGuard(
       !user.id ||
       !user.email ||
       !user.role ||
-      user.role !== UserRole.admin
+      !isAdminRole(user.role)
     ) {
       return ApiError(401, "Unauthorized access!");
     }
@@ -34,28 +34,63 @@ export const GET = authGuard(
       return ApiError(404, "User not found!");
     }
 
-    const purchaseHistories = await prisma.purchaseHistories.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        user: {
-          include: {
-            profile: {
-              select: {
-                firstName: true,
-                lastName: true,
+    const searchParams = new URL(request.url).searchParams;
+    const page = Math.max(1, Number(searchParams.get("page")) || 1);
+    const pageSize = Math.min(
+      100,
+      Math.max(1, Number(searchParams.get("pageSize")) || 10),
+    );
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status");
+    const where: Prisma.PurchaseHistoriesWhereInput = {
+      ...(search
+        ? {
+            OR: [
+              { user: { email: { contains: search } } },
+              { product: { name: { contains: search } } },
+            ],
+          }
+        : {}),
+      ...(status === "paid"
+        ? { refundAt: null, isRefunded: false }
+        : status === "refunded"
+          ? { isRefunded: true }
+          : {}),
+    };
+    const [purchaseHistories, total] = await Promise.all([
+      prisma.purchaseHistories.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          user: {
+            include: {
+              profile: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+      prisma.purchaseHistories.count({ where }),
+    ]);
 
     return sendResponse({
       status: 200,
       message: "Purchase histories fetched successfully!",
       success: true,
+      meta: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      },
       data: purchaseHistories,
     });
   }),

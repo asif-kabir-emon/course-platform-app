@@ -13,9 +13,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate, formatNumber, formatPrice } from "@/lib/formatter";
-import { useGetAdminDashboardDataQuery } from "@/redux/api/purchaseApi";
+import { cn } from "@/lib/utils";
 import {
+  useGetAdminDashboardDataQuery,
+  useGetPaymentReliabilityQuery,
+} from "@/redux/api/purchaseApi";
+import {
+  AlertTriangle,
   BookOpen,
+  CheckCircle2,
   CircleDollarSign,
   GraduationCap,
   Layers3,
@@ -31,6 +37,7 @@ import React from "react";
 
 const AdminPage = () => {
   const { data: dashboard, isLoading } = useGetAdminDashboardDataQuery({});
+  const { data: reliability } = useGetPaymentReliabilityQuery({});
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -95,6 +102,49 @@ const AdminPage = () => {
             icon={TrendingUp}
             tone="emerald"
           />
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <div
+          className={cn(
+            "flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between",
+            reliability?.success &&
+              reliability.data.failedEvents === 0 &&
+              reliability.data.staleProcessingEvents === 0
+              ? "border-emerald-500/20 bg-emerald-500/5"
+              : "border-amber-500/20 bg-amber-500/5",
+          )}
+        >
+          <div className="flex items-start gap-3">
+            {reliability?.success &&
+            reliability.data.failedEvents === 0 &&
+            reliability.data.staleProcessingEvents === 0 ? (
+              <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertTriangle className="mt-0.5 size-6 shrink-0 text-amber-600" />
+            )}
+            <div>
+              <h2 className="font-semibold">Payment processing health</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Stripe webhook delivery and fulfillment status.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div className="rounded-xl bg-background/80 px-4 py-2">
+              <div className="text-xl font-bold">
+                {reliability?.data?.failedEvents ?? 0}
+              </div>
+              <div className="text-xs text-muted-foreground">Failed</div>
+            </div>
+            <div className="rounded-xl bg-background/80 px-4 py-2">
+              <div className="text-xl font-bold">
+                {reliability?.data?.staleProcessingEvents ?? 0}
+              </div>
+              <div className="text-xs text-muted-foreground">Stuck</div>
+            </div>
+          </div>
         </div>
       </section>
 

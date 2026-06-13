@@ -88,11 +88,11 @@ const SortableSectionList = ({
           <SortableItem
             key={section.id}
             id={section.id}
-            className="flex items-center gap-1"
+            className="flex min-w-0 items-center gap-2"
           >
             <div
               className={cn(
-                "contents truncate max-w-[200px] overflow-hidden whitespace-nowrap",
+                "flex min-w-0 flex-1 items-center gap-2",
                 section.status === CourseSectionStatus.private &&
                   "text-muted-foreground",
               )}
@@ -104,16 +104,19 @@ const SortableSectionList = ({
               {section.status === CourseSectionStatus.private && (
                 <EyeOff className="size-4" />
               )}
-              {section.name}
+              <span className="truncate text-sm font-medium">
+                {section.name}
+              </span>
             </div>
             <SectionFormDialog courseId={courseId} section={section}>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="ml-auto hover:bg-primary/5 hover:text-primary"
+                  className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
                 >
-                  Edit
+                  <span className="hidden sm:inline">Edit</span>
+                  <span className="sm:hidden">Edit</span>
                 </Button>
               </DialogTrigger>
             </SectionFormDialog>

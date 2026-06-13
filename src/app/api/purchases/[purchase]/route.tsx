@@ -2,12 +2,12 @@ import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { isSuperAdminRole } from "@/constants/UserRole.constant";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { stripeServerClient } from "@/helpers/stripe/stripeServer";
 import Stripe from "stripe";
 
-const prisma = new PrismaClient();
 
 function getReceiptUrl(paymentIntent: Stripe.PaymentIntent | string | null) {
   if (
@@ -163,7 +163,7 @@ export const PUT = authGuard(
       !user.id ||
       !user.email ||
       !user.role ||
-      user.role !== UserRole.admin ||
+      !isSuperAdminRole(user.role) ||
       !purchaseId
     ) {
       return ApiError(401, "Unauthorized access!");
@@ -201,6 +201,7 @@ export const PUT = authGuard(
 
     const otherPurchases = await prisma.purchaseHistories.findMany({
       where: {
+        userId: isPurchaseExist.userId,
         id: {
           not: purchaseId,
         },
@@ -251,12 +252,17 @@ export const PUT = authGuard(
           return ApiError(400, "Payment intent not found!");
         }
 
-        await stripeServerClient.refunds.create({
-          payment_intent:
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : session.payment_intent.id,
-        });
+        await stripeServerClient.refunds.create(
+          {
+            payment_intent:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent.id,
+          },
+          {
+            idempotencyKey: `purchase-refund-${purchaseId}`,
+          },
+        );
 
         await tsc.purchaseHistories.update({
           where: {

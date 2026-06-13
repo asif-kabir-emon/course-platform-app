@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
+import { isAdminRole } from "@/constants/UserRole.constant";
+import { Prisma } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 export const POST = authGuard(
   catchAsync(async (request: Request) => {
@@ -14,7 +14,7 @@ export const POST = authGuard(
     console.log(user);
 
     // Check if user is authenticated or not
-    if (user && user.role !== UserRole.admin) {
+    if (user && !isAdminRole(user.role)) {
       return ApiError(401, "Unauthorized access!");
     }
 
@@ -44,17 +44,36 @@ export const POST = authGuard(
   }),
 );
 
-export const GET = catchAsync(async () => {
-  const courses = await prisma.courses.findMany({
-    include: {
-      userCourseAccess: true,
-      sections: {
-        include: {
-          lessons: true,
+export const GET = catchAsync(async (request: Request) => {
+  const searchParams = new URL(request.url).searchParams;
+  const paginate = searchParams.get("paginate") === "true";
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const pageSize = Math.min(
+    100,
+    Math.max(1, Number(searchParams.get("pageSize")) || 10),
+  );
+  const search = searchParams.get("search")?.trim() || "";
+  const where: Prisma.CoursesWhereInput = {
+    isDeleted: false,
+    ...(search ? { name: { contains: search } } : {}),
+  };
+
+  const [courses, total] = await Promise.all([
+    prisma.courses.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      ...(paginate ? { skip: (page - 1) * pageSize, take: pageSize } : {}),
+      include: {
+        userCourseAccess: true,
+        sections: {
+          include: {
+            lessons: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.courses.count({ where }),
+  ]);
 
   if (!courses) {
     return ApiError(404, "No courses found!");
@@ -84,6 +103,10 @@ export const GET = catchAsync(async () => {
     success: true,
     meta: {
       count: courses.length,
+      total,
+      page: paginate ? page : 1,
+      pageSize: paginate ? pageSize : total || pageSize,
+      totalPages: paginate ? Math.max(1, Math.ceil(total / pageSize)) : 1,
     },
     data: responseData,
   });

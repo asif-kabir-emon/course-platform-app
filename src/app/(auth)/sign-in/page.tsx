@@ -6,7 +6,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
-import { UserRole } from "@/constants/UserRole.constant";
+import { UserRole, isAdminRole } from "@/constants/UserRole.constant";
 import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
@@ -59,14 +59,16 @@ const SignInPage = () => {
           duration: 2000,
         });
         // set Temporary session to verify otp
-        if (responseData.data.isVerified === false) {
+        if (responseData.data?.isVerified === false) {
           const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiration
           sessionStorage.setItem(
             "emailVerifyData",
             JSON.stringify({ email: data.email, expiry: expiryTime }),
           );
-          sendOTP(data.email);
-          router.push("/verify-otp");
+          const otpSent = await sendOTP(data.email);
+          if (otpSent) {
+            router.push("/verify-otp");
+          }
         }
         return;
       }
@@ -94,7 +96,7 @@ const SignInPage = () => {
       );
 
       // Redirect to the home page
-      if (responseData.data.role === UserRole.admin) {
+      if (isAdminRole(responseData.data.role)) {
         router.push("/admin");
       } else if (responseData.data.role === UserRole.user) {
         router.push("/courses");

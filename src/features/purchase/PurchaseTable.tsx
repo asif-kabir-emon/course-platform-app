@@ -22,6 +22,8 @@ import { ActionButton } from "@/components/ActionButton";
 
 const PurchaseTable = ({
   purchases,
+  embedded = false,
+  canRefund = false,
 }: {
   purchases: {
     id: string;
@@ -41,6 +43,8 @@ const PurchaseTable = ({
       };
     };
   }[];
+  embedded?: boolean;
+  canRefund?: boolean;
 }) => {
   const [refundPurchase, { isLoading }] = useRefundPurchaseMutation();
 
@@ -75,7 +79,13 @@ const PurchaseTable = ({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+    <div
+      className={
+        embedded
+          ? "overflow-x-auto"
+          : "overflow-hidden rounded-xl border bg-card shadow-sm"
+      }
+    >
       <Table>
         <TableHeader>
           <TableRow>
@@ -151,7 +161,8 @@ const PurchaseTable = ({
               </TableCell>
               <TableCell>
                 <div className="flex items-center">
-                  {(purchase.refundAt === null || !purchase.refundAt) &&
+                  {canRefund &&
+                    (purchase.refundAt === null || !purchase.refundAt) &&
                     purchase.pricePaidInCent > 0 && (
                       <ActionButton
                         action={(closeDialog: () => void) => {
@@ -167,6 +178,16 @@ const PurchaseTable = ({
                           Refund
                         </Button>
                       </ActionButton>
+                    )}
+                  {!canRefund &&
+                    !purchase.refundAt &&
+                    purchase.pricePaidInCent > 0 && (
+                      <span
+                        className="text-xs text-muted-foreground"
+                        title="Only super admins can issue refunds"
+                      >
+                        Super admin required
+                      </span>
                     )}
                   {purchase.refundAt && (
                     <span className="text-sm text-muted-foreground">

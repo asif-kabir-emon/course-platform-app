@@ -9,16 +9,14 @@ import { notFound, redirect } from "next/navigation";
 import React, { Suspense, use } from "react";
 import PageHeader from "@/components/PageHeader";
 import StripeCheckoutForm from "@/features/product/StripeCheckoutForm";
+import { useClientSession } from "@/hooks/useClientSession";
+import { isAdminRole } from "@/constants/UserRole.constant";
 
 const PurchasePage = ({
   params,
 }: {
   params: Promise<{ productId: string }>;
 }) => {
-  const { productId } = use(params);
-
-  console.log(productId);
-
   return (
     <Suspense
       fallback={<LoadingSpinner className="my-6 md:my-28 size-16 mx-auto" />}
@@ -36,12 +34,17 @@ const SuspendedComponent = ({
   params: Promise<{ productId: string }>;
 }) => {
   const { productId } = use(params);
+  const { session, isReady } = useClientSession();
 
   const { data: userProfile, isLoading: isFetchUserProfileData } =
     useGetUserProfileQuery({});
   const { data: product, isLoading: isFetchingProductData } =
     useGetProductByIdQuery(productId);
   const { data: userAccess } = useCheckUserAccessQuery(productId);
+
+  if (isReady && isAdminRole(session?.role)) {
+    return redirect("/admin/courses");
+  }
 
   if (
     !isFetchingProductData &&

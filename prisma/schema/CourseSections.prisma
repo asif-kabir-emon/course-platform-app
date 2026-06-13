@@ -8,10 +8,10 @@ model CourseSections {
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
-  product Products        @relation(fields: [courseId], references: [id])
   lessons CourseLessons[]
   courses Courses         @relation(fields: [courseId], references: [id])
 
+  @@index([courseId, order])
   @@map("course_sections")
 }
 

@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useClientSession } from "@/hooks/useClientSession";
 
 export default function AdminLayout({
   children,
@@ -25,6 +26,7 @@ export default function AdminLayout({
 function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const pathname = usePathname();
+  const { session } = useClientSession();
 
   return (
     <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
@@ -52,7 +54,9 @@ function Navbar() {
             </span>
             {process.env.NEXT_PUBLIC_APP_NAME || "Course Platform"}
           </Link>
-          <Badge>Admin</Badge>
+          <Badge className="capitalize">
+            {session?.role === "super_admin" ? "Super admin" : "Admin"}
+          </Badge>
         </div>
 
         <div className="hidden md:flex gap-3">

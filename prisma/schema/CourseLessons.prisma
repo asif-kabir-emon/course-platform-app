@@ -12,7 +12,13 @@ model CourseLessons {
 
   section            CourseSections       @relation(fields: [sectionId], references: [id])
   userLessonComplete UserLessonComplete[]
+  userLessonProgress UserLessonProgress[]
+  lessonNotes        LessonNotes[]
+  lessonBookmarks    LessonBookmarks[]
+  quiz               LessonQuizzes?
 
+  @@index([sectionId, order])
+  @@index([status])
   @@map("course_lessons")
 }
 

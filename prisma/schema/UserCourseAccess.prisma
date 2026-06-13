@@ -9,5 +9,6 @@ model UserCourseAccess {
   courses Courses @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
+  @@index([courseId])
   @@map("user_course_access")
 }

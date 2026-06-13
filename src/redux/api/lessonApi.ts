@@ -73,6 +73,80 @@ export const LessonApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.completedLesson, TagTypes.lesson],
     }),
+    getLessonLearning: build.query({
+      query: (lessonId: string) => ({
+        url: `${Route_URL}/${lessonId}/learning`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lessonLearning],
+    }),
+    saveLessonLearning: build.mutation({
+      query: ({
+        lessonId,
+        body,
+      }: {
+        lessonId: string;
+        body: {
+          positionSeconds?: number;
+          durationSeconds?: number;
+          note?: string;
+          bookmarked?: boolean;
+        };
+      }) => ({
+        url: `${Route_URL}/${lessonId}/learning`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: (_result, _error, { body }) =>
+        body.note !== undefined || body.bookmarked !== undefined
+          ? [TagTypes.lessonLearning]
+          : [],
+    }),
+    getLessonQuiz: build.query({
+      query: (lessonId: string) => ({
+        url: `${Route_URL}/${lessonId}/quiz`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lessonQuiz],
+    }),
+    saveLessonQuiz: build.mutation({
+      query: ({
+        lessonId,
+        body,
+      }: {
+        lessonId: string;
+        body: {
+          title: string;
+          passingScore: number;
+          isPublished: boolean;
+          questions: {
+            prompt: string;
+            options: string[];
+            correctOption: number;
+            explanation?: string;
+          }[];
+        };
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: [TagTypes.lessonQuiz],
+    }),
+    submitLessonQuiz: build.mutation({
+      query: ({
+        lessonId,
+        answers,
+      }: {
+        lessonId: string;
+        answers: number[];
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz`,
+        method: "POST",
+        data: { answers },
+      }),
+      invalidatesTags: [TagTypes.lessonQuiz],
+    }),
 
     // API for previous lesson
     getPreviousLesson: build.query({
@@ -121,6 +195,11 @@ export const {
   useReorderedLessonsMutation,
   useGetCompletedLessonsQuery,
   useAddCompletedLessonMutation,
+  useGetLessonLearningQuery,
+  useSaveLessonLearningMutation,
+  useGetLessonQuizQuery,
+  useSaveLessonQuizMutation,
+  useSubmitLessonQuizMutation,
   useGetPreviousLessonQuery,
   useGetNextLessonQuery,
 } = LessonApi;

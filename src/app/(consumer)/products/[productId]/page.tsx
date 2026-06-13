@@ -32,6 +32,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React, { Suspense, use } from "react";
+import { useClientSession } from "@/hooks/useClientSession";
+import { isAdminRole } from "@/constants/UserRole.constant";
 
 const ProductPage = ({
   params,
@@ -136,7 +138,10 @@ const ProductPage = ({
             <div className="mt-7">
               <Suspense fallback={<SkeletonButton className="h-11 w-36" />}>
                 {product.data?.id && (
-                  <PurchaseButton productId={product.data.id} />
+                  <PurchaseButton
+                    productId={product.data.id}
+                    courseId={product.data.courseProducts[0]?.course.id}
+                  />
                 )}
               </Suspense>
             </div>
@@ -289,33 +294,36 @@ const LessonRow = ({
   };
   courseId: string;
 }) => {
+  const { session } = useClientSession();
+  const isAdmin = isAdminRole(session?.role);
   const isPreview = lesson.status === CourseLessonStatus.preview;
+  const canOpen = isPreview || isAdmin;
   const content = (
     <>
       <div
         className={cn(
           "flex size-8 shrink-0 items-center justify-center rounded-lg",
-          isPreview
+          canOpen
             ? "bg-primary/10 text-primary"
             : "bg-muted text-muted-foreground",
         )}
       >
-        {isPreview ? (
+        {canOpen ? (
           <VideoIcon className="size-4" />
         ) : (
           <LockKeyhole className="size-4" />
         )}
       </div>
       <span className="min-w-0 flex-1 leading-snug">{lesson.name}</span>
-      {isPreview && (
+      {canOpen && (
         <Badge variant="secondary" className="shrink-0">
-          Preview
+          {isAdmin && !isPreview ? "Admin access" : "Preview"}
         </Badge>
       )}
     </>
   );
 
-  if (isPreview) {
+  if (canOpen) {
     return (
       <Link
         href={`/courses/${courseId}/lessons/${lesson.id}`}
@@ -334,11 +342,30 @@ const LessonRow = ({
   );
 };
 
-const PurchaseButton = ({ productId }: { productId: string }) => {
+const PurchaseButton = ({
+  productId,
+  courseId,
+}: {
+  productId: string;
+  courseId?: string;
+}) => {
+  const { session, isReady } = useClientSession();
   const { data: userAccess, isLoading } = useCheckUserAccessQuery(productId);
+  const isAdmin = isAdminRole(session?.role);
 
-  if (isLoading) {
+  if (isLoading || !isReady) {
     return <SkeletonButton className="w-28 h-12" />;
+  }
+
+  if (isAdmin) {
+    return (
+      <Button size="lg" asChild disabled={!courseId}>
+        <Link href={courseId ? `/courses/${courseId}` : "/admin/courses"}>
+          <BookOpen />
+          Open course content
+        </Link>
+      </Button>
+    );
   }
 
   if (!isLoading && userAccess?.success === false) {

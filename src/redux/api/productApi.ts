@@ -13,8 +13,24 @@ export const ProductApi = baseApi.injectEndpoints({
       invalidatesTags: [TagTypes.product],
     }),
     getProducts: build.query({
-      query: ({ showAllProducts = false }: { showAllProducts?: boolean }) => ({
-        url: `${Route_URL}?showAllProducts=${showAllProducts}`,
+      query: ({
+        showAllProducts = false,
+        paginate = false,
+        page = 1,
+        pageSize = 10,
+        search = "",
+        status = "all",
+        visibility = "all",
+      }: {
+        showAllProducts?: boolean;
+        paginate?: boolean;
+        page?: number;
+        pageSize?: number;
+        search?: string;
+        status?: string;
+        visibility?: string;
+      }) => ({
+        url: `${Route_URL}?showAllProducts=${showAllProducts}&paginate=${paginate}&page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${status}&visibility=${visibility}`,
         method: "GET",
       }),
       providesTags: [TagTypes.product],
@@ -41,6 +57,20 @@ export const ProductApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.product],
     }),
+    updateProductAction: build.mutation({
+      query: ({
+        id,
+        action,
+      }: {
+        id: string;
+        action: "publish" | "unpublish" | "archive" | "restore";
+      }) => ({
+        url: `${Route_URL}/${id}`,
+        method: "PATCH",
+        data: { action },
+      }),
+      invalidatesTags: [TagTypes.product],
+    }),
     checkUserAccess: build.query({
       query: (id: string) => ({
         url: `${Route_URL}/${id}/user-access`,
@@ -56,5 +86,6 @@ export const {
   useGetProductByIdQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useUpdateProductActionMutation,
   useCheckUserAccessQuery,
 } = ProductApi;

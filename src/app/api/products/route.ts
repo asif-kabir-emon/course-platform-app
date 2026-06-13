@@ -1,13 +1,13 @@
 import { ProductStatus } from "@/constants/ProductStatus.constant";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
+import { isAdminRole } from "@/constants/UserRole.constant";
 import { authVerification } from "@/utils/authVerification";
 
-const prisma = new PrismaClient();
 
 export const POST = authGuard(
   catchAsync(async (request: Request) => {
@@ -16,7 +16,7 @@ export const POST = authGuard(
       await request.json();
 
     // Check if user is authenticated or not
-    if (user && user.role !== UserRole.admin) {
+    if (user && !isAdminRole(user.role)) {
       return ApiError(401, "Unauthorized access!");
     }
 
@@ -97,32 +97,51 @@ export const POST = authGuard(
 );
 
 export const GET = catchAsync(async (request: Request) => {
-  const showAllProducts = new URLSearchParams(request.url.split("?")[1]).get(
-    "showAllProducts",
+  const searchParams = new URL(request.url).searchParams;
+  const showAllProducts = searchParams.get("showAllProducts");
+  const paginate = searchParams.get("paginate") === "true";
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const pageSize = Math.min(
+    100,
+    Math.max(1, Number(searchParams.get("pageSize")) || 10),
   );
+  const search = searchParams.get("search")?.trim() || "";
+  const status = searchParams.get("status");
+  const visibility = searchParams.get("visibility");
 
   const authorization = await authVerification({
     authorization: request.headers.get("authorization") || "",
   });
 
-  let products = [];
-
-  if (authorization?.success && showAllProducts === "true") {
-    products = await prisma.products.findMany({
+  const isAdminRequest =
+    authorization?.success &&
+    isAdminRole(authorization.user?.role) &&
+    showAllProducts === "true";
+  const where: Prisma.ProductsWhereInput = isAdminRequest
+    ? {
+        ...(search ? { name: { contains: search } } : {}),
+        ...(status === ProductStatus.public ||
+        status === ProductStatus.private
+          ? { status }
+          : {}),
+        ...(visibility === "active"
+          ? { isDeleted: false }
+          : visibility === "archived"
+            ? { isDeleted: true }
+            : {}),
+      }
+    : { status: ProductStatus.public, isDeleted: false };
+  const [products, total] = await Promise.all([
+    prisma.products.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      ...(paginate ? { skip: (page - 1) * pageSize, take: pageSize } : {}),
       include: {
         PurchaseHistories: true,
       },
-    });
-  } else {
-    products = await prisma.products.findMany({
-      where: {
-        status: ProductStatus.public,
-      },
-      include: {
-        PurchaseHistories: true,
-      },
-    });
-  }
+    }),
+    prisma.products.count({ where }),
+  ]);
 
   if (!products) {
     return ApiError(404, "No data found!");
@@ -137,6 +156,7 @@ export const GET = catchAsync(async (request: Request) => {
         imageUrl: product.imageUrl,
         priceInDollar: product.priceInDollar,
         status: product.status,
+        isDeleted: product.isDeleted,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         coursesCount: product.courseIds.length || 0,
@@ -146,10 +166,14 @@ export const GET = catchAsync(async (request: Request) => {
 
   return sendResponse({
     status: 200,
-    message: "Courses fetched successfully!",
+    message: "Products fetched successfully!",
     success: true,
     meta: {
       count: products.length,
+      total,
+      page: paginate ? page : 1,
+      pageSize: paginate ? pageSize : total || pageSize,
+      totalPages: paginate ? Math.max(1, Math.ceil(total / pageSize)) : 1,
     },
     data: reformatedData,
   });

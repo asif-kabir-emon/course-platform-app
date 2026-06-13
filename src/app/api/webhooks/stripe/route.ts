@@ -2,9 +2,8 @@ import { stripeServerClient } from "@/helpers/stripe/stripeServer";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { Prisma, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export const GET = async (req: NextRequest) => {
   const stripeSessionId = await req.nextUrl.searchParams.get("stripeSessionId");
@@ -15,16 +14,19 @@ export const GET = async (req: NextRequest) => {
   let redirectUrl: string;
 
   try {
-    const checkoutSession = await stripeServerClient.checkout.sessions.retrieve(
-      stripeSessionId,
-      {
-        expand: ["line_items"],
-      },
-    );
+    const checkoutSession =
+      await stripeServerClient.checkout.sessions.retrieve(stripeSessionId);
+    const productId = checkoutSession.metadata?.productId;
 
-    const productId = await processStripeCheckout(checkoutSession);
+    if (!productId) {
+      throw new Error("Checkout product is missing.");
+    }
 
-    redirectUrl = `/products/${productId}/purchase/success`;
+    if (checkoutSession.payment_status === "unpaid") {
+      redirectUrl = "/products/purchase-pending";
+    } else {
+      redirectUrl = `/products/${productId}/purchase/success`;
+    }
   } catch {
     redirectUrl = "/products/purchase-failure";
   }
@@ -35,20 +37,86 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const POST = async (req: NextRequest) => {
-  const event = await stripeServerClient.webhooks.constructEvent(
-    await req.text(),
-    req.headers.get("stripe-signature") as string,
-    process.env.STRIPE_WEBHOOK_SECRET as string,
-  );
+  const signature = req.headers.get("stripe-signature");
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  switch (event.type) {
-    case "checkout.session.completed":
-    case "checkout.session.async_payment_succeeded":
-      try {
+  if (!signature || !webhookSecret) {
+    return new Response("Missing Stripe webhook configuration.", {
+      status: 400,
+    });
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripeServerClient.webhooks.constructEvent(
+      await req.text(),
+      signature,
+      webhookSecret,
+    );
+  } catch {
+    return new Response("Invalid Stripe webhook signature.", { status: 400 });
+  }
+
+  const existingEvent = await prisma.stripeWebhookEvents.findUnique({
+    where: { eventId: event.id },
+  });
+
+  if (existingEvent?.status === "processed") {
+    return new Response(null, { status: 200 });
+  }
+
+  await prisma.stripeWebhookEvents.upsert({
+    where: { eventId: event.id },
+    update: {
+      status: "processing",
+      attempts: { increment: 1 },
+      lastError: null,
+    },
+    create: {
+      eventId: event.id,
+      eventType: event.type,
+      status: "processing",
+    },
+  });
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded":
+        if (
+          !["paid", "no_payment_required"].includes(
+            event.data.object.payment_status,
+          )
+        ) {
+          break;
+        }
+
         await processStripeCheckout(event.data.object);
-      } catch {
-        return new Response(null, { status: 500 });
-      }
+        break;
+    }
+
+    await prisma.stripeWebhookEvents.update({
+      where: { eventId: event.id },
+      data: {
+        status: "processed",
+        processedAt: new Date(),
+        lastError: null,
+      },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown fulfillment error";
+
+    await prisma.stripeWebhookEvents.update({
+      where: { eventId: event.id },
+      data: {
+        status: "failed",
+        lastError: message.slice(0, 1000),
+      },
+    });
+    console.error("Stripe fulfillment failed:", message);
+    return new Response(null, { status: 500 });
   }
 
   return new Response(null, { status: 200 });
@@ -62,6 +130,16 @@ const processStripeCheckout = async (
 
   if (productId == null || userId == null) {
     throw new Error("Missing metadata");
+  }
+
+  const existingPurchase = await prisma.purchaseHistories.findUnique({
+    where: {
+      stripeSessionId: checkoutSession.id,
+    },
+  });
+
+  if (existingPurchase) {
+    return existingPurchase.productId;
   }
 
   const product = await prisma.products.findFirst({
@@ -106,42 +184,42 @@ const processStripeCheckout = async (
     });
   });
 
-  if (needToPurchaseCourses.length === 0) {
-    throw new Error("User already has access to all courses");
+  try {
+    await prisma.$transaction(async (trc: Prisma.TransactionClient) => {
+      await trc.purchaseHistories.create({
+        data: {
+          userId,
+          productId,
+          stripeSessionId: checkoutSession.id,
+          pricePaidInCent:
+            checkoutSession.amount_total ?? product.priceInDollar * 100,
+          productDetails: {
+            name: product.name,
+            description: product.description,
+            imageUrls: product.imageUrl,
+          },
+        },
+      });
+
+      if (needToPurchaseCourses.length > 0) {
+        await trc.userCourseAccess.createMany({
+          data: needToPurchaseCourses.map((courseId) => ({
+            userId,
+            courseId,
+          })),
+        });
+      }
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return productId;
+    }
+
+    throw error;
   }
 
-  await prisma.$transaction(async (trc: Prisma.TransactionClient) => {
-    const userCourseAccess = await trc.userCourseAccess.createMany({
-      data: needToPurchaseCourses.map((courseId) => {
-        return {
-          userId: userId,
-          courseId: courseId,
-        };
-      }),
-    });
-
-    if (!userCourseAccess) {
-      throw new Error("User course access not created");
-    }
-
-    const purchaseHistory = await trc.purchaseHistories.create({
-      data: {
-        userId: userId,
-        productId: productId,
-        stripeSessionId: checkoutSession.id,
-        pricePaidInCent:
-          checkoutSession.amount_total || product.priceInDollar * 100,
-        productDetails: {
-          name: product.name,
-          description: product.description,
-          imageUrls: product.imageUrl,
-        },
-      },
-    });
-
-    if (!purchaseHistory) {
-      throw new Error("Purchase history not created");
-    }
-  });
   return productId;
 };

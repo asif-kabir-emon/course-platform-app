@@ -14,6 +14,11 @@ model Users {
   userCourseAccess   UserCourseAccess[]
   purchaseHistories  PurchaseHistories[]
   userLessonComplete UserLessonComplete[]
+  userLessonProgress UserLessonProgress[]
+  lessonNotes        LessonNotes[]
+  lessonBookmarks    LessonBookmarks[]
+  courseReviews      CourseReviews[]
+  quizAttempts       QuizAttempts[]
 
   @@map("users")
 }

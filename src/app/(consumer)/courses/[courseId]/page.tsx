@@ -2,12 +2,27 @@
 import { SkeletonText } from "@/components/Skeleton";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
+import {
+  useGetCourseByIdQuery,
+  useGetCourseReviewsQuery,
+  useSaveCourseReviewMutation,
+} from "@/redux/api/courseApi";
 import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
-import { BookOpen, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  PlayCircle,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
-import React, { use } from "react";
+import React, { use, useEffect, useState } from "react";
 import { mapCourse } from "./courseMapper";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useClientSession } from "@/hooks/useClientSession";
+import { isAdminRole } from "@/constants/UserRole.constant";
 
 const CoursePage = ({ params }: { params: Promise<{ courseId: string }> }) => {
   const { courseId } = use(params);
@@ -82,7 +97,146 @@ const CoursePage = ({ params }: { params: Promise<{ courseId: string }> }) => {
         </p>
       </div>
       <CourseDetailWithSessionLesson course={mappedCourse} />
+      <CourseReviews courseId={courseId} />
     </div>
+  );
+};
+
+const CourseReviews = ({ courseId }: { courseId: string }) => {
+  const { data, isLoading } = useGetCourseReviewsQuery(courseId);
+  const [saveReview, { isLoading: isSaving }] = useSaveCourseReviewMutation();
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const reviewsData = data?.success ? data.data : undefined;
+  const { session } = useClientSession();
+  const isAdmin = isAdminRole(session?.role);
+
+  useEffect(() => {
+    if (reviewsData?.currentUserReview) {
+      setRating(reviewsData.currentUserReview.rating);
+      setComment(reviewsData.currentUserReview.comment || "");
+    }
+  }, [reviewsData]);
+
+  const handleSave = async () => {
+    try {
+      const response = await saveReview({
+        courseId,
+        rating,
+        comment,
+      }).unwrap();
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    } catch {
+      toast.error("Failed to save your review.");
+    }
+  };
+
+  if (isLoading) {
+    return <SkeletonText className="h-44 w-full" />;
+  }
+
+  if (!reviewsData) {
+    return (
+      <section className="surface-panel p-5 sm:p-6">
+        <h2 className="text-xl font-semibold">Learner reviews</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Reviews are temporarily unavailable. The rest of the course remains
+          available.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="surface-panel p-5 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Learner reviews</h2>
+          <div className="mt-2 flex items-center gap-2">
+            <Star className="size-5 fill-amber-400 text-amber-400" />
+            <span className="text-lg font-bold">
+              {Number(reviewsData.averageRating || 0).toFixed(1)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              from {reviewsData.reviewCount || 0} reviews
+            </span>
+          </div>
+        </div>
+        {isAdmin ? (
+          <div className="w-full max-w-xl rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+            Reviews are displayed in preview mode. Admin accounts cannot submit
+            learner reviews.
+          </div>
+        ) : (
+          <div className="w-full max-w-xl rounded-2xl bg-muted/40 p-4">
+            <label className="text-sm font-medium">Your rating</label>
+            <div className="mt-2 flex gap-1">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRating(value)}
+                  aria-label={`${value} star rating`}
+                  className="rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <Star
+                    className={cn(
+                      "size-6 text-muted-foreground/40",
+                      value <= rating && "fill-amber-400 text-amber-400",
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+            <Textarea
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="Share what helped you most..."
+              maxLength={2000}
+              className="mt-3 min-h-24"
+            />
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="mt-3 w-full sm:w-auto"
+            >
+              Save review
+            </Button>
+          </div>
+        )}
+      </div>
+      {reviewsData.reviews?.length > 0 && (
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+          {reviewsData.reviews.slice(0, 6).map(
+            (review: {
+              id: string;
+              rating: number;
+              comment?: string;
+              author: string;
+            }) => (
+              <article key={review.id} className="rounded-2xl border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium">{review.author}</span>
+                  <span className="flex items-center gap-1 text-sm">
+                    <Star className="size-4 fill-amber-400 text-amber-400" />
+                    {review.rating}
+                  </span>
+                </div>
+                {review.comment && (
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {review.comment}
+                  </p>
+                )}
+              </article>
+            ),
+          )}
+        </div>
+      )}
+    </section>
   );
 };
 

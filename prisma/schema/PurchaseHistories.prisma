@@ -13,6 +13,8 @@ model PurchaseHistories {
   user    Users    @relation(fields: [userId], references: [id])
   product Products @relation(fields: [productId], references: [id])
 
+  @@index([userId, createdAt])
+  @@index([productId, isRefunded])
   @@map("purchase_histories")
 }
 

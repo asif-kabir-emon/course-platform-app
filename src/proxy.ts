@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authKey } from "./constants/AuthKey.constant";
 import { decodedToken, validateToken } from "./utils/validateToken";
+import { getJwtSecret } from "./utils/serverEnv";
+import { isAdminRole } from "./constants/UserRole.constant";
 // import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
 // import { forbidden } from "next/navigation";
 // import { setUserCountryHeader } from "./lib/userCountryHeader";
@@ -74,17 +76,13 @@ const isUserRoutes = createRouteMatcher([
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const jwtSecret = getJwtSecret();
 
   const token = req.cookies.get(authKey)?.value;
-  const isValid = token
-    ? await validateToken(
-        token || "",
-        process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      )
-    : false;
+  const isValid = token ? await validateToken(token, jwtSecret) : false;
   const decodedTokenData =
     token && isValid
-      ? await decodedToken(token, process.env.NEXT_PUBLIC_JWT_SECRET as string)
+      ? await decodedToken(token, jwtSecret)
       : null;
 
   const userRole = decodedTokenData ? decodedTokenData.data?.role : null;
@@ -104,7 +102,7 @@ export async function proxy(req: NextRequest) {
     if (!token || !isValid) {
       return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
     }
-    if (userRole !== "admin") {
+    if (!isAdminRole(userRole)) {
       return NextResponse.redirect(new URL("/not-found", req.nextUrl));
     }
   } else if (isUserRoutes(pathname)) {

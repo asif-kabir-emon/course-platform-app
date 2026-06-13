@@ -1,11 +1,10 @@
 import bcrypt from "bcrypt";
 import { authGuard } from "./../../../../utils/authGuard";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { catchAsync } from "@/utils/handleApi";
 import { ApiError } from "@/utils/apiError";
 import { sendResponse } from "@/utils/sendResponse";
 
-const prisma = new PrismaClient();
 
 export const POST = authGuard(
   catchAsync(async (request: Request) => {

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import PaginationControls from "@/components/PaginationControls";
 import {
   Table,
   TableBody,
@@ -9,54 +10,131 @@ import {
 } from "@/components/ui/table";
 import { formatPlural, formatPrice } from "@/lib/formatter";
 import Link from "next/link";
-import React from "react";
-import { EyeIcon, LockIcon, Trash2Icon } from "lucide-react";
-import { ActionButton } from "@/components/ActionButton";
+import React, { useState } from "react";
+import {
+  Archive,
+  Copy,
+  Ellipsis,
+  EyeIcon,
+  LockIcon,
+  Pencil,
+  RotateCcw,
+  Store,
+} from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { ProductStatus } from "@/constants/ProductStatus.constant";
 import {
-  useDeleteProductMutation,
   useGetProductsQuery,
+  useUpdateProductActionMutation,
 } from "@/redux/api/productApi";
 import { TableSkeleton } from "@/components/Skeleton";
+import { Input } from "@/components/ui/input";
+import { useClientSession } from "@/hooks/useClientSession";
+import { isSuperAdminRole } from "@/constants/UserRole.constant";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ProductTable = () => {
+  const pageSize = 10;
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [visibility, setVisibility] = useState("active");
+  const { session } = useClientSession();
+  const isSuperAdmin = isSuperAdminRole(session?.role);
   const { data: products, isLoading: isFetchingData } = useGetProductsQuery({
     showAllProducts: true,
+    paginate: true,
+    page,
+    pageSize,
+    search,
+    status,
+    visibility,
   });
-  const [deleteProduct, { isLoading: isDeletingProduct }] =
-    useDeleteProductMutation();
+  const [updateProductAction, { isLoading: isUpdatingProduct }] =
+    useUpdateProductActionMutation();
 
   if (isFetchingData) {
     return <TableSkeleton columns={4} withMedia />;
   }
 
-  if (products.success === false) {
+  if (!products || products.success === false) {
     return null;
   }
 
-  const handleDeleteProduct = async (id: string) => {
-    const toastId = toast.loading("Deleting product...", {
-      duration: 2000,
-    });
+  const handleProductAction = async (
+    id: string,
+    action: "publish" | "unpublish" | "archive" | "restore",
+  ) => {
+    const toastId = toast.loading("Updating product...");
     try {
-      const response = await deleteProduct(id).unwrap();
+      const response = await updateProductAction({ id, action }).unwrap();
 
       if (response.success) {
-        toast.success(response.message, { id: toastId, duration: 2000 });
+        toast.success(response.message, { id: toastId });
       } else {
-        toast.error(response.message, { id: toastId, duration: 2000 });
-      } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete product!", { id: toastId, duration: 2000 });
+        toast.error(response.message, { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to update product.", { id: toastId });
     }
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-      <Table>
+    <div className="space-y-4">
+      <form
+        className="surface-panel grid gap-3 p-4 sm:grid-cols-[minmax(220px,1fr)_180px_180px_auto]"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setPage(1);
+          setSearch(searchInput.trim());
+        }}
+      >
+        <Input
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="Search products..."
+          aria-label="Search products"
+        />
+        <select
+          value={status}
+          onChange={(event) => {
+            setStatus(event.target.value);
+            setPage(1);
+          }}
+          className="h-10 rounded-lg border bg-background px-3 text-sm"
+          aria-label="Filter products by status"
+        >
+          <option value="all">All statuses</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+        <select
+          value={visibility}
+          onChange={(event) => {
+            setVisibility(event.target.value);
+            setPage(1);
+          }}
+          className="h-10 rounded-lg border bg-background px-3 text-sm"
+          aria-label="Filter active or archived products"
+        >
+          <option value="active">Active products</option>
+          <option value="archived">Archived products</option>
+          <option value="all">All products</option>
+        </select>
+        <Button type="submit">Search</Button>
+      </form>
+      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="min-w-[300px]">
@@ -85,6 +163,7 @@ const ProductTable = () => {
               imageUrl: string;
               priceInDollar: number;
               status: ProductStatus;
+              isDeleted: boolean;
               coursesCount: number;
               customersCount: number;
             }) => (
@@ -121,40 +200,119 @@ const ProductTable = () => {
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={getStatusClassName(product.status)}
+                    className={
+                      product.isDeleted
+                        ? "inline-flex items-center gap-1.5 rounded-full border-slate-200 bg-slate-100 px-2.5 py-1 font-semibold text-slate-600"
+                        : getStatusClassName(product.status)
+                    }
                   >
-                    {getStatusIcon(product.status)}
-                    <span className="capitalize">{product.status}</span>
+                    {product.isDeleted ? (
+                      <Archive className="size-3.5" />
+                    ) : (
+                      getStatusIcon(product.status)
+                    )}
+                    <span className="capitalize">
+                      {product.isDeleted ? "Archived" : product.status}
+                    </span>
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Button asChild>
-                      <Link href={`/admin/products/${product.id}/edit`}>
-                        Edit
-                      </Link>
-                    </Button>
-                    <ActionButton
-                      action={() => {
-                        handleDeleteProduct(product.id);
-                      }}
-                      tryAction={isDeletingProduct}
-                    >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        size="icon"
+                        disabled={isUpdatingProduct}
+                        aria-label={`Open actions for ${product.name}`}
+                        className="rounded-full"
                       >
-                        <Trash2Icon />
-                        <span className="sr-only">Delete</span>
+                        <Ellipsis />
                       </Button>
-                    </ActionButton>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuLabel>Product actions</DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/products/${product.id}`}>
+                          <Store />
+                          View storefront
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/products/${product.id}/edit`}>
+                          <Pencil />
+                          Manage product
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          void navigator.clipboard.writeText(
+                            `${window.location.origin}/products/${product.id}`,
+                          );
+                          toast.success("Product link copied.");
+                        }}
+                      >
+                        <Copy />
+                        Copy product link
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {!product.isDeleted && (
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            void handleProductAction(
+                              product.id,
+                              product.status === ProductStatus.public
+                                ? "unpublish"
+                                : "publish",
+                            )
+                          }
+                        >
+                          {product.status === ProductStatus.public ? (
+                            <LockIcon />
+                          ) : (
+                            <EyeIcon />
+                          )}
+                          {product.status === ProductStatus.public
+                            ? "Make private"
+                            : "Publish product"}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        disabled={!isSuperAdmin}
+                        onSelect={() =>
+                          isSuperAdmin
+                            ? void handleProductAction(
+                                product.id,
+                                product.isDeleted ? "restore" : "archive",
+                              )
+                            : undefined
+                        }
+                      >
+                        {product.isDeleted ? <RotateCcw /> : <Archive />}
+                        {product.isDeleted
+                          ? "Restore product"
+                          : "Archive product"}
+                        {!isSuperAdmin && (
+                          <span className="ml-auto text-[10px] uppercase">
+                            Super admin
+                          </span>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ),
           )}
         </TableBody>
-      </Table>
+        </Table>
+        <PaginationControls
+          page={products.meta.page}
+          totalPages={products.meta.totalPages}
+          total={products.meta.total}
+          pageSize={products.meta.pageSize}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 };

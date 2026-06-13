@@ -1,4 +1,3 @@
-import { sectionSchema } from "@/schema/section.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
 import React from "react";
@@ -97,56 +96,79 @@ const LessonForm = ({
   };
 
   return (
-    <div>
-      <Form schema={sectionSchema} {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <TextInput
-            name="name"
-            label="Name"
-            placeholder="Enter name of the lesson"
-            required
-          />
-          <TextInput
-            name="youtubeVideoId"
-            label="Youtube Video ID"
-            placeholder="Enter youtube video id"
-            required
-          />
-          <SelectInput
-            name="status"
-            label="Status"
-            placeholder="Select status"
-            items={[
-              {
-                label: "Public",
-                value: CourseLessonStatus.public,
-              },
-              {
-                label: "Private",
-                value: CourseLessonStatus.private,
-              },
-              {
-                label: "Preview",
-                value: CourseLessonStatus.preview,
-              },
-            ]}
-            required
-          />
-          <TextAreaInput name="description" label="Description" />
-          <div className="text-right">
-            <Button
-              type="submit"
-              className="px-6"
-              disabled={isAdding || isUpdating}
-            >
-              Save
-            </Button>
-          </div>
-          {videoId && (
-            <div className="aspect-video">
-              <YoutubeVideoPlayer videoId={videoId} />
+    <div className="mx-auto w-full max-w-7xl">
+      <Form schema={lessonSchema} {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="grid items-start gap-6 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)]"
+        >
+          <div className="surface-panel space-y-4 p-5 sm:p-6">
+            <div>
+              <h2 className="text-lg font-semibold">Lesson information</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Update the learner-facing content and publishing status.
+              </p>
             </div>
-          )}
+            <TextInput
+              name="name"
+              label="Name"
+              placeholder="Enter name of the lesson"
+              required
+            />
+            <TextInput
+              name="youtubeVideoId"
+              label="Youtube Video ID"
+              placeholder="Enter youtube video id"
+              required
+            />
+            <SelectInput
+              name="status"
+              label="Status"
+              placeholder="Select status"
+              items={[
+                {
+                  label: "Public",
+                  value: CourseLessonStatus.public,
+                },
+                {
+                  label: "Private",
+                  value: CourseLessonStatus.private,
+                },
+                {
+                  label: "Preview",
+                  value: CourseLessonStatus.preview,
+                },
+              ]}
+              required
+            />
+            <TextAreaInput name="description" label="Description" />
+            <div className="flex justify-end border-t pt-4">
+              <Button
+                type="submit"
+                className="w-full px-6 sm:w-auto"
+                disabled={isAdding || isUpdating}
+              >
+                {isAdding || isUpdating ? "Saving..." : "Save lesson"}
+              </Button>
+            </div>
+          </div>
+          <aside className="surface-panel overflow-hidden lg:sticky lg:top-0">
+            <div className="border-b p-5 sm:p-6">
+              <h2 className="text-lg font-semibold">Video preview</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Confirm the YouTube video before saving the lesson.
+              </p>
+            </div>
+            {videoId ? (
+              <div className="aspect-video bg-black">
+                <YoutubeVideoPlayer videoId={videoId} />
+              </div>
+            ) : (
+              <div className="flex aspect-video items-center justify-center bg-muted/40 p-6 text-center text-sm text-muted-foreground">
+                Enter a YouTube video ID to preview the lesson.
+              </div>
+            )}
+          </aside>
         </form>
       </Form>
     </div>

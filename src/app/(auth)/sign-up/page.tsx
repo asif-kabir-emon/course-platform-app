@@ -8,6 +8,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import PasswordInput from "@/components/Form/PasswordInput";
 import PasswordStrength from "@/components/Form/PasswordStrength";
+import { sendOTP } from "@/utils/auth";
 
 type TFormInput = {
   firstName: string;
@@ -76,7 +77,11 @@ const SignUpPage = () => {
             "emailVerifyData",
             JSON.stringify({ email: data.email, expiry: expiryTime }),
           );
-          router.push("/verify-otp");
+
+          const otpSent = await sendOTP(data.email);
+          if (otpSent) {
+            router.push("/verify-otp");
+          }
         }
       }
 

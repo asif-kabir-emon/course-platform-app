@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
+import { isAdminRole } from "@/constants/UserRole.constant";
 
-const prisma = new PrismaClient();
 
 export const PUT = authGuard(
   catchAsync(async (request: Request) => {
@@ -13,7 +12,7 @@ export const PUT = authGuard(
     const { lessonIds } = await request.json();
 
     // Check if user is authenticated or not
-    if (user && user.role !== UserRole.admin) {
+    if (user && !isAdminRole(user.role)) {
       return ApiError(401, "Unauthorized access!");
     }
 

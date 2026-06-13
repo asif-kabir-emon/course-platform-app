@@ -12,20 +12,34 @@ export const sendEmail = async ({
   emailTextInHTML: string;
 }) => {
   try {
+    const host = process.env.EMAIL_HOST;
+    const port = Number(process.env.EMAIL_PORT);
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS;
+
+    if (!host || !port || !user || !pass) {
+      console.error("Email delivery is not configured.");
+      return {
+        success: false,
+        message: "Email service is not configured",
+      };
+    }
+
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false,
+      host,
+      port,
+      secure: port === 465,
+      requireTLS: port === 587,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user,
+        pass,
       },
     } as nodemailer.TransportOptions);
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"KnowVeria" <${user}>`,
       to: email,
-      subject: subject,
+      subject,
       text: emailTexInPlain || "",
       html: emailTextInHTML,
     };
@@ -38,6 +52,10 @@ export const sendEmail = async ({
 
     return { success: true, message: "Email sent successfully", info };
   } catch (error) {
+    console.error(
+      "Email delivery failed:",
+      error instanceof Error ? error.message : error,
+    );
     return { success: false, message: "Failed to send OTP", error };
   }
 };

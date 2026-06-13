@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -25,7 +24,6 @@ const VerifyOtpPage = () => {
         router.push("/");
       } else {
         setEmailAddress(email);
-        handleResendOtp();
         router.replace(`/verify-otp?email=${email}`);
       }
     } else {
@@ -92,12 +90,14 @@ const VerifyOtpPage = () => {
 
   const handleResendOtp = async () => {
     if (emailAddress) {
-      sendOTP(emailAddress);
+      const otpSent = await sendOTP(emailAddress);
 
-      // Reset the OTP and start the countdown again
-      setOtp(Array(6).fill(""));
-      setSeconds(120); // Reset timer to 2 minutes
-      setIsResendDisabled(true); // Disable Resend button during countdown
+      if (otpSent) {
+        // Reset the OTP and start the countdown again
+        setOtp(Array(6).fill(""));
+        setSeconds(120); // Reset timer to 2 minutes
+        setIsResendDisabled(true); // Disable Resend button during countdown
+      }
     }
   };
 
@@ -218,6 +218,7 @@ const VerifyOtpPage = () => {
                 <>
                   Didn&apos;t receive the OTP?{" "}
                   <button
+                    type="button"
                     onClick={handleResendOtp}
                     className="font-bold hover:underline focus:outline-none"
                   >

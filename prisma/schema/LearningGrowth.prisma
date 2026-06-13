@@ -1,0 +1,65 @@
+model UserLessonProgress {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  lessonId        String   @db.ObjectId
+  positionSeconds Int      @default(0)
+  durationSeconds Int?
+  lastViewedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user   Users         @relation(fields: [userId], references: [id])
+  lesson CourseLessons @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@index([userId, lastViewedAt])
+  @@map("user_lesson_progress")
+}
+
+model LessonNotes {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  lessonId  String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users         @relation(fields: [userId], references: [id])
+  lesson CourseLessons @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@index([lessonId])
+  @@map("lesson_notes")
+}
+
+model LessonBookmarks {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  lessonId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users         @relation(fields: [userId], references: [id])
+  lesson CourseLessons @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@index([userId, createdAt])
+  @@map("lesson_bookmarks")
+}
+
+model CourseReviews {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  courseId  String   @db.ObjectId
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   Users   @relation(fields: [userId], references: [id])
+  course Courses @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([courseId, createdAt])
+  @@map("course_reviews")
+}

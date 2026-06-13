@@ -12,8 +12,18 @@ export const PurchasesApi = baseApi.injectEndpoints({
       providesTags: [TagTypes.purchases],
     }),
     getPurchaseHistories: build.query({
-      query: () => ({
-        url: `${Route_URL}/`,
+      query: ({
+        page = 1,
+        pageSize = 10,
+        search = "",
+        status = "all",
+      }: {
+        page?: number;
+        pageSize?: number;
+        search?: string;
+        status?: string;
+      }) => ({
+        url: `${Route_URL}/?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${status}`,
         method: "GET",
       }),
       providesTags: [TagTypes.purchases],
@@ -47,6 +57,13 @@ export const PurchasesApi = baseApi.injectEndpoints({
         TagTypes.lesson,
       ],
     }),
+    getPaymentReliability: build.query({
+      query: () => ({
+        url: `/dashboard/admin/reliability`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.purchases],
+    }),
   }),
 });
 
@@ -56,4 +73,5 @@ export const {
   useGetPurchaseHistoryByIdQuery,
   useRefundPurchaseMutation,
   useGetAdminDashboardDataQuery,
+  useGetPaymentReliabilityQuery,
 } = PurchasesApi;

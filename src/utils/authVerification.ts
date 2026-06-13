@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { jwtVerify } from "jose";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { getJwtSecret } from "./serverEnv";
 
 export const authVerification = async ({
   authorization,
@@ -25,7 +24,7 @@ export const authVerification = async ({
   }
 
   const token = authorization.split(" ")[1];
-  const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET);
+  const jwtSecret = getJwtSecret();
 
   // Verify the token
   const decoded = await jwtVerify(token, new TextEncoder().encode(jwtSecret));

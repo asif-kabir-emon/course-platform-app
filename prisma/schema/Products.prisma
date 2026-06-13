@@ -11,9 +11,9 @@ model Products {
   updatedAt     DateTime      @updatedAt
 
   courseProducts    CourseProducts[]
-  courseSections    CourseSections[]
   PurchaseHistories PurchaseHistories[]
 
+  @@index([status, isDeleted])
   @@map("products")
 }
 

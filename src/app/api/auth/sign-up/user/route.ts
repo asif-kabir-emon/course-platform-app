@@ -1,11 +1,12 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { createToken } from "@/utils/jwtToken";
+import { getJwtSecret } from "@/utils/serverEnv";
 
-const prisma = new PrismaClient();
 
 export const POST = catchAsync(async (request: Request) => {
   const { email, password, firstName, lastName } = await request.json();
@@ -87,7 +88,7 @@ export const POST = catchAsync(async (request: Request) => {
     email: newUser.email,
     verified: newUser.isVerified,
   };
-  const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
+  const jwtSecret = getJwtSecret();
   const jwtExpiresIn = "1h";
   const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
 

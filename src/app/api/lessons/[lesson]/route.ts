@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
-import { UserRole } from "@/constants/UserRole.constant";
+import { isAdminRole } from "@/constants/UserRole.constant";
 import { authVerification } from "@/utils/authVerification";
 
-const prisma = new PrismaClient();
 
 export const PUT = authGuard(
   catchAsync(async (request: Request, context: any) => {
@@ -18,7 +17,7 @@ export const PUT = authGuard(
     const { name, description, youtubeVideoId, status } = await request.json();
 
     // Check if user is authenticated or not
-    if (user && user.role !== UserRole.admin) {
+    if (user && !isAdminRole(user.role)) {
       return ApiError(401, "Unauthorized access!");
     }
 
@@ -80,7 +79,7 @@ export const DELETE = authGuard(
     const lessonId = params.lesson;
 
     // Check if user is authenticated or not
-    if (user && user.role !== UserRole.admin) {
+    if (user && !isAdminRole(user.role)) {
       return ApiError(401, "Unauthorized access!");
     }
 
@@ -151,17 +150,20 @@ export const GET = catchAsync(async (request: Request, context: any) => {
   });
 
   const user = authorization.user;
+  const isAdmin = isAdminRole(user?.role);
 
-  let hasAccess;
+  let hasAccess = isAdmin;
   if (user) {
-    const hasAccessToCourse = await prisma.userCourseAccess.findFirst({
-      where: {
-        userId: user?.id,
-        courseId,
-      },
-    });
+    if (!isAdmin) {
+      const hasAccessToCourse = await prisma.userCourseAccess.findFirst({
+        where: {
+          userId: user.id,
+          courseId,
+        },
+      });
 
-    hasAccess = hasAccessToCourse ? true : false;
+      hasAccess = Boolean(hasAccessToCourse);
+    }
   }
 
   //  --- If lesson is in preview mode and don't have access to course, then response directly ---
@@ -194,10 +196,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     },
   });
 
-  if (
-    user.role !== UserRole.admin &&
-    lesson.status === CourseLessonStatus.private
-  ) {
+  if (!isAdmin && lesson.status === CourseLessonStatus.private) {
     return ApiError(400, "Unauthorized access!");
   }
 
@@ -209,7 +208,7 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     },
   });
 
-  if (!isEnrolled) {
+  if (!isAdmin && !isEnrolled) {
     return ApiError(401, "Unauthorized access!");
   }
 
@@ -251,7 +250,8 @@ export const GET = catchAsync(async (request: Request, context: any) => {
     data: {
       ...lesson,
       isCompleted: isLessonCompleted ? true : false,
-      hasAccess,
+      hasAccess: Boolean(hasAccess),
+      isAdminPreview: isAdmin,
     },
   });
 });

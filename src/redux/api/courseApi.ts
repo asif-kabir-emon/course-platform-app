@@ -13,8 +13,18 @@ export const CourseApi = baseApi.injectEndpoints({
       invalidatesTags: [TagTypes.course],
     }),
     getCourses: build.query({
-      query: () => ({
-        url: `${Route_URL}`,
+      query: ({
+        paginate = false,
+        page = 1,
+        pageSize = 10,
+        search = "",
+      }: {
+        paginate?: boolean;
+        page?: number;
+        pageSize?: number;
+        search?: string;
+      }) => ({
+        url: `${Route_URL}?paginate=${paginate}&page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`,
         method: "GET",
       }),
       providesTags: [TagTypes.course],
@@ -48,6 +58,29 @@ export const CourseApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.course],
     }),
+    getCourseReviews: build.query({
+      query: (courseId: string) => ({
+        url: `${Route_URL}/${courseId}/reviews`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.courseReview],
+    }),
+    saveCourseReview: build.mutation({
+      query: ({
+        courseId,
+        rating,
+        comment,
+      }: {
+        courseId: string;
+        rating: number;
+        comment?: string;
+      }) => ({
+        url: `${Route_URL}/${courseId}/reviews`,
+        method: "PUT",
+        data: { rating, comment },
+      }),
+      invalidatesTags: [TagTypes.courseReview],
+    }),
   }),
 });
 
@@ -58,4 +91,6 @@ export const {
   useGetMyCoursesQuery,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
+  useGetCourseReviewsQuery,
+  useSaveCourseReviewMutation,
 } = CourseApi;

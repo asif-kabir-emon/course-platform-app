@@ -5,20 +5,28 @@ import YoutubeVideoPlayer from "@/components/YoutubeVideoPlayer";
 import {
   useAddCompletedLessonMutation,
   useGetLessonByIdQuery,
+  useGetLessonLearningQuery,
   useGetNextLessonQuery,
   useGetPreviousLessonQuery,
+  useSaveLessonLearningMutation,
 } from "@/redux/api/lessonApi";
 import {
   ArrowLeft,
   ArrowRight,
+  Bookmark,
+  BookmarkCheck,
   CheckCircle2,
   ChevronLeft,
   LockIcon,
+  NotebookPen,
   PlayCircle,
+  Save,
 } from "lucide-react";
 import Link from "next/link";
-import React, { ReactNode, Suspense, use } from "react";
+import React, { ReactNode, Suspense, use, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import LessonQuiz from "@/features/lesson/LessonQuiz";
 
 const LessonPage = ({
   params,
@@ -77,12 +85,19 @@ const SuspenseBoundary = ({
     description: string;
     isCompleted: boolean;
     hasAccess: boolean;
+    isAdminPreview?: boolean;
   };
   isFetchingLessonData: boolean;
   courseId: string;
 }) => {
   const [addCompletedLesson, { isLoading: isMarkingCompletedLesson }] =
     useAddCompletedLessonMutation();
+  const isLearnerSession = lesson.hasAccess && !lesson.isAdminPreview;
+  const { data: learningData, isLoading: isLearningDataLoading } =
+    useGetLessonLearningQuery(lesson.id, {
+      skip: !isLearnerSession,
+    });
+  const [saveLessonLearning] = useSaveLessonLearningMutation();
 
   const { data: previousLesson, isLoading: isFetchingPreviousLessonId } =
     useGetPreviousLessonQuery({
@@ -136,9 +151,22 @@ const SuspenseBoundary = ({
           <YoutubeVideoPlayer
             videoId={lesson.youtubeVideoId}
             onFinishedVideo={undefined}
+            initialPositionSeconds={
+              learningData?.success ? learningData.data.positionSeconds : 0
+            }
+            onProgress={
+              isLearnerSession
+                ? (positionSeconds, durationSeconds) => {
+                    void saveLessonLearning({
+                      lessonId: lesson.id,
+                      body: { positionSeconds, durationSeconds },
+                    });
+                  }
+                : undefined
+            }
           />
         </div>
-        {lesson.hasAccess && (
+        {isLearnerSession && (
           <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
             <Suspense fallback={<SkeletonButton />}>
               <div>
@@ -214,7 +242,135 @@ const SuspenseBoundary = ({
           {lesson.description}
         </p>
       </section>
+
+      {isLearnerSession && (
+        <>
+          <LessonQuiz lessonId={lesson.id} />
+          <LessonLearningTools
+            lessonId={lesson.id}
+            learningData={learningData}
+            isLoading={isLearningDataLoading}
+          />
+        </>
+      )}
+      {lesson.isAdminPreview && (
+        <section className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-sm text-primary">
+          Admin preview mode is active. Progress, completion, notes, and quiz
+          attempts are not recorded.
+        </section>
+      )}
     </div>
+  );
+};
+
+const LessonLearningTools = ({
+  lessonId,
+  learningData,
+  isLoading,
+}: {
+  lessonId: string;
+  learningData?: {
+    success: boolean;
+    data: {
+      note: string;
+      bookmarked: boolean;
+      positionSeconds: number;
+    };
+  };
+  isLoading: boolean;
+}) => {
+  const [note, setNote] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
+  const [saveLessonLearning, { isLoading: isSaving }] =
+    useSaveLessonLearningMutation();
+
+  useEffect(() => {
+    if (learningData?.success) {
+      setNote(learningData.data.note);
+      setBookmarked(learningData.data.bookmarked);
+    }
+  }, [learningData]);
+
+  const saveNote = async () => {
+    try {
+      await saveLessonLearning({
+        lessonId,
+        body: { note },
+      }).unwrap();
+      toast.success(note.trim() ? "Lesson note saved." : "Lesson note removed.");
+    } catch {
+      toast.error("Failed to save your lesson note.");
+    }
+  };
+
+  const toggleBookmark = async () => {
+    const nextBookmarked = !bookmarked;
+    setBookmarked(nextBookmarked);
+
+    try {
+      await saveLessonLearning({
+        lessonId,
+        body: { bookmarked: nextBookmarked },
+      }).unwrap();
+      toast.success(
+        nextBookmarked ? "Lesson bookmarked." : "Bookmark removed.",
+      );
+    } catch {
+      setBookmarked(!nextBookmarked);
+      toast.error("Failed to update the bookmark.");
+    }
+  };
+
+  return (
+    <section className="surface-panel p-5 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 font-semibold">
+            <NotebookPen className="size-5 text-primary" />
+            Personal learning tools
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Notes and bookmarks are private to your account.
+          </p>
+        </div>
+        <Button
+          variant={bookmarked ? "default" : "outline"}
+          onClick={toggleBookmark}
+          disabled={isLoading || isSaving}
+          className="w-full sm:w-auto"
+        >
+          {bookmarked ? <BookmarkCheck /> : <Bookmark />}
+          {bookmarked ? "Bookmarked" : "Bookmark lesson"}
+        </Button>
+      </div>
+      <div className="mt-5 space-y-3">
+        <label htmlFor="lesson-note" className="text-sm font-medium">
+          Lesson notes
+        </label>
+        <Textarea
+          id="lesson-note"
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+          placeholder="Write a key takeaway, question, or reminder..."
+          maxLength={5000}
+          disabled={isLoading}
+          className="min-h-32"
+        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-xs text-muted-foreground">
+            {note.length}/5000 characters
+          </span>
+          <Button
+            onClick={saveNote}
+            disabled={isLoading || isSaving}
+            className="w-full sm:w-auto"
+          >
+            <Save />
+            Save note
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 };
 

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-export const sendOTP = async (email: string) => {
+export const sendOTP = async (email: string): Promise<boolean> => {
   const payload = {
     email: email,
     otpType: "email_verification",
@@ -20,15 +20,17 @@ export const sendOTP = async (email: string) => {
       toast.error(responseData.message, {
         duration: 2000,
       });
+      return false;
     } else {
       toast.success(responseData.message, {
         duration: 2000,
       });
+      return true;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error: unknown) {
-    toast.error("Failed to sign in. Please try again.", {
+  } catch {
+    toast.error("Failed to send the verification code. Please try again.", {
       duration: 2000,
     });
+    return false;
   }
 };

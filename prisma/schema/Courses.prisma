@@ -9,6 +9,8 @@ model Courses {
   courseProducts   CourseProducts[]
   userCourseAccess UserCourseAccess[]
   sections         CourseSections[]
+  reviews          CourseReviews[]
 
+  @@index([isDeleted])
   @@map("courses")
 }

@@ -1,0 +1,49 @@
+model LessonQuizzes {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  lessonId     String   @unique @db.ObjectId
+  title        String
+  passingScore Int      @default(70)
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lesson    CourseLessons  @relation(fields: [lessonId], references: [id])
+  questions QuizQuestions[]
+  attempts  QuizAttempts[]
+
+  @@map("lesson_quizzes")
+}
+
+model QuizQuestions {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  quizId        String   @db.ObjectId
+  prompt        String
+  options       String[]
+  correctOption Int
+  explanation   String?
+  order         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  quiz LessonQuizzes @relation(fields: [quizId], references: [id])
+
+  @@index([quizId, order])
+  @@map("quiz_questions")
+}
+
+model QuizAttempts {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  quizId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  score     Int
+  passed    Boolean
+  answers   Int[]
+  createdAt DateTime @default(now())
+
+  quiz LessonQuizzes @relation(fields: [quizId], references: [id])
+  user Users         @relation(fields: [userId], references: [id])
+
+  @@index([quizId, userId, createdAt])
+  @@index([userId, createdAt])
+  @@map("quiz_attempts")
+}

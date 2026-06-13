@@ -1,11 +1,11 @@
 import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendResponse } from "@/utils/sendResponse";
 import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
+import { isAdminRole } from "@/constants/UserRole.constant";
 
-const prisma = new PrismaClient();
 
 export const GET = authGuard(
   catchAsync(async (request: Request) => {
@@ -28,28 +28,42 @@ export const GET = authGuard(
       return ApiError(401, "Unauthorized access!");
     }
 
-    const userCourses = await prisma.userCourseAccess.findMany({
-      where: { userId: user.id },
-      include: {
-        courses: {
-          include: {
-            sections: {
-              where: {
-                status: CourseSectionStatus.public,
+    const courseRecords = isAdminRole(user.role)
+      ? (
+          await prisma.courses.findMany({
+            where: { isDeleted: false },
+            orderBy: { name: "asc" },
+            include: {
+              sections: {
+                include: {
+                  lessons: true,
+                },
               },
+            },
+          })
+        ).map((courses) => ({ courses }))
+      : await prisma.userCourseAccess.findMany({
+          where: { userId: user.id },
+          include: {
+            courses: {
               include: {
-                lessons: true,
+                sections: {
+                  where: {
+                    status: CourseSectionStatus.public,
+                  },
+                  include: {
+                    lessons: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-      orderBy: {
-        courses: {
-          name: "asc",
-        },
-      },
-    });
+          orderBy: {
+            courses: {
+              name: "asc",
+            },
+          },
+        });
 
     const userLessonComplete = await prisma.userLessonComplete.findMany({
       where: { userId: user.id },
@@ -60,7 +74,7 @@ export const GET = authGuard(
     );
 
     const formattedData =
-      userCourses.map((course) => {
+      courseRecords.map((course) => {
         return {
           id: course.courses.id,
           name: course.courses.name,
@@ -77,6 +91,7 @@ export const GET = authGuard(
               .map((lesson) => lesson.id)
               .includes(lessonId),
           ).length,
+          isAdminPreview: isAdminRole(user.role),
         };
       }) || [];
 
