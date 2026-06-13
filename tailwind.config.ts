@@ -18,7 +18,7 @@ export default {
         lg: "2rem",
       },
       screens: {
-        sm: "1500px",
+        sm: "1440px",
       },
     },
     extend: {

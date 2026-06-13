@@ -120,7 +120,7 @@ const CourseSkeleton = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {[1, 2, 3].map((_, index) => (
-        <Card key={index} className="animate-pulse">
+        <Card key={index}>
           <CardHeader>
             <CardTitle>
               <SkeletonText className="w-3/4 h-6" />

@@ -204,7 +204,7 @@ export function PurchaseTableSkeleton() {
             <TableRow>
               <TableCell>
                 <div className="flex items-center gap-4">
-                  <div className="size-12 bg-secondary animate-pulse rounded" />
+                  <div className="skeleton-shimmer size-12 rounded" />
                   <div className="flex flex-col gap-1">
                     <SkeletonText className="w-36" />
                     <SkeletonText className="w-3/4" />

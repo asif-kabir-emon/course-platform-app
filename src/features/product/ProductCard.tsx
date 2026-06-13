@@ -62,19 +62,19 @@ export const ProductSkeleton = () => {
   return (
     <Card className="overflow-hidden flex flex-col w-full max-w-[500px] mx-auto">
       <div className="relative aspect-video w-full">
-        <div className="bg-secondary animate-pulse w-full h-60" />
+        <div className="skeleton-shimmer h-60 w-full" />
       </div>
       <CardHeader className="space-y-0">
         <CardDescription>
-          <div className="mb-2 text-base bg-secondary animate-pulse h-6 w-20 rounded-full" />
+          <div className="skeleton-shimmer mb-2 h-6 w-20 rounded-full" />
         </CardDescription>
-        <CardTitle className="text-xl bg-secondary animate-pulse h-6 w-40 rounded" />
+        <CardTitle className="skeleton-shimmer h-6 w-40 rounded" />
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-3 bg-secondary animate-pulse h-6 w-full rounded" />
+        <p className="skeleton-shimmer h-6 w-full rounded" />
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button className="w-full text-md py-6 bg-secondary animate-pulse" />
+        <div className="skeleton-shimmer h-12 w-full rounded-lg" />
       </CardFooter>
     </Card>
   );

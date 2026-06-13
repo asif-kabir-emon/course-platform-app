@@ -12,14 +12,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TagTypes.auth],
     }),
-    verifyToken: build.query({
-      query: ({ revalidateToken = false }: { revalidateToken?: boolean }) => ({
-        url: `${Route_URL}/verify-token?revalidateToken=${revalidateToken}`,
-        method: "GET",
-      }),
-      providesTags: [TagTypes.auth],
-    }),
   }),
 });
 
-export const { useResetPasswordMutation, useVerifyTokenQuery } = authApi;
+export const { useResetPasswordMutation } = authApi;

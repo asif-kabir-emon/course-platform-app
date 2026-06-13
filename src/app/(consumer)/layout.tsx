@@ -1,9 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { useClientSession } from "@/hooks/useClientSession";
 import Link from "next/link";
-import { ReactNode, useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import { decodedToken, validateToken } from "@/utils/validateToken";
+import { ReactNode, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogInIcon, LogOutIcon, Menu } from "lucide-react";
 import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
@@ -16,61 +15,25 @@ export default function ConsumerLayout({
   return (
     <>
       <Navbar />
-      {children}
+      <main className="mx-auto w-full max-w-[var(--content-max-width)]">
+        {children}
+      </main>
     </>
   );
 }
 
 function Navbar() {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const { session, isReady } = useClientSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isLoggedIn = Boolean(session);
+  const isAdmin = session?.role === "admin" || session?.role === "super_admin";
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = Cookies.get("accessToken");
-
-      if (!token) {
-        setIsLoggedIn(false);
-        setIsAdmin(false);
-        return;
-      }
-
-      const isValidToken = await validateToken(
-        token,
-        process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      );
-
-      if (!isValidToken) {
-        Cookies.remove("accessToken");
-        setIsLoggedIn(false);
-        setIsAdmin(false);
-        return;
-      }
-
-      const decodedTokenData = await decodedToken(
-        token,
-        process.env.NEXT_PUBLIC_JWT_SECRET as string,
-      );
-
-      if (decodedTokenData.success && decodedTokenData.data?.role === "admin") {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-
-      setIsLoggedIn(true);
-    };
-
-    checkAuth();
-  }, []);
-
-  if (isLoggedIn === null) return null;
+  if (!isReady) return null;
 
   return (
     <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
-      <nav className="container flex gap-4">
+      <nav className="layout-container flex gap-4">
         <div className="flex items-center mr-auto">
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

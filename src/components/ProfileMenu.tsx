@@ -6,31 +6,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import Cookies from "js-cookie";
-import { useVerifyTokenQuery } from "@/redux/api/authApi";
+import { useClientSession } from "@/hooks/useClientSession";
+import { clearClientSession } from "@/lib/clientSession";
 
 export const handleSignOut = () => {
-  Cookies.remove("accessToken");
+  clearClientSession();
   window.location.href = "/";
 };
 
 const ProfileMenu = () => {
-  const { data: authData, isLoading } = useVerifyTokenQuery({});
+  const { session, isReady } = useClientSession();
 
-  if (isLoading) {
+  if (!isReady) {
     return (
       <Avatar className="border-2 border-primary/15 ring-2 ring-primary/5">
         <AvatarImage src={""} />
-        <AvatarFallback className="bg-secondary animate-pulse"></AvatarFallback>
+        <AvatarFallback className="skeleton-shimmer"></AvatarFallback>
       </Avatar>
     );
   }
 
-  if (authData.success === false) {
+  if (!session) {
     return (
       <Avatar className="border-2 border-primary/15 ring-2 ring-primary/5">
         <AvatarImage src={""} />
-        <AvatarFallback className="bg-secondary animate-pulse"></AvatarFallback>
+        <AvatarFallback>?</AvatarFallback>
       </Avatar>
     );
   }
@@ -39,11 +39,11 @@ const ProfileMenu = () => {
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:!bg-none focus:!bg-none hover:cursor-pointer select-none">
         <Avatar className="border-2 border-primary/20 ring-2 ring-primary/10 transition hover:border-primary/40">
-          <AvatarImage src={authData.data.imageUrl} />
+          <AvatarImage src={session.imageUrl} />
           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
-            {authData.data.name
-              ? authData.data.name.charAt(0).toUpperCase()
-              : authData.data.email.charAt(0).toUpperCase()}
+            {session.name
+              ? session.name.charAt(0).toUpperCase()
+              : session.email.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -53,20 +53,19 @@ const ProfileMenu = () => {
       >
         <div className="flex items-center justify-start gap-2.5 py-4">
           <Avatar className="border-2 border-primary/20">
-            <AvatarImage src={authData.data.imageUrl} />
+            <AvatarImage src={session.imageUrl} />
             <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
-              {authData.data.name
-                ? authData.data.name.charAt(0).toUpperCase()
-                : authData.data.email.charAt(0).toUpperCase()}
+              {session.name
+                ? session.name.charAt(0).toUpperCase()
+                : session.email.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
             <div className="font-semibold">
-              {authData.data.name ||
-                authData.data.email.split("@")[0].toUpperCase()}
+              {session.name || session.email.split("@")[0].toUpperCase()}
             </div>
             <div className="text-sm text-muted-foreground">
-              {authData.data.email}
+              {session.email}
             </div>
           </div>
         </div>

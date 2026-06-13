@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --content-max-width: 1440px;
     --background: 220 33% 98%;
     --foreground: 224 38% 13%;
     --card: 0 0% 100%;
@@ -53,8 +54,19 @@
 }
 
 @layer components {
+  .layout-container {
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
   .page-shell {
-    @apply container py-6 sm:py-8;
+    @apply py-6 sm:py-8;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin-inline: auto;
+    padding-inline: 1rem;
   }
 
   .surface-panel {
@@ -63,5 +75,53 @@
 
   .error-panel {
     @apply rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive;
+  }
+
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: hsl(var(--muted));
+  }
+
+  .skeleton-shimmer::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.1),
+      hsl(var(--card) / 0.8),
+      hsl(var(--primary) / 0.1),
+      transparent
+    );
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@media (min-width: 640px) {
+  .layout-container,
+  .page-shell {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout-container,
+  .page-shell {
+    padding-inline: 2rem;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
   }
 }

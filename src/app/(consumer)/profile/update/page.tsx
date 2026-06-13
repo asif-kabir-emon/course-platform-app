@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
+import { notifyClientSessionChanged } from "@/lib/clientSession";
 
 const UpdateProfilePage = () => {
   const { data: profileInfo, isLoading } = useGetUserProfileQuery({});
@@ -101,6 +102,7 @@ const ProfileForm = ({
               isVerified: response.data.isVerified,
             }),
           );
+          notifyClientSessionChanged();
         }
         router.push("/profile");
       } else {

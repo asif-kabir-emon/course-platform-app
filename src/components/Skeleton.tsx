@@ -16,7 +16,10 @@ export const SkeletonButton = ({ className }: { className?: string }) => {
     <div
       className={buttonVariants({
         variant: "secondary",
-        className: cn("pointer-events-none animate-pulse w-24", className),
+        className: cn(
+          "skeleton-shimmer pointer-events-none w-24 border-0 shadow-none",
+          className,
+        ),
       })}
     />
   );
@@ -48,7 +51,7 @@ export const SkeletonText = ({
       <SkeletonArray amount={rows}>
         <div
           className={cn(
-            "bg-secondary animate-pulse w-full rounded-sm",
+            "skeleton-shimmer w-full rounded-sm",
             rows > 1 && "last:w-3/4",
             size === "md" && "h-3",
             size === "lg" && "h-5",
@@ -115,7 +118,7 @@ export const TableSkeleton = ({
 
 export const FormPageSkeleton = ({ fields = 5 }: { fields?: number }) => {
   return (
-    <div className="container my-5 space-y-6" aria-label="Loading form">
+    <div className="page-shell space-y-6" aria-label="Loading form">
       <Skeleton className="h-8 w-48" />
       <div className="max-w-3xl space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-6">
         {Array.from({ length: fields }).map((_, index) => (

@@ -20,6 +20,9 @@ export const POST = catchAsync(async (request: Request) => {
     where: {
       email: email,
     },
+    include: {
+      profile: true,
+    },
   });
 
   if (!isUserExist) {
@@ -56,6 +59,10 @@ export const POST = catchAsync(async (request: Request) => {
     email: isUserExist.email,
     role: isUserExist.role,
     verified: isUserExist.isVerified,
+    name:
+      `${isUserExist.profile?.firstName ?? ""} ${isUserExist.profile?.lastName ?? ""}`.trim() ||
+      undefined,
+    imageUrl: isUserExist.profile?.imageUrl || undefined,
   };
   const jwtSecret = String(process.env.NEXT_PUBLIC_JWT_SECRET) || "";
   const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";

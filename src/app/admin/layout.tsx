@@ -15,7 +15,9 @@ export default function AdminLayout({
   return (
     <>
       <Navbar />
-      {children}
+      <main className="mx-auto w-full max-w-[var(--content-max-width)]">
+        {children}
+      </main>
     </>
   );
 }
@@ -26,7 +28,7 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
-      <nav className="container flex gap-4">
+      <nav className="layout-container flex gap-4">
         <div className="flex items-center gap-2 mr-auto">
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
