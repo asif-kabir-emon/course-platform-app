@@ -46,7 +46,6 @@ const PurchaseTable = ({
 
   const handleRefund = async (id: string, closeDialog: () => void) => {
     const toasterId = toast.loading("Refunding purchase...", {
-      position: "top-center",
       duration: 2000,
     });
     try {

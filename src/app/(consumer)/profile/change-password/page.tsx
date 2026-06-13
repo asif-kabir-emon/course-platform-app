@@ -59,7 +59,6 @@ const ChangePasswordPage = () => {
 
     const toastId = toast.loading("Updating Password...", {
       duration: 2000,
-      position: "top-center",
     });
 
     try {

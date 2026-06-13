@@ -42,7 +42,6 @@ const ResetPasswordForm = () => {
   const onSubmit: SubmitHandler<TFormInput> = async (data) => {
     if (data.password !== data.confirmPassword) {
       toast.error("Password and Confirm Password must be the same!", {
-        position: "top-center",
         duration: 2000,
       });
       return;
@@ -54,7 +53,6 @@ const ResetPasswordForm = () => {
     };
 
     const toastId = toast.loading("Trying to reset password...", {
-      position: "top-center",
       duration: 0,
     });
 

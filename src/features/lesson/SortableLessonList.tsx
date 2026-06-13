@@ -34,7 +34,6 @@ const SortableLessonList = ({
   const handleDeleteLesson = async (id: string) => {
     const toastId = toast.loading("Deleting section ...", {
       duration: 2000,
-      position: "top-center",
     });
     try {
       const response = await deleteLesson(id).unwrap();
@@ -59,7 +58,6 @@ const SortableLessonList = ({
 
       if (response.success) {
         toast.success(response.message, {
-          position: "top-center",
           duration: 2000,
         });
         return {
@@ -68,14 +66,12 @@ const SortableLessonList = ({
         };
       } else {
         toast.error(response.message, {
-          position: "top-center",
           duration: 2000,
         });
         return { error: true, message: "Error reordering your sections" };
       } // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to delete section", {
-        position: "top-center",
         duration: 2000,
       });
       return { error: true, message: "Error reordering your sections" };

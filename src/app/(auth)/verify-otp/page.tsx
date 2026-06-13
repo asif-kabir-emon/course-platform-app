@@ -111,7 +111,6 @@ const VerifyOtpPage = () => {
     };
 
     const toasterId = toast.loading("Trying to verify your account!", {
-      position: "top-center",
       duration: 2000,
     });
 

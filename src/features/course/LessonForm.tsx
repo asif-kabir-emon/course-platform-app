@@ -69,7 +69,6 @@ const LessonForm = ({
       action === "added" ? "Adding new lesson ..." : "Updating lesson ...",
       {
         duration: 2000,
-        position: "top-center",
       },
     );
 

@@ -42,7 +42,6 @@ const SignUpPage = () => {
     };
 
     const toasterId = toast.loading("Trying to sign up!", {
-      position: "top-center",
       duration: 2000,
     });
 

@@ -72,7 +72,6 @@ const ProductForm = ({
       action === "added" ? "Adding new product..." : "Updating product...",
       {
         duration: 2000,
-        position: "top-center",
       },
     );
 

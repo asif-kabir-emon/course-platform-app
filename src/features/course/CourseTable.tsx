@@ -35,7 +35,6 @@ const CourseTable = () => {
   const handleDeleteCourse = async (id: string) => {
     const toastId = toast.loading("Deleting course...", {
       duration: 2000,
-      position: "top-center",
     });
     try {
       const response = await deleteCourse(id).unwrap();

@@ -40,7 +40,6 @@ const ProductTable = () => {
   const handleDeleteProduct = async (id: string) => {
     const toastId = toast.loading("Deleting product...", {
       duration: 2000,
-      position: "top-center",
     });
     try {
       const response = await deleteProduct(id).unwrap();

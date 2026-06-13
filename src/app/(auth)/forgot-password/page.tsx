@@ -78,12 +78,10 @@ const ForgotPasswordPage = () => {
         setIsButtonDisabled(false);
 
         toast.error(responseData.message, {
-          position: "top-center",
           duration: 2000,
         });
       } else {
         toast.success(responseData.message, {
-          position: "top-center",
           duration: 2000,
         });
 
@@ -104,7 +102,6 @@ const ForgotPasswordPage = () => {
     } catch (error: unknown) {
       setIsButtonDisabled(false);
       toast.error("Failed to sign in. Please try again.", {
-        position: "top-center",
         duration: 2000,
       });
     }

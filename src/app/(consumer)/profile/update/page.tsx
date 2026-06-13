@@ -78,7 +78,6 @@ const ProfileForm = ({
 
     const toastId = toast.loading("Updating profile...", {
       duration: 2000,
-      position: "top-center",
     });
 
     try {

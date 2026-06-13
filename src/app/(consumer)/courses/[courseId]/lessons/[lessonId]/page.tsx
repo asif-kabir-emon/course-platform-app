@@ -105,18 +105,15 @@ const SuspenseBoundary = ({
 
       if (response.success) {
         toast.success(response.message, {
-          position: "top-center",
           duration: 5000,
         });
       } else {
         toast.error(response.message, {
-          position: "top-center",
           duration: 5000,
         });
       }
     } catch {
       toast.error("Failed to mark lesson as completed!", {
-        position: "top-center",
         duration: 5000,
       });
     }

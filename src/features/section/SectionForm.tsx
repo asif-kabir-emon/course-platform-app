@@ -58,7 +58,6 @@ const SectionForm = ({
       action === "added" ? "Adding new section..." : "Updating section...",
       {
         duration: 2000,
-        position: "top-center",
       },
     );
 

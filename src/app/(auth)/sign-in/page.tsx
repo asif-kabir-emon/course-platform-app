@@ -37,7 +37,6 @@ const SignInPage = () => {
     };
 
     const toasterId = toast.loading("Trying to sign in!", {
-      position: "top-center",
       duration: 2000,
     });
 

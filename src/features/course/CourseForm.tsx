@@ -50,7 +50,6 @@ const CourseForm = ({
       action === "added" ? "Adding new course..." : "Updating course...",
       {
         duration: 2000,
-        position: "top-center",
       },
     );
 
