@@ -4,6 +4,10 @@ model LessonQuizzes {
   title        String
   passingScore Int      @default(70)
   isPublished  Boolean  @default(false)
+  timeLimitMinutes Int?
+  maxAttempts     Int?
+  availableFrom   DateTime?
+  availableUntil  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

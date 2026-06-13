@@ -7,6 +7,7 @@ import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { isAdminRole } from "@/constants/UserRole.constant";
 import { authVerification } from "@/utils/authVerification";
+import { CourseLessonType } from "@/constants/CourseLessonType.constant";
 
 
 export const PUT = authGuard(
@@ -14,7 +15,8 @@ export const PUT = authGuard(
     const params = await context.params;
     const user = request.user;
     const lessonId = params.lesson;
-    const { name, description, youtubeVideoId, status } = await request.json();
+    const { name, description, type, content, youtubeVideoId, status } =
+      await request.json();
 
     // Check if user is authenticated or not
     if (user && !isAdminRole(user.role)) {
@@ -24,7 +26,6 @@ export const PUT = authGuard(
     // Check if payload is valid or not
     if (
       !name ||
-      !youtubeVideoId ||
       !status ||
       ![
         CourseLessonStatus.public,
@@ -34,7 +35,6 @@ export const PUT = authGuard(
     ) {
       return ApiError(400, "Invalid payload!");
     }
-
     // Check if section exists
     const isLessonExist = await prisma.courseLessons.findUnique({
       where: {
@@ -45,6 +45,19 @@ export const PUT = authGuard(
     if (!isLessonExist) {
       return ApiError(404, "Not found!");
     }
+    const lessonType = isLessonExist.type;
+    if (type && type !== lessonType) {
+      return ApiError(
+        400,
+        "Lesson type cannot be changed after the lesson is created.",
+      );
+    }
+    if (lessonType === CourseLessonType.video && !youtubeVideoId?.trim()) {
+      return ApiError(400, "A YouTube video ID is required.");
+    }
+    if (lessonType === CourseLessonType.text && !content?.trim()) {
+      return ApiError(400, "Text lesson content is required.");
+    }
 
     // Update a lesson
     const updatedLesson = await prisma.courseLessons.update({
@@ -54,7 +67,10 @@ export const PUT = authGuard(
       data: {
         name: name || isLessonExist.name,
         description: description || isLessonExist.description || "",
-        youtubeVideoId: youtubeVideoId || isLessonExist.youtubeVideoId || "",
+        type: lessonType,
+        content: lessonType === CourseLessonType.text ? content.trim() : "",
+        youtubeVideoId:
+          lessonType === CourseLessonType.video ? youtubeVideoId.trim() : "",
         status: status || isLessonExist.status,
       },
     });
@@ -134,6 +150,8 @@ export const GET = catchAsync(async (request: Request, context: any) => {
       id: true,
       name: true,
       description: true,
+      type: true,
+      content: true,
       youtubeVideoId: true,
       status: true,
       sectionId: true,

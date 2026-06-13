@@ -12,6 +12,7 @@ import {
   BookOpen,
   CheckCircle2,
   Circle,
+  Pencil,
   PlayCircle,
   Star,
 } from "lucide-react";
@@ -107,6 +108,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
   const [saveReview, { isLoading: isSaving }] = useSaveCourseReviewMutation();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [isEditingReview, setIsEditingReview] = useState(true);
   const reviewsData = data?.success ? data.data : undefined;
   const { session } = useClientSession();
   const isAdmin = isAdminRole(session?.role);
@@ -115,6 +117,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
     if (reviewsData?.currentUserReview) {
       setRating(reviewsData.currentUserReview.rating);
       setComment(reviewsData.currentUserReview.comment || "");
+      setIsEditingReview(false);
     }
   }, [reviewsData]);
 
@@ -127,6 +130,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
       }).unwrap();
       if (response.success) {
         toast.success(response.message);
+        setIsEditingReview(false);
       } else {
         toast.error(response.message);
       }
@@ -173,39 +177,91 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
           </div>
         ) : (
           <div className="w-full max-w-xl rounded-2xl bg-muted/40 p-4">
-            <label className="text-sm font-medium">Your rating</label>
-            <div className="mt-2 flex gap-1">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setRating(value)}
-                  aria-label={`${value} star rating`}
-                  className="rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <Star
-                    className={cn(
-                      "size-6 text-muted-foreground/40",
-                      value <= rating && "fill-amber-400 text-amber-400",
-                    )}
-                  />
-                </button>
-              ))}
-            </div>
-            <Textarea
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              placeholder="Share what helped you most..."
-              maxLength={2000}
-              className="mt-3 min-h-24"
-            />
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="mt-3 w-full sm:w-auto"
-            >
-              Save review
-            </Button>
+            {reviewsData.currentUserReview && !isEditingReview ? (
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Your review</p>
+                    <div className="mt-2 flex gap-1">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <Star
+                          key={value}
+                          className={cn(
+                            "size-5 text-muted-foreground/30",
+                            value <= rating &&
+                              "fill-amber-400 text-amber-400",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingReview(true)}
+                  >
+                    <Pencil className="size-4" />
+                    Review again
+                  </Button>
+                </div>
+                {comment && (
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                    {comment}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <label className="text-sm font-medium">Your rating</label>
+                <div className="mt-2 flex gap-1">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRating(value)}
+                      aria-label={`${value} star rating`}
+                      className="rounded-md p-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <Star
+                        className={cn(
+                          "size-6 text-muted-foreground/40",
+                          value <= rating &&
+                            "fill-amber-400 text-amber-400",
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <Textarea
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  placeholder="Share what helped you most..."
+                  maxLength={2000}
+                  className="mt-3 min-h-24"
+                />
+                <div className="mt-3 flex gap-2">
+                  {reviewsData.currentUserReview && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setRating(reviewsData.currentUserReview.rating);
+                        setComment(
+                          reviewsData.currentUserReview.comment || "",
+                        );
+                        setIsEditingReview(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  <Button onClick={handleSave} disabled={isSaving}>
+                    {reviewsData.currentUserReview
+                      ? "Update review"
+                      : "Submit review"}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

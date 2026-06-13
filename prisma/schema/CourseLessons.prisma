@@ -3,7 +3,9 @@ model CourseLessons {
   sectionId      String             @db.ObjectId
   name           String
   description    String?
-  youtubeVideoId String
+  type           CourseLessonType   @default(video)
+  content        String             @default("")
+  youtubeVideoId String             @default("")
   transcript     String             @default("")
   status         CourseLessonStatus @default(private)
   order          Int
@@ -26,4 +28,10 @@ enum CourseLessonStatus {
   public
   private
   preview
+}
+
+enum CourseLessonType {
+  video
+  text
+  quiz
 }

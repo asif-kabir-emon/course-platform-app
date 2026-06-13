@@ -5,13 +5,17 @@ import { ApiError } from "@/utils/apiError";
 import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { isAdminRole } from "@/constants/UserRole.constant";
+import { CourseLessonType } from "@/constants/CourseLessonType.constant";
 
 
 export const POST = authGuard(
   catchAsync(async (request: Request) => {
     const user = request.user;
-    const { name, description, youtubeVideoId, status, sectionId } =
+    const { name, description, type, content, youtubeVideoId, status, sectionId } =
       await request.json();
+    const lessonType = Object.values(CourseLessonType).includes(type)
+      ? type
+      : CourseLessonType.video;
 
     // Check if user is authenticated or not
     if (user && !isAdminRole(user.role)) {
@@ -21,7 +25,6 @@ export const POST = authGuard(
     // Check if name, courseId and status are provided in the payload or not
     if (
       !name ||
-      !youtubeVideoId ||
       !sectionId ||
       !status ||
       ![
@@ -31,6 +34,12 @@ export const POST = authGuard(
       ].includes(status)
     ) {
       return ApiError(400, "Invalid payload!");
+    }
+    if (lessonType === CourseLessonType.video && !youtubeVideoId?.trim()) {
+      return ApiError(400, "A YouTube video ID is required.");
+    }
+    if (lessonType === CourseLessonType.text && !content?.trim()) {
+      return ApiError(400, "Text lesson content is required.");
     }
 
     const totalExistingLessons = await prisma.courseLessons.count({
@@ -66,6 +75,8 @@ export const POST = authGuard(
       data: {
         name: name,
         description: description || "",
+        type: lessonType,
+        content: lessonType === CourseLessonType.text ? content.trim() : "",
         youtubeVideoId: youtubeVideoId || "",
         status: status,
         sectionId: sectionId,

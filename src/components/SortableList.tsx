@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useId, useOptimistic, useTransition } from "react";
+import React, { ReactNode, useEffect, useId, useState } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -17,21 +17,22 @@ export const SortableList = <T extends { id: string }>({
   children,
 }: {
   items: T[];
-  onOrderChange: (
-    newOrder: string[],
-  ) => Promise<{ error: boolean; message: string }>;
+  onOrderChange?: (newOrder: string[]) => void;
   children: (items: T[]) => ReactNode;
 }) => {
   const dndContextId = useId();
-  const [optimisticItems, setOptimisticItems] = useOptimistic(items);
-  const [, startTransition] = useTransition();
+  const [draftItems, setDraftItems] = useState(items);
+
+  useEffect(() => {
+    setDraftItems(items);
+  }, [items]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     const activeId = active.id.toString();
     const overId = over?.id.toString();
 
-    if (activeId === null || overId === undefined) return;
+    if (activeId === overId || overId === undefined) return;
 
     const getNewArray = (array: T[], activeId: string, overId: string) => {
       const oldIndex = array.findIndex((item) => item.id === activeId);
@@ -40,21 +41,18 @@ export const SortableList = <T extends { id: string }>({
       return arrayMove(array, oldIndex, newIndex);
     };
 
-    startTransition(async () => {
-      setOptimisticItems((items) => getNewArray(items, activeId, overId));
-      await onOrderChange(
-        getNewArray(optimisticItems, activeId, overId).map((item) => item.id),
-      );
-    });
+    const nextItems = getNewArray(draftItems, activeId, overId);
+    setDraftItems(nextItems);
+    onOrderChange?.(nextItems.map((item) => item.id));
   };
 
   return (
     <DndContext id={dndContextId} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={optimisticItems}
+        items={draftItems}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex flex-col">{children(optimisticItems)}</div>
+        <div className="flex flex-col gap-1 w-full">{children(draftItems)}</div>
       </SortableContext>
     </DndContext>
   );

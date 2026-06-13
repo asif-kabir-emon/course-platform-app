@@ -1,9 +1,18 @@
 "use client";
 import { CourseLessonStatus } from "@/constants/CourseLessonStatus.constant";
-import React from "react";
+import { CourseLessonType } from "@/constants/CourseLessonType.constant";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Trash2Icon, Video } from "lucide-react";
+import {
+  CircleHelp,
+  Eye,
+  EyeOff,
+  FileText,
+  Save,
+  Trash2Icon,
+  Video,
+} from "lucide-react";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import LessonFormDialog from "./LessonFormDialog";
@@ -24,12 +33,16 @@ const SortableLessonList = ({
     name: string;
     description: string;
     youtubeVideoId: string;
+    type?: CourseLessonType;
+    content?: string;
     status: CourseLessonStatus;
   }[];
 }) => {
   const [deleteLesson, { isLoading: isDeletingLesson }] =
     useDeleteLessonMutation();
   const [reorderLessons] = useReorderedLessonsMutation();
+  const [draftOrder, setDraftOrder] = useState<string[] | null>(null);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   const handleDeleteLesson = async (id: string) => {
     const toastId = toast.loading("Deleting section ...", {
@@ -48,45 +61,31 @@ const SortableLessonList = ({
     }
   };
 
-  const handleReorderLessons = async (newOrder: string[]) => {
-    if (newOrder.length === 0) {
-      return { error: true, message: "Error reordering your sections" };
-    }
+  const handleReorderLessons = async () => {
+    if (!draftOrder?.length) return;
 
+    setIsSavingOrder(true);
     try {
-      const response = await reorderLessons(newOrder).unwrap();
+      const response = await reorderLessons(draftOrder).unwrap();
 
       if (response.success) {
-        toast.success(response.message, {
-          duration: 2000,
-        });
-        return {
-          error: false,
-          message: "Successfully reordered your sections",
-        };
+        setDraftOrder(null);
+        toast.success("Lesson order saved.");
       } else {
-        toast.error(response.message, {
-          duration: 2000,
-        });
-        return { error: true, message: "Error reordering your sections" };
-      } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete section", {
-        duration: 2000,
-      });
-      return { error: true, message: "Error reordering your sections" };
+        toast.error(response.message);
+      }
+    } catch {
+      toast.error("Failed to save lesson order.");
+    } finally {
+      setIsSavingOrder(false);
     }
   };
 
   return (
-    <SortableList
-      items={lessons}
-      onOrderChange={async (newOrder: string[]) =>
-        handleReorderLessons(newOrder)
-      }
-    >
-      {(items) =>
-        items.map((lesson) => (
+    <div>
+      <SortableList items={lessons} onOrderChange={setDraftOrder}>
+        {(items) =>
+          items.map((lesson) => (
           <SortableItem
             key={lesson.id}
             id={lesson.id}
@@ -110,6 +109,16 @@ const SortableLessonList = ({
               )}
               <span className="truncate text-sm font-medium">
                 {lesson.name}
+              </span>
+              <span className="hidden items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] capitalize text-muted-foreground sm:flex">
+                {lesson.type === CourseLessonType.text ? (
+                  <FileText className="size-3" />
+                ) : lesson.type === CourseLessonType.quiz ? (
+                  <CircleHelp className="size-3" />
+                ) : (
+                  <Video className="size-3" />
+                )}
+                {lesson.type ?? CourseLessonType.video}
               </span>
             </div>
             <LessonFormDialog sectionId={sectionId} lesson={lesson}>
@@ -139,9 +148,26 @@ const SortableLessonList = ({
               </Button>
             </ActionButton>
           </SortableItem>
-        ))
-      }
-    </SortableList>
+          ))
+        }
+      </SortableList>
+      {draftOrder && (
+        <div className="mt-3 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-primary">
+            Lesson order changed. Save when you are ready.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleReorderLessons}
+            disabled={isSavingOrder}
+          >
+            <Save className="size-4" />
+            {isSavingOrder ? "Saving..." : "Save lesson order"}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

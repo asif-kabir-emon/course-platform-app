@@ -72,9 +72,35 @@ export const GET = authGuard(
     const userLessonCompleteIds = userLessonComplete.map(
       (lesson) => lesson.lessonId,
     );
+    const recentProgress = isAdminRole(user.role)
+      ? []
+      : await prisma.userLessonProgress.findMany({
+          where: { userId: user.id },
+          orderBy: { lastViewedAt: "desc" },
+          include: {
+            lesson: {
+              select: {
+                id: true,
+                name: true,
+                section: { select: { courseId: true } },
+              },
+            },
+          },
+        });
+    const lastProgressByCourse = new Map<
+      string,
+      (typeof recentProgress)[number]
+    >();
+    recentProgress.forEach((progress) => {
+      const progressCourseId = progress.lesson.section.courseId;
+      if (!lastProgressByCourse.has(progressCourseId)) {
+        lastProgressByCourse.set(progressCourseId, progress);
+      }
+    });
 
     const formattedData =
       courseRecords.map((course) => {
+        const lastProgress = lastProgressByCourse.get(course.courses.id);
         return {
           id: course.courses.id,
           name: course.courses.name,
@@ -92,6 +118,9 @@ export const GET = authGuard(
               .includes(lessonId),
           ).length,
           isAdminPreview: isAdminRole(user.role),
+          lastLessonId: lastProgress?.lesson.id ?? null,
+          lastLessonName: lastProgress?.lesson.name ?? null,
+          lastViewedAt: lastProgress?.lastViewedAt ?? null,
         };
       }) || [];
 

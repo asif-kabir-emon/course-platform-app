@@ -5,8 +5,15 @@ import {
   useGetLessonQuizQuery,
   useSubmitLessonQuizMutation,
 } from "@/redux/api/lessonApi";
-import { CheckCircle2, CircleHelp, RotateCcw, XCircle } from "lucide-react";
-import { useState } from "react";
+import {
+  CalendarClock,
+  CheckCircle2,
+  CircleHelp,
+  Clock3,
+  RotateCcw,
+  XCircle,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type QuizResult = {
@@ -27,38 +34,66 @@ const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
     useSubmitLessonQuizMutation();
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const quiz = data?.success ? data.data : null;
+
+  useEffect(() => {
+    if (!quiz?.timeLimitMinutes || result) return;
+
+    setSecondsRemaining(quiz.timeLimitMinutes * 60);
+  }, [quiz?.id, quiz?.timeLimitMinutes, result]);
+
+  const submitAnswers = useCallback(
+    async (allowIncomplete = false) => {
+      if (!quiz) return;
+      if (
+        !allowIncomplete &&
+        Object.keys(answers).length !== quiz.questions.length
+      ) {
+        toast.error("Answer every question before submitting.");
+        return;
+      }
+
+      try {
+        const response = await submitQuiz({
+          lessonId,
+          answers: quiz.questions.map(
+            (_question: unknown, index: number) => answers[index] ?? -1,
+          ),
+        }).unwrap();
+
+        if (response.success) {
+          setResult(response.data);
+          toast.success(response.message);
+        } else {
+          toast.error(response.message);
+        }
+      } catch (error) {
+        toast.error(getApiErrorMessage(error, "Failed to submit the quiz."));
+      }
+    },
+    [answers, lessonId, quiz, submitQuiz],
+  );
+
+  useEffect(() => {
+    if (secondsRemaining === null || result) return;
+    if (secondsRemaining <= 0) {
+      void submitAnswers(true);
+      return;
+    }
+
+    const timer = window.setTimeout(
+      () => setSecondsRemaining((current) => Math.max(0, (current ?? 1) - 1)),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [result, secondsRemaining, submitAnswers]);
 
   if (isLoading) {
     return <div className="h-52 animate-pulse rounded-2xl bg-muted" />;
   }
 
   if (!quiz) return null;
-
-  const handleSubmit = async () => {
-    if (Object.keys(answers).length !== quiz.questions.length) {
-      toast.error("Answer every question before submitting.");
-      return;
-    }
-
-    try {
-      const response = await submitQuiz({
-        lessonId,
-        answers: quiz.questions.map(
-          (_question: unknown, index: number) => answers[index],
-        ),
-      }).unwrap();
-
-      if (response.success) {
-        setResult(response.data);
-        toast.success(response.message);
-      } else {
-        toast.error(response.message);
-      }
-    } catch {
-      toast.error("Failed to submit the quiz.");
-    }
-  };
 
   return (
     <section className="surface-panel overflow-hidden">
@@ -68,11 +103,35 @@ const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
           Knowledge check
         </div>
         <h2 className="mt-2 text-xl font-semibold">{quiz.title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Score {quiz.passingScore}% or higher to pass.
-        </p>
+        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <span>Score {quiz.passingScore}% or higher to pass.</span>
+          {quiz.maxAttempts && (
+            <span>
+              Attempt {Math.min(quiz.attemptCount + 1, quiz.maxAttempts)} of{" "}
+              {quiz.maxAttempts}
+            </span>
+          )}
+          {secondsRemaining !== null && !result && (
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <Clock3 className="size-4" />
+              {formatTime(secondsRemaining)}
+            </span>
+          )}
+        </div>
+        {(quiz.availableFrom || quiz.availableUntil) && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarClock className="size-3.5" />
+            Attempt window: {formatDate(quiz.availableFrom) || "Now"} to{" "}
+            {formatDate(quiz.availableUntil) || "No end date"}
+          </p>
+        )}
       </div>
       <div className="space-y-6 p-5 sm:p-6">
+        {!quiz.canAttempt && !result && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900">
+            {quiz.unavailableReason || "This quiz is currently unavailable."}
+          </div>
+        )}
         {quiz.questions.map(
           (
             question: { id: string; prompt: string; options: string[] },
@@ -110,7 +169,7 @@ const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
                           type="radio"
                           name={`quiz-question-${questionIndex}`}
                           checked={isSelected}
-                          disabled={Boolean(result)}
+                          disabled={Boolean(result) || !quiz.canAttempt}
                           onChange={() =>
                             setAnswers((current) => ({
                               ...current,
@@ -157,13 +216,17 @@ const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
                 setAnswers({});
                 setResult(null);
               }}
+              disabled={!quiz.canAttempt}
             >
               <RotateCcw className="size-4" />
               Try again
             </Button>
           </div>
         ) : (
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            onClick={() => void submitAnswers()}
+            disabled={isSubmitting || !quiz.canAttempt}
+          >
             {isSubmitting ? "Submitting..." : "Submit quiz"}
           </Button>
         )}
@@ -173,3 +236,33 @@ const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
 };
 
 export default LessonQuiz;
+
+const formatTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+};
+
+const formatDate = (value?: string | null) =>
+  value
+    ? new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(value))
+    : "";
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "message" in error.data &&
+    typeof error.data.message === "string"
+  ) {
+    return error.data.message;
+  }
+
+  return fallback;
+};

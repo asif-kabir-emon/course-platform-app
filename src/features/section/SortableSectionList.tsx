@@ -1,10 +1,10 @@
 "use client";
 import { CourseSectionStatus } from "@/constants/CourseSectionStatus.constant";
-import React from "react";
+import React, { useState } from "react";
 import { SortableItem, SortableList } from "@/components/SortableList";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Trash2Icon } from "lucide-react";
+import { Eye, EyeOff, Save, Trash2Icon } from "lucide-react";
 import SectionFormDialog from "./SectionFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -28,6 +28,8 @@ const SortableSectionList = ({
   const [deleteSection, { isLoading: isDeletingSection }] =
     useDeleteSectionMutation();
   const [reorderSections] = useReorderedSectionsMutation();
+  const [draftOrder, setDraftOrder] = useState<string[] | null>(null);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   const handleDeleteSection = async (id: string) => {
     const toastId = toast.loading("Deleting section ...", {
@@ -46,99 +48,103 @@ const SortableSectionList = ({
     }
   };
 
-  const handleReorderSections = async (newOrder: string[]) => {
-    if (newOrder.length === 0) {
-      return { error: true, message: "Error reordering your sections" };
-    }
+  const handleReorderSections = async () => {
+    if (!draftOrder?.length) return;
 
+    setIsSavingOrder(true);
     try {
-      const response = await reorderSections(newOrder).unwrap();
+      const response = await reorderSections(draftOrder).unwrap();
 
       if (response.success) {
-        toast.success(response.message, {
-          duration: 2000,
-        });
-        return {
-          error: false,
-          message: "Successfully reordered your sections",
-        };
+        setDraftOrder(null);
+        toast.success("Section order saved.");
       } else {
-        toast.error(response.message, {
-          duration: 2000,
-        });
-        return { error: true, message: "Error reordering your sections" };
-      } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete section", {
-        duration: 2000,
-      });
-      return { error: true, message: "Error reordering your sections" };
+        toast.error(response.message);
+      }
+    } catch {
+      toast.error("Failed to save section order.");
+    } finally {
+      setIsSavingOrder(false);
     }
   };
 
   return (
-    <SortableList
-      items={sections}
-      onOrderChange={async (newOrder: string[]) =>
-        handleReorderSections(newOrder)
-      }
-    >
-      {(items) =>
-        items.map((section) => (
-          <SortableItem
-            key={section.id}
-            id={section.id}
-            className="flex min-w-0 items-center gap-2"
-          >
-            <div
-              className={cn(
-                "flex min-w-0 flex-1 items-center gap-2",
-                section.status === CourseSectionStatus.private &&
-                  "text-muted-foreground",
-              )}
-              title={section.name}
+    <div>
+      <SortableList items={sections} onOrderChange={setDraftOrder}>
+        {(items) =>
+          items.map((section) => (
+            <SortableItem
+              key={section.id}
+              id={section.id}
+              className="flex min-w-0 items-center gap-2"
             >
-              {section.status === CourseSectionStatus.public && (
-                <Eye className="size-4" />
-              )}
-              {section.status === CourseSectionStatus.private && (
-                <EyeOff className="size-4" />
-              )}
-              <span className="truncate text-sm font-medium">
-                {section.name}
-              </span>
-            </div>
-            <SectionFormDialog courseId={courseId} section={section}>
-              <DialogTrigger asChild>
+              <div
+                className={cn(
+                  "flex min-w-0 flex-1 items-center gap-2",
+                  section.status === CourseSectionStatus.private &&
+                    "text-muted-foreground",
+                )}
+                title={section.name}
+              >
+                {section.status === CourseSectionStatus.public && (
+                  <Eye className="size-4" />
+                )}
+                {section.status === CourseSectionStatus.private && (
+                  <EyeOff className="size-4" />
+                )}
+                <span className="truncate text-sm font-medium">
+                  {section.name}
+                </span>
+              </div>
+              <SectionFormDialog courseId={courseId} section={section}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
+                  >
+                    <span className="hidden sm:inline">Edit</span>
+                    <span className="sm:hidden">Edit</span>
+                  </Button>
+                </DialogTrigger>
+              </SectionFormDialog>
+              <ActionButton
+                action={() => {
+                  handleDeleteSection(section.id);
+                }}
+                tryAction={isDeletingSection}
+              >
                 <Button
                   variant="outline"
                   size="sm"
-                  className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
+                  className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  <span className="hidden sm:inline">Edit</span>
-                  <span className="sm:hidden">Edit</span>
+                  <Trash2Icon />
+                  <span className="sr-only">Delete</span>
                 </Button>
-              </DialogTrigger>
-            </SectionFormDialog>
-            <ActionButton
-              action={() => {
-                handleDeleteSection(section.id);
-              }}
-              tryAction={isDeletingSection}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              >
-                <Trash2Icon />
-                <span className="sr-only">Delete</span>
-              </Button>
-            </ActionButton>
-          </SortableItem>
-        ))
-      }
-    </SortableList>
+              </ActionButton>
+            </SortableItem>
+          ))
+        }
+      </SortableList>
+      {draftOrder && (
+        <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs text-primary">
+            Section order changed. Save to publish it.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={handleReorderSections}
+            disabled={isSavingOrder}
+          >
+            <Save className="size-4" />
+            {isSavingOrder ? "Saving..." : "Save section order"}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

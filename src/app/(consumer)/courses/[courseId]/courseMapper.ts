@@ -4,6 +4,7 @@ type CourseSection = {
   lessons: {
     id: string;
     name: string;
+    type?: "video" | "text" | "quiz";
   }[];
 };
 

@@ -94,12 +94,18 @@ business. Items are ordered by risk and dependency.
 
 - [x] Add lesson quizzes with draft/published states, passing scores, answer
       explanations, learner attempts, scoring, and retakes.
+- [x] Add quiz lesson types with attempt windows, time limits, and maximum
+      attempt controls.
+- [x] Add text lessons alongside video and quiz lessons.
 - [ ] Add completion certificates with public verification URLs.
 - [x] Save video playback position and resume lessons.
+- [x] Remember the most recently studied lesson for every enrolled course.
 - [x] Add private lesson notes and bookmarks.
+- [x] Add learner-friendly view, edit, and remove states for saved notes.
 - [ ] Add a dedicated Continue Learning dashboard.
 - [ ] Add lesson resources and transcript search.
 - [x] Add course reviews and ratings.
+- [x] Let learners update and submit a course review again.
 - [ ] Add announcements and drip-released curriculum.
 - [ ] Add accessible captions and a full keyboard/screen-reader review.
 

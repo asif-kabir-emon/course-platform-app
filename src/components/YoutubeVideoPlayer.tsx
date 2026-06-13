@@ -15,15 +15,21 @@ const YoutubeVideoPlayer = ({
 }) => {
   const playerRef = useRef<YouTubePlayer | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const onProgressRef = useRef(onProgress);
+
+  useEffect(() => {
+    onProgressRef.current = onProgress;
+  }, [onProgress]);
 
   const reportProgress = useCallback(() => {
     const player = playerRef.current;
-    if (!player || !onProgress) return;
+    const progressHandler = onProgressRef.current;
+    if (!player || !progressHandler) return;
 
     const position = Number(player.getCurrentTime?.() ?? 0);
     const duration = Number(player.getDuration?.() ?? 0);
-    onProgress(position, duration);
-  }, [onProgress]);
+    progressHandler(position, duration);
+  }, []);
 
   const handleReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
@@ -32,6 +38,7 @@ const YoutubeVideoPlayer = ({
       event.target.seekTo(initialPositionSeconds, true);
     }
 
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(reportProgress, 10000);
   };
 

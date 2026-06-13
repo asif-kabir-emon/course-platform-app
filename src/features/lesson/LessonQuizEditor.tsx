@@ -32,6 +32,10 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
   const [title, setTitle] = useState("Lesson knowledge check");
   const [passingScore, setPassingScore] = useState(70);
   const [isPublished, setIsPublished] = useState(false);
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState("");
+  const [maxAttempts, setMaxAttempts] = useState("");
+  const [availableFrom, setAvailableFrom] = useState("");
+  const [availableUntil, setAvailableUntil] = useState("");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
   useEffect(() => {
@@ -40,6 +44,12 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
     setTitle(data.data.title);
     setPassingScore(data.data.passingScore);
     setIsPublished(data.data.isPublished);
+    setTimeLimitMinutes(
+      data.data.timeLimitMinutes ? String(data.data.timeLimitMinutes) : "",
+    );
+    setMaxAttempts(data.data.maxAttempts ? String(data.data.maxAttempts) : "");
+    setAvailableFrom(toDateTimeLocal(data.data.availableFrom));
+    setAvailableUntil(toDateTimeLocal(data.data.availableUntil));
     setQuestions(
       data.data.questions.map(
         (question: {
@@ -99,7 +109,22 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
     try {
       const response = await saveQuiz({
         lessonId,
-        body: { title, passingScore, isPublished, questions },
+        body: {
+          title,
+          passingScore,
+          isPublished,
+          timeLimitMinutes: timeLimitMinutes
+            ? Number(timeLimitMinutes)
+            : null,
+          maxAttempts: maxAttempts ? Number(maxAttempts) : null,
+          availableFrom: availableFrom
+            ? new Date(availableFrom).toISOString()
+            : null,
+          availableUntil: availableUntil
+            ? new Date(availableUntil).toISOString()
+            : null,
+          questions,
+        },
       }).unwrap();
 
       if (response.success) {
@@ -139,7 +164,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
             Published
           </label>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_12rem]">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
             <Label htmlFor="quiz-title">Quiz title</Label>
             <Input
@@ -158,6 +183,46 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
               max={100}
               value={passingScore}
               onChange={(event) => setPassingScore(Number(event.target.value))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="time-limit">Time limit (minutes)</Label>
+            <Input
+              id="time-limit"
+              type="number"
+              min={1}
+              value={timeLimitMinutes}
+              onChange={(event) => setTimeLimitMinutes(event.target.value)}
+              placeholder="No limit"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="max-attempts">Maximum attempts</Label>
+            <Input
+              id="max-attempts"
+              type="number"
+              min={1}
+              value={maxAttempts}
+              onChange={(event) => setMaxAttempts(event.target.value)}
+              placeholder="Unlimited"
+            />
+          </div>
+          <div className="space-y-2 md:col-span-1 xl:col-span-2">
+            <Label htmlFor="available-from">Attempt window starts</Label>
+            <Input
+              id="available-from"
+              type="datetime-local"
+              value={availableFrom}
+              onChange={(event) => setAvailableFrom(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2 md:col-span-1 xl:col-span-2">
+            <Label htmlFor="available-until">Attempt window ends</Label>
+            <Input
+              id="available-until"
+              type="datetime-local"
+              value={availableUntil}
+              onChange={(event) => setAvailableUntil(event.target.value)}
             />
           </div>
         </div>
@@ -291,3 +356,13 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
 };
 
 export default LessonQuizEditor;
+
+const toDateTimeLocal = (value?: string | null) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};

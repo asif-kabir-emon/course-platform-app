@@ -530,10 +530,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 
-ARCJET_KEY=
 ```
-
-`ARCJET_KEY` is currently reserved for the commented proxy security rules.
 
 Never commit real database, JWT, SMTP, or Stripe secrets.
 

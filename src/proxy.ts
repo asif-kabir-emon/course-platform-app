@@ -3,9 +3,6 @@ import { authKey } from "./constants/AuthKey.constant";
 import { decodedToken, validateToken } from "./utils/validateToken";
 import { getJwtSecret } from "./utils/serverEnv";
 import { isAdminRole } from "./constants/UserRole.constant";
-// import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
-// import { forbidden } from "next/navigation";
-// import { setUserCountryHeader } from "./lib/userCountryHeader";
 
 export function createRouteMatcher(routes: string[]) {
   // Convert patterns to regular expressions
@@ -56,24 +53,6 @@ const isUserRoutes = createRouteMatcher([
   "/products/:productId/purchase/success",
 ]);
 
-// const aj = arcjet({
-//   key: process.env.ARCJET_KEY!,
-//   rules: [
-//     shield({
-//       mode: "LIVE",
-//     }),
-//     detectBot({
-//       mode: "LIVE",
-//       allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:MONITOR", "CATEGORY:PREVIEW"],
-//     }),
-//     slidingWindow({
-//       mode: "LIVE",
-//       interval: "1m",
-//       max: 100,
-//     }),
-//   ],
-// });
-
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const jwtSecret = getJwtSecret();
@@ -86,12 +65,6 @@ export async function proxy(req: NextRequest) {
       : null;
 
   const userRole = decodedTokenData ? decodedTokenData.data?.role : null;
-
-  // const decision = await aj.protect(req);
-
-  // if (decision.isDenied()) {
-  //   return forbidden();
-  // }
 
   if (isCannotAccessAfterAuthRoutes(pathname)) {
     // If user is already authenticated, redirect to home page
@@ -112,13 +85,6 @@ export async function proxy(req: NextRequest) {
   } else if (isPublicRoutes(pathname)) {
     console.log("Public route");
   }
-
-  // if (!decision.ip.isVpn() && !decision.ip.isProxy()) {
-  //   const headers = new Headers(req.headers);
-  //   setUserCountryHeader(headers, decision.ip.country);
-
-  //   return NextResponse.next({ request: { headers } });
-  // }
 
   return NextResponse.next();
 }

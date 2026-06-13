@@ -14,6 +14,7 @@ import { formatPlural } from "@/lib/formatter";
 import { useGetMyCoursesQuery } from "@/redux/api/courseApi";
 import Link from "next/link";
 import React, { Suspense } from "react";
+import { ArrowRight, History } from "lucide-react";
 
 const CoursesPage = () => {
   return (
@@ -64,6 +65,8 @@ const CourseGrid = () => {
           sectionsCount: number;
           lessonsCount: number;
           lessonsComplete: number;
+          lastLessonId: string | null;
+          lastLessonName: string | null;
         }) => (
           <Card key={course.id} className="overflow-hidden flex flex-col">
             <CardHeader>
@@ -92,20 +95,39 @@ const CourseGrid = () => {
                 )}
               </CardDescription>
             </CardHeader>
-            <CardContent className="line-clamp-3">
-              {course.description}
+            <CardContent>
+              <p className="line-clamp-3">{course.description}</p>
+              {course.lastLessonName && (
+                <div className="mt-4 flex items-start gap-2 rounded-xl bg-primary/5 p-3 text-sm text-primary">
+                  <History className="mt-0.5 size-4 shrink-0" />
+                  <span className="line-clamp-2">
+                    Continue: {course.lastLessonName}
+                  </span>
+                </div>
+              )}
             </CardContent>
             <div className="flex-grow" />
             <CardFooter>
               <Button asChild>
-                <Link href={`/courses/${course.id}`}>View Course</Link>
+                <Link
+                  href={
+                    course.lastLessonId
+                      ? `/courses/${course.id}/lessons/${course.lastLessonId}`
+                      : `/courses/${course.id}`
+                  }
+                >
+                  {course.lastLessonId ? "Continue learning" : "View Course"}
+                  <ArrowRight className="size-4" />
+                </Link>
               </Button>
             </CardFooter>
             <div
               className="bg-accent h-2 -mt-2"
               style={{
                 width: `${
-                  (course.lessonsComplete / course.lessonsCount) * 100
+                  course.lessonsCount > 0
+                    ? (course.lessonsComplete / course.lessonsCount) * 100
+                    : 0
                 }%`,
               }}
             />

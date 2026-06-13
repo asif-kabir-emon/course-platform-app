@@ -17,16 +17,28 @@ import {
   BookmarkCheck,
   CheckCircle2,
   ChevronLeft,
+  FileText,
   LockIcon,
   NotebookPen,
+  Pencil,
   PlayCircle,
   Save,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import React, { ReactNode, Suspense, use, useEffect, useState } from "react";
+import React, {
+  ReactNode,
+  Suspense,
+  use,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import LessonQuiz from "@/features/lesson/LessonQuiz";
+import { CourseLessonType } from "@/constants/CourseLessonType.constant";
+import MarkdownContent from "@/components/MarkdownContent";
 
 const LessonPage = ({
   params,
@@ -79,6 +91,8 @@ const SuspenseBoundary = ({
   lesson: {
     id: string;
     name: string;
+    type?: CourseLessonType;
+    content?: string;
     youtubeVideoId: string;
     sectionId: string;
     order: number;
@@ -98,6 +112,26 @@ const SuspenseBoundary = ({
       skip: !isLearnerSession,
     });
   const [saveLessonLearning] = useSaveLessonLearningMutation();
+  const lessonType = lesson.type ?? CourseLessonType.video;
+
+  const handleVideoProgress = useCallback(
+    (positionSeconds: number, durationSeconds: number) => {
+      void saveLessonLearning({
+        lessonId: lesson.id,
+        body: { positionSeconds, durationSeconds },
+      });
+    },
+    [lesson.id, saveLessonLearning],
+  );
+
+  useEffect(() => {
+    if (!isLearnerSession) return;
+
+    void saveLessonLearning({
+      lessonId: lesson.id,
+      body: { viewed: true },
+    });
+  }, [isLearnerSession, lesson.id, saveLessonLearning]);
 
   const { data: previousLesson, isLoading: isFetchingPreviousLessonId } =
     useGetPreviousLessonQuery({
@@ -136,6 +170,18 @@ const SuspenseBoundary = ({
 
   return (
     <div className="space-y-5">
+      <header>
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
+          {lessonType === CourseLessonType.quiz
+            ? "Quiz lesson"
+            : lessonType === CourseLessonType.text
+              ? "Reading lesson"
+              : "Video lesson"}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+          {lesson.name}
+        </h1>
+      </header>
       {lesson.hasAccess && (
         <div className="lg:hidden">
           <Button variant="outline" className="w-full sm:w-auto" asChild>
@@ -147,25 +193,35 @@ const SuspenseBoundary = ({
         </div>
       )}
       <section className="surface-panel overflow-hidden">
-        <div className="aspect-video bg-black">
-          <YoutubeVideoPlayer
-            videoId={lesson.youtubeVideoId}
-            onFinishedVideo={undefined}
-            initialPositionSeconds={
-              learningData?.success ? learningData.data.positionSeconds : 0
-            }
-            onProgress={
-              isLearnerSession
-                ? (positionSeconds, durationSeconds) => {
-                    void saveLessonLearning({
-                      lessonId: lesson.id,
-                      body: { positionSeconds, durationSeconds },
-                    });
-                  }
-                : undefined
-            }
-          />
-        </div>
+        {lessonType === CourseLessonType.video && (
+          <div className="aspect-video bg-black">
+            <YoutubeVideoPlayer
+              videoId={lesson.youtubeVideoId}
+              onFinishedVideo={undefined}
+              initialPositionSeconds={
+                learningData?.success ? learningData.data.positionSeconds : 0
+              }
+              onProgress={
+                isLearnerSession ? handleVideoProgress : undefined
+              }
+            />
+          </div>
+        )}
+        {lessonType === CourseLessonType.text && (
+          <article className="max-w-none p-5 text-[0.98rem] sm:p-8">
+            <MarkdownContent content={lesson.content || ""} />
+          </article>
+        )}
+        {lessonType === CourseLessonType.quiz && (
+          <div className="flex min-h-48 flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 p-6 text-center">
+            <CheckCircle2 className="size-10 text-primary" />
+            <h2 className="mt-3 text-xl font-semibold">Ready to begin?</h2>
+            <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+              Review the attempt window and quiz rules below before submitting
+              your answers.
+            </p>
+          </div>
+        )}
         {isLearnerSession && (
           <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
             <Suspense fallback={<SkeletonButton />}>
@@ -232,14 +288,15 @@ const SuspenseBoundary = ({
 
       <section className="surface-panel p-5 sm:p-6">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
-          <PlayCircle className="size-4" />
-          Current lesson
+          {lessonType === CourseLessonType.text ? (
+            <FileText className="size-4" />
+          ) : (
+            <PlayCircle className="size-4" />
+          )}
+          About this lesson
         </div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {lesson.name}
-        </h1>
-        <p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">
-          {lesson.description}
+        <p className="whitespace-pre-line leading-7 text-muted-foreground">
+          {lesson.description || "No additional lesson description."}
         </p>
       </section>
 
@@ -280,6 +337,8 @@ const LessonLearningTools = ({
   isLoading: boolean;
 }) => {
   const [note, setNote] = useState("");
+  const [savedNote, setSavedNote] = useState("");
+  const [isEditingNote, setIsEditingNote] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [saveLessonLearning, { isLoading: isSaving }] =
     useSaveLessonLearningMutation();
@@ -287,6 +346,8 @@ const LessonLearningTools = ({
   useEffect(() => {
     if (learningData?.success) {
       setNote(learningData.data.note);
+      setSavedNote(learningData.data.note);
+      setIsEditingNote(!learningData.data.note);
       setBookmarked(learningData.data.bookmarked);
     }
   }, [learningData]);
@@ -297,9 +358,28 @@ const LessonLearningTools = ({
         lessonId,
         body: { note },
       }).unwrap();
+      const normalizedNote = note.trim();
+      setSavedNote(normalizedNote);
+      setNote(normalizedNote);
+      setIsEditingNote(false);
       toast.success(note.trim() ? "Lesson note saved." : "Lesson note removed.");
     } catch {
       toast.error("Failed to save your lesson note.");
+    }
+  };
+
+  const removeNote = async () => {
+    try {
+      await saveLessonLearning({
+        lessonId,
+        body: { note: "" },
+      }).unwrap();
+      setNote("");
+      setSavedNote("");
+      setIsEditingNote(true);
+      toast.success("Lesson note removed.");
+    } catch {
+      toast.error("Failed to remove your lesson note.");
     }
   };
 
@@ -344,31 +424,75 @@ const LessonLearningTools = ({
         </Button>
       </div>
       <div className="mt-5 space-y-3">
-        <label htmlFor="lesson-note" className="text-sm font-medium">
-          Lesson notes
-        </label>
-        <Textarea
-          id="lesson-note"
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Write a key takeaway, question, or reminder..."
-          maxLength={5000}
-          disabled={isLoading}
-          className="min-h-32"
-        />
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs text-muted-foreground">
-            {note.length}/5000 characters
-          </span>
-          <Button
-            onClick={saveNote}
-            disabled={isLoading || isSaving}
-            className="w-full sm:w-auto"
-          >
-            <Save />
-            Save note
-          </Button>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="lesson-note" className="text-sm font-medium">
+            Lesson notes
+          </label>
+          {savedNote && !isEditingNote && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingNote(true)}
+              >
+                <Pencil className="size-4" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={removeNote}
+                disabled={isSaving}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+                Remove
+              </Button>
+            </div>
+          )}
         </div>
+        {savedNote && !isEditingNote ? (
+          <div className="min-h-28 whitespace-pre-wrap rounded-xl border bg-muted/25 p-4 text-sm leading-7">
+            {savedNote}
+          </div>
+        ) : (
+          <>
+            <Textarea
+              id="lesson-note"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="Write a key takeaway, question, or reminder..."
+              maxLength={5000}
+              disabled={isLoading}
+              className="min-h-32"
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs text-muted-foreground">
+                {note.length}/5000 characters
+              </span>
+              <div className="flex gap-2">
+                {savedNote && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setNote(savedNote);
+                      setIsEditingNote(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  onClick={saveNote}
+                  disabled={isLoading || isSaving}
+                >
+                  <Save />
+                  {savedNote ? "Update note" : "Save note"}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

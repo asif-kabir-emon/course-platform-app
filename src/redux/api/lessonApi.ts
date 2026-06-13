@@ -89,6 +89,7 @@ export const LessonApi = baseApi.injectEndpoints({
         body: {
           positionSeconds?: number;
           durationSeconds?: number;
+          viewed?: boolean;
           note?: string;
           bookmarked?: boolean;
         };
@@ -119,6 +120,10 @@ export const LessonApi = baseApi.injectEndpoints({
           title: string;
           passingScore: number;
           isPublished: boolean;
+          timeLimitMinutes?: number | null;
+          maxAttempts?: number | null;
+          availableFrom?: string | null;
+          availableUntil?: string | null;
           questions: {
             prompt: string;
             options: string[];

@@ -7,7 +7,13 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Circle, VideoIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  CircleHelp,
+  FileText,
+  VideoIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -24,6 +30,7 @@ const CoursePageClient = ({
       lessons: {
         id: string;
         name: string;
+        type?: "video" | "text" | "quiz";
         isComplete: boolean;
       }[];
     }[];
@@ -77,7 +84,13 @@ const CoursePageClient = ({
                   className="justify-between gap-3"
                 >
                   <div className="flex min-w-0 items-center gap-2">
-                    <VideoIcon className="size-4 flex-shrink-0" />
+                    {lesson.type === "text" ? (
+                      <FileText className="size-4 flex-shrink-0" />
+                    ) : lesson.type === "quiz" ? (
+                      <CircleHelp className="size-4 flex-shrink-0" />
+                    ) : (
+                      <VideoIcon className="size-4 flex-shrink-0" />
+                    )}
                     <div
                       className="whitespace-normal leading-snug"
                       title={lesson.name}

@@ -81,6 +81,19 @@ export const GET = authGuard(
       });
     }
 
+    const attemptCount = isAdmin
+      ? 0
+      : await prisma.quizAttempts.count({
+          where: { quizId: quiz.id, userId: user.id },
+        });
+    const now = new Date();
+    const isBeforeWindow =
+      Boolean(quiz.availableFrom) && now < (quiz.availableFrom as Date);
+    const isAfterWindow =
+      Boolean(quiz.availableUntil) && now > (quiz.availableUntil as Date);
+    const hasAttemptsRemaining =
+      quiz.maxAttempts === null || attemptCount < quiz.maxAttempts;
+
     return sendResponse({
       status: 200,
       message: "Lesson quiz fetched successfully.",
@@ -90,6 +103,10 @@ export const GET = authGuard(
         title: quiz.title,
         passingScore: quiz.passingScore,
         isPublished: quiz.isPublished,
+        timeLimitMinutes: quiz.timeLimitMinutes,
+        maxAttempts: quiz.maxAttempts,
+        availableFrom: quiz.availableFrom,
+        availableUntil: quiz.availableUntil,
         questions: quiz.questions.map((question) => ({
           id: question.id,
           prompt: question.prompt,
@@ -102,6 +119,16 @@ export const GET = authGuard(
             : {}),
         })),
         ...(!isAdmin && {
+          attemptCount,
+          canAttempt:
+            !isBeforeWindow && !isAfterWindow && hasAttemptsRemaining,
+          unavailableReason: isBeforeWindow
+            ? "This quiz is not open yet."
+            : isAfterWindow
+              ? "This quiz attempt window has closed."
+              : !hasAttemptsRemaining
+                ? "You have used all available attempts."
+                : null,
           latestAttempt: Array.isArray(quiz.attempts)
             ? (quiz.attempts[0] ?? null)
             : null,
@@ -131,6 +158,24 @@ export const PUT = authGuard(
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const passingScore = Number(body.passingScore);
     const isPublished = body.isPublished === true;
+    const timeLimitMinutes =
+      body.timeLimitMinutes === null ||
+      body.timeLimitMinutes === undefined ||
+      body.timeLimitMinutes === ""
+        ? null
+        : Number(body.timeLimitMinutes);
+    const maxAttempts =
+      body.maxAttempts === null ||
+      body.maxAttempts === undefined ||
+      body.maxAttempts === ""
+        ? null
+        : Number(body.maxAttempts);
+    const availableFrom = body.availableFrom
+      ? new Date(body.availableFrom)
+      : null;
+    const availableUntil = body.availableUntil
+      ? new Date(body.availableUntil)
+      : null;
     const questions = Array.isArray(body.questions)
       ? (body.questions as QuizQuestionInput[])
       : [];
@@ -142,6 +187,21 @@ export const PUT = authGuard(
       passingScore > 100
     ) {
       return ApiError(400, "Enter a title and a passing score from 1 to 100.");
+    }
+    if (
+      (timeLimitMinutes !== null &&
+        (!Number.isInteger(timeLimitMinutes) || timeLimitMinutes < 1)) ||
+      (maxAttempts !== null &&
+        (!Number.isInteger(maxAttempts) || maxAttempts < 1))
+    ) {
+      return ApiError(400, "Time limits and attempt limits must be positive.");
+    }
+    if (
+      (availableFrom && Number.isNaN(availableFrom.getTime())) ||
+      (availableUntil && Number.isNaN(availableUntil.getTime())) ||
+      (availableFrom && availableUntil && availableFrom >= availableUntil)
+    ) {
+      return ApiError(400, "Enter a valid quiz start and end date.");
     }
 
     const normalizedQuestions = questions.map((question, index) => {
@@ -182,8 +242,25 @@ export const PUT = authGuard(
     const quiz = await prisma.$transaction(async (transaction) => {
       const savedQuiz = await transaction.lessonQuizzes.upsert({
         where: { lessonId },
-        update: { title, passingScore, isPublished },
-        create: { lessonId, title, passingScore, isPublished },
+        update: {
+          title,
+          passingScore,
+          isPublished,
+          timeLimitMinutes,
+          maxAttempts,
+          availableFrom,
+          availableUntil,
+        },
+        create: {
+          lessonId,
+          title,
+          passingScore,
+          isPublished,
+          timeLimitMinutes,
+          maxAttempts,
+          availableFrom,
+          availableUntil,
+        },
       });
 
       await transaction.quizQuestions.deleteMany({
@@ -223,6 +300,9 @@ export const POST = authGuard(
     if (!user || !Array.isArray(answers)) {
       return ApiError(400, "Quiz answers are required.");
     }
+    if (isAdminRole(user.role)) {
+      return ApiError(403, "Admin preview does not record quiz attempts.");
+    }
 
     const lesson = await getLesson(lessonId);
     if (
@@ -239,6 +319,21 @@ export const POST = authGuard(
 
     if (!quiz?.isPublished || quiz.questions.length === 0) {
       return ApiError(404, "No published quiz is available.");
+    }
+    const now = new Date();
+    if (quiz.availableFrom && now < quiz.availableFrom) {
+      return ApiError(403, "This quiz is not open yet.");
+    }
+    if (quiz.availableUntil && now > quiz.availableUntil) {
+      return ApiError(403, "This quiz attempt window has closed.");
+    }
+    if (quiz.maxAttempts !== null) {
+      const attemptCount = await prisma.quizAttempts.count({
+        where: { quizId: quiz.id, userId: user.id },
+      });
+      if (attemptCount >= quiz.maxAttempts) {
+        return ApiError(403, "You have used all available quiz attempts.");
+      }
     }
 
     const normalizedAnswers = answers.map((answer) => Number(answer));

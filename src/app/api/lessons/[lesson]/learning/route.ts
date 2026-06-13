@@ -103,20 +103,21 @@ export const PUT = authGuard(
     const note = typeof body.note === "string" ? body.note.trim() : undefined;
     const bookmarked =
       typeof body.bookmarked === "boolean" ? body.bookmarked : undefined;
+    const viewed = body.viewed === true;
 
     await prisma.$transaction(async (transaction) => {
-      if (positionSeconds !== undefined) {
+      if (positionSeconds !== undefined || viewed) {
         await transaction.userLessonProgress.upsert({
           where: { userId_lessonId: { userId: user.id, lessonId } },
           update: {
-            positionSeconds,
-            durationSeconds,
+            ...(positionSeconds !== undefined ? { positionSeconds } : {}),
+            ...(durationSeconds !== undefined ? { durationSeconds } : {}),
             lastViewedAt: new Date(),
           },
           create: {
             userId: user.id,
             lessonId,
-            positionSeconds,
+            positionSeconds: positionSeconds ?? 0,
             durationSeconds,
           },
         });

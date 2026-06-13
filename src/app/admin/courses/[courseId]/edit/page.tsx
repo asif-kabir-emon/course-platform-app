@@ -206,7 +206,7 @@ const CurriculumEditor = ({
   }, [query, sections, visibility]);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
       <Card className="min-w-0">
         <CardHeader className="gap-4 border-b border-border/70">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -288,8 +288,7 @@ const CurriculumEditor = ({
                           <span>{section.lessons.length} lessons</span>
                           <span>•</span>
                           <span className="inline-flex items-center gap-1">
-                            {section.status ===
-                            CourseSectionStatus.public ? (
+                            {section.status === CourseSectionStatus.public ? (
                               <Eye className="size-3.5 text-emerald-600" />
                             ) : (
                               <EyeOff className="size-3.5" />
@@ -352,9 +351,8 @@ const CurriculumEditor = ({
           <CardHeader>
             <CardTitle className="text-base">Publishing guide</CardTitle>
             <CardDescription className="leading-6">
-              Public lessons are available to enrolled learners. Preview
-              lessons can be opened before purchase. Private content stays
-              hidden.
+              Public lessons are available to enrolled learners. Preview lessons
+              can be opened before purchase. Private content stays hidden.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -367,7 +365,10 @@ export default CourseEditPage;
 
 const CourseEditSkeleton = () => {
   return (
-    <div className="container my-5 space-y-6" aria-label="Loading course editor">
+    <div
+      className="container my-5 space-y-6"
+      aria-label="Loading course editor"
+    >
       <Skeleton className="h-8 w-64" />
       <div className="flex gap-2">
         <Skeleton className="h-10 w-24" />
