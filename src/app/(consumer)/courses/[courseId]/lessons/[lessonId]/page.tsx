@@ -17,7 +17,6 @@ import {
   BookmarkCheck,
   CheckCircle2,
   ChevronLeft,
-  FileText,
   LockIcon,
   NotebookPen,
   Pencil,
@@ -286,23 +285,25 @@ const SuspenseBoundary = ({
         )}
       </section>
 
-      <section className="surface-panel p-5 sm:p-6">
-        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
-          {lessonType === CourseLessonType.text ? (
-            <FileText className="size-4" />
-          ) : (
+      {lessonType !== CourseLessonType.text && (
+        <section className="surface-panel p-5 sm:p-6">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
             <PlayCircle className="size-4" />
-          )}
-          About this lesson
-        </div>
-        <p className="whitespace-pre-line leading-7 text-muted-foreground">
-          {lesson.description || "No additional lesson description."}
-        </p>
-      </section>
+            About this lesson
+          </div>
+          <div className="text-muted-foreground">
+            {lesson.description ? (
+              <MarkdownContent content={lesson.description} />
+            ) : (
+              <p className="leading-7">No additional lesson description.</p>
+            )}
+          </div>
+        </section>
+      )}
 
       {isLearnerSession && (
         <>
-          <LessonQuiz lessonId={lesson.id} />
+          <LessonQuiz lessonId={lesson.id} courseId={courseId} />
           <LessonLearningTools
             lessonId={lesson.id}
             learningData={learningData}

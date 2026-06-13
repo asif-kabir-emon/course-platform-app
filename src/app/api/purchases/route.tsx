@@ -5,6 +5,10 @@ import { authGuard } from "@/utils/authGuard";
 import { isAdminRole } from "@/constants/UserRole.constant";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import {
+  caseInsensitiveMongoFilter,
+  extractMongoIds,
+} from "@/lib/mongoSearch";
 
 
 export const GET = authGuard(
@@ -42,17 +46,36 @@ export const GET = authGuard(
     );
     const search = searchParams.get("search")?.trim() || "";
     const status = searchParams.get("status");
+    const [matchingUserIds, matchingPurchaseIds] = search
+      ? await Promise.all([
+          prisma.users
+            .findRaw({
+              filter: caseInsensitiveMongoFilter("email", search),
+              options: { projection: { _id: 1 } },
+            })
+            .then(extractMongoIds),
+          prisma.purchaseHistories
+            .findRaw({
+              filter: caseInsensitiveMongoFilter(
+                "productDetails.name",
+                search,
+              ),
+              options: { projection: { _id: 1 } },
+            })
+            .then(extractMongoIds),
+        ])
+      : [undefined, undefined];
     const where: Prisma.PurchaseHistoriesWhereInput = {
       ...(search
         ? {
             OR: [
-              { user: { email: { contains: search } } },
-              { product: { name: { contains: search } } },
+              { userId: { in: matchingUserIds } },
+              { id: { in: matchingPurchaseIds } },
             ],
           }
         : {}),
       ...(status === "paid"
-        ? { refundAt: null, isRefunded: false }
+        ? { isRefunded: false }
         : status === "refunded"
           ? { isRefunded: true }
           : {}),

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ResponsiveFilterSelect from "@/components/ResponsiveFilterSelect";
 import {
   useGetLessonQuizQuery,
   useSaveLessonQuizMutation,
@@ -11,18 +12,34 @@ import {
 import { CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  isChoiceQuestion,
+  type QuizKind,
+  type QuizQuestionType,
+} from "@/types/quiz";
+import QuizGradingPanel from "./QuizGradingPanel";
 
 type QuizQuestion = {
   prompt: string;
+  type: QuizQuestionType;
   options: string[];
   correctOption: number;
+  correctOptions: number[];
+  acceptedAnswers: string[];
+  caseSensitive: boolean;
+  points: number;
   explanation: string;
 };
 
 const createQuestion = (): QuizQuestion => ({
   prompt: "",
+  type: "single_choice",
   options: ["", ""],
   correctOption: 0,
+  correctOptions: [0],
+  acceptedAnswers: [""],
+  caseSensitive: false,
+  points: 1,
   explanation: "",
 });
 
@@ -30,7 +47,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
   const { data, isLoading } = useGetLessonQuizQuery(lessonId);
   const [saveQuiz, { isLoading: isSaving }] = useSaveLessonQuizMutation();
   const [title, setTitle] = useState("Lesson knowledge check");
+  const [kind, setKind] = useState<QuizKind>("quiz");
   const [passingScore, setPassingScore] = useState(70);
+  const [isGradable, setIsGradable] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState("");
   const [maxAttempts, setMaxAttempts] = useState("");
@@ -42,7 +61,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
     if (!data?.success || !data.data) return;
 
     setTitle(data.data.title);
+    setKind(data.data.kind || "quiz");
     setPassingScore(data.data.passingScore);
+    setIsGradable(data.data.isGradable !== false);
     setIsPublished(data.data.isPublished);
     setTimeLimitMinutes(
       data.data.timeLimitMinutes ? String(data.data.timeLimitMinutes) : "",
@@ -54,13 +75,28 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
       data.data.questions.map(
         (question: {
           prompt: string;
+          type?: QuizQuestionType;
           options: string[];
           correctOption: number;
+          correctOptions?: number[];
+          acceptedAnswers?: string[];
+          caseSensitive?: boolean;
+          points?: number;
           explanation?: string;
         }) => ({
           prompt: question.prompt,
+          type: question.type || "single_choice",
           options: question.options,
           correctOption: question.correctOption,
+          correctOptions:
+            question.correctOptions?.length
+              ? question.correctOptions
+              : [question.correctOption],
+          acceptedAnswers: question.acceptedAnswers?.length
+            ? question.acceptedAnswers
+            : [""],
+          caseSensitive: question.caseSensitive === true,
+          points: question.points || 1,
           explanation: question.explanation || "",
         }),
       ),
@@ -94,15 +130,65 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
     });
   };
 
+  const changeQuestionType = (
+    questionIndex: number,
+    type: QuizQuestionType,
+  ) => {
+    const question = questions[questionIndex];
+    const options =
+      type === "true_false"
+        ? ["True", "False"]
+        : isChoiceQuestion(type)
+          ? question.options.length >= 2
+            ? question.options
+            : ["", ""]
+          : [];
+
+    updateQuestion(questionIndex, {
+      type,
+      options,
+      correctOption: 0,
+      correctOptions: isChoiceQuestion(type) ? [0] : [],
+      acceptedAnswers:
+        type === "short_answer" ? question.acceptedAnswers : [],
+    });
+  };
+
+  const toggleCorrectOption = (
+    questionIndex: number,
+    optionIndex: number,
+  ) => {
+    const question = questions[questionIndex];
+    if (question.type !== "multiple_choice") {
+      updateQuestion(questionIndex, {
+        correctOption: optionIndex,
+        correctOptions: [optionIndex],
+      });
+      return;
+    }
+
+    const selected = question.correctOptions.includes(optionIndex)
+      ? question.correctOptions.filter((option) => option !== optionIndex)
+      : [...question.correctOptions, optionIndex];
+    updateQuestion(questionIndex, {
+      correctOption: selected[0] ?? 0,
+      correctOptions: selected,
+    });
+  };
+
   const removeOption = (questionIndex: number, optionIndex: number) => {
     const question = questions[questionIndex];
     if (question.options.length <= 2) return;
 
     const options = question.options.filter((_, index) => index !== optionIndex);
-    let correctOption = question.correctOption;
-    if (correctOption === optionIndex) correctOption = 0;
-    if (correctOption > optionIndex) correctOption -= 1;
-    updateQuestion(questionIndex, { options, correctOption });
+    const correctOptions = question.correctOptions
+      .filter((option) => option !== optionIndex)
+      .map((option) => (option > optionIndex ? option - 1 : option));
+    updateQuestion(questionIndex, {
+      options,
+      correctOption: correctOptions[0] ?? 0,
+      correctOptions,
+    });
   };
 
   const handleSave = async () => {
@@ -111,7 +197,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
         lessonId,
         body: {
           title,
+          kind,
           passingScore,
+          isGradable,
           isPublished,
           timeLimitMinutes: timeLimitMinutes
             ? Number(timeLimitMinutes)
@@ -148,7 +236,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
       <section className="surface-panel p-5 sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Lesson quiz</h2>
+            <h2 className="text-xl font-semibold">Quiz and exam settings</h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               Add an optional knowledge check. Draft quizzes stay hidden from
               learners until published.
@@ -166,12 +254,56 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
+            <Label>Assessment type</Label>
+            <ResponsiveFilterSelect
+              value={kind}
+              onValueChange={(value) => setKind(value as QuizKind)}
+              label="Assessment type"
+              options={[
+                {
+                  label: "Quiz",
+                  value: "quiz",
+                  description: "A lighter knowledge check.",
+                },
+                {
+                  label: "Exam",
+                  value: "exam",
+                  description: "A formal timed assessment.",
+                },
+              ]}
+              mobilePresentation="popover"
+              className="h-10"
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="quiz-title">Quiz title</Label>
             <Input
               id="quiz-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Lesson knowledge check"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Grading</Label>
+            <ResponsiveFilterSelect
+              value={isGradable ? "graded" : "completion"}
+              onValueChange={(value) => setIsGradable(value === "graded")}
+              label="Grading mode"
+              options={[
+                {
+                  label: "Graded",
+                  value: "graded",
+                  description: "Calculate a score and passing result.",
+                },
+                {
+                  label: "Completion only",
+                  value: "completion",
+                  description: "Record submission without a score.",
+                },
+              ]}
+              mobilePresentation="popover"
+              className="h-10"
             />
           </div>
           <div className="space-y-2">
@@ -251,6 +383,37 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
             </Button>
           </div>
           <div className="space-y-5 p-5 sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]">
+              <div className="space-y-2">
+                <Label>Question type</Label>
+                <ResponsiveFilterSelect
+                  value={question.type}
+                  onValueChange={(value) =>
+                    changeQuestionType(
+                      questionIndex,
+                      value as QuizQuestionType,
+                    )
+                  }
+                  label={`Question ${questionIndex + 1} type`}
+                  options={questionTypeOptions}
+                  mobilePresentation="popover"
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Points</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={question.points}
+                  onChange={(event) =>
+                    updateQuestion(questionIndex, {
+                      points: Number(event.target.value),
+                    })
+                  }
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>Question</Label>
               <Textarea
@@ -264,6 +427,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
                 className="min-h-24"
               />
             </div>
+            {isChoiceQuestion(question.type) && (
             <div className="space-y-3">
               <Label>Answer options</Label>
               {question.options.map((option, optionIndex) => (
@@ -272,13 +436,15 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
                   className="grid grid-cols-[auto_1fr_auto] items-center gap-3"
                 >
                   <input
-                    type="radio"
+                    type={
+                      question.type === "multiple_choice"
+                        ? "checkbox"
+                        : "radio"
+                    }
                     name={`correct-answer-${questionIndex}`}
-                    checked={question.correctOption === optionIndex}
+                    checked={question.correctOptions.includes(optionIndex)}
                     onChange={() =>
-                      updateQuestion(questionIndex, {
-                        correctOption: optionIndex,
-                      })
+                      toggleCorrectOption(questionIndex, optionIndex)
                     }
                     aria-label={`Mark option ${optionIndex + 1} as correct`}
                     className="size-4 accent-primary"
@@ -311,11 +477,83 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
                 variant="outline"
                 size="sm"
                 onClick={() => addOption(questionIndex)}
+                disabled={question.type === "true_false"}
               >
                 <Plus className="size-4" />
                 Add option
               </Button>
             </div>
+            )}
+            {question.type === "short_answer" && (
+              <div className="space-y-3">
+                <Label>Accepted answers</Label>
+                {question.acceptedAnswers.map((answer, answerIndex) => (
+                  <div
+                    key={answerIndex}
+                    className="grid grid-cols-[1fr_auto] gap-2"
+                  >
+                    <Input
+                      value={answer}
+                      onChange={(event) => {
+                        const acceptedAnswers = [...question.acceptedAnswers];
+                        acceptedAnswers[answerIndex] = event.target.value;
+                        updateQuestion(questionIndex, { acceptedAnswers });
+                      }}
+                      placeholder={`Accepted answer ${answerIndex + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={question.acceptedAnswers.length <= 1}
+                      onClick={() =>
+                        updateQuestion(questionIndex, {
+                          acceptedAnswers: question.acceptedAnswers.filter(
+                            (_, index) => index !== answerIndex,
+                          ),
+                        })
+                      }
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      updateQuestion(questionIndex, {
+                        acceptedAnswers: [...question.acceptedAnswers, ""],
+                      })
+                    }
+                  >
+                    <Plus className="size-4" />
+                    Add accepted answer
+                  </Button>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={question.caseSensitive}
+                      onChange={(event) =>
+                        updateQuestion(questionIndex, {
+                          caseSensitive: event.target.checked,
+                        })
+                      }
+                      className="size-4 accent-primary"
+                    />
+                    Case sensitive
+                  </label>
+                </div>
+              </div>
+            )}
+            {question.type === "long_answer" && (
+              <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-amber-900">
+                Long answers are saved for manual grading. They do not receive
+                automatic points.
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Answer explanation (optional)</Label>
               <Textarea
@@ -351,6 +589,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
           {isSaving ? "Saving..." : "Save quiz"}
         </Button>
       </div>
+      <QuizGradingPanel lessonId={lessonId} />
     </div>
   );
 };
@@ -366,3 +605,31 @@ const toDateTimeLocal = (value?: string | null) => {
   const offset = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
+
+const questionTypeOptions = [
+  {
+    label: "Single choice",
+    value: "single_choice",
+    description: "One correct option.",
+  },
+  {
+    label: "Multiple selections",
+    value: "multiple_choice",
+    description: "More than one correct option.",
+  },
+  {
+    label: "True or false",
+    value: "true_false",
+    description: "A two-option statement.",
+  },
+  {
+    label: "Short answer",
+    value: "short_answer",
+    description: "Automatically match accepted text.",
+  },
+  {
+    label: "Long answer",
+    value: "long_answer",
+    description: "Saved for manual grading.",
+  },
+];

@@ -12,7 +12,6 @@ import {
 import { Form } from "@/components/Form/Form";
 import TextInput from "@/components/Form/TextInput";
 import SelectInput from "@/components/Form/SelectInput";
-import TextAreaInput from "@/components/Form/TextAreaInput";
 import { Button } from "@/components/ui/button";
 import YoutubeVideoPlayer from "@/components/YoutubeVideoPlayer";
 import { CourseLessonType } from "@/constants/CourseLessonType.constant";
@@ -72,28 +71,36 @@ const LessonForm = ({
 
   const handleSubmit = async (values: z.infer<typeof lessonSchema>) => {
     const action = lesson ? "updated" : "added";
+    const isTextLesson = values.type === CourseLessonType.text;
+    const normalizedValues = {
+      ...values,
+      description: isTextLesson ? "" : values.description,
+      content: isTextLesson ? values.content : "",
+      youtubeVideoId:
+        values.type === CourseLessonType.video ? values.youtubeVideoId : "",
+    };
 
     const payload =
       action === "added"
         ? {
-            name: values.name,
-            type: values.type,
-            content: values.content,
-            youtubeVideoId: values.youtubeVideoId,
-            status: values.status,
+            name: normalizedValues.name,
+            type: normalizedValues.type,
+            content: normalizedValues.content,
+            youtubeVideoId: normalizedValues.youtubeVideoId,
+            status: normalizedValues.status,
             sectionId: sectionId,
-            description: values.description,
+            description: normalizedValues.description,
           }
         : {
             id: lesson?.id,
             body: {
-              name: values.name,
-              type: values.type,
-              content: values.content,
-              youtubeVideoId: values.youtubeVideoId,
-              status: values.status,
+              name: normalizedValues.name,
+              type: normalizedValues.type,
+              content: normalizedValues.content,
+              youtubeVideoId: normalizedValues.youtubeVideoId,
+              status: normalizedValues.status,
               sectionId: sectionId,
-              description: values.description,
+              description: normalizedValues.description,
             },
           };
 
@@ -133,17 +140,16 @@ const LessonForm = ({
       <Form schema={lessonSchema} {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className={
-            lessonType === CourseLessonType.text
-              ? "space-y-6"
-              : "grid items-start gap-6 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]"
-          }
+          className="grid items-start gap-6 xl:grid-cols-[minmax(20rem,24rem)_minmax(0,1fr)]"
         >
           <div className="surface-panel space-y-4 p-5 sm:p-6">
             <div>
-              <h2 className="text-lg font-semibold">Lesson information</h2>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Step 1
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">Lesson setup</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Update the learner-facing content and publishing status.
+                Set the lesson identity, type, and learner visibility.
               </p>
             </div>
             <TextInput
@@ -183,20 +189,6 @@ const LessonForm = ({
                 required
               />
             )}
-            {lessonType === CourseLessonType.video && (
-              <TextInput
-                name="youtubeVideoId"
-                label="Youtube Video ID"
-                placeholder="Enter youtube video id"
-                required
-              />
-            )}
-            {lessonType === CourseLessonType.quiz && (
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
-                Save this lesson, then open its Quiz tab to add questions,
-                timing, and attempt rules.
-              </div>
-            )}
             <SelectInput
               name="status"
               label="Status"
@@ -217,29 +209,42 @@ const LessonForm = ({
               ]}
               required
             />
-            <TextAreaInput name="description" label="Description" />
-            {lessonType !== CourseLessonType.text && (
-              <div className="flex justify-end border-t pt-4">
-                <Button
-                  type="submit"
-                  className="w-full px-6 sm:w-auto"
-                  disabled={isAdding || isUpdating}
-                >
-                  {isAdding || isUpdating ? "Saving..." : "Save lesson"}
-                </Button>
-              </div>
-            )}
+            <div className="rounded-xl bg-muted/40 p-4 text-xs leading-5 text-muted-foreground">
+              {lessonType === CourseLessonType.text
+                ? "Text lessons contain one formatted reading document and do not use a separate description."
+                : lessonType === CourseLessonType.quiz
+                  ? "Add the lesson introduction here. Questions, schedule, and attempt rules are managed after saving."
+                  : "Add the video source and a formatted lesson description in the content panel."}
+            </div>
           </div>
-          {lessonType === CourseLessonType.text ? (
-            <section className="surface-panel overflow-hidden">
-              <div className="border-b p-5 sm:p-6">
-                <h2 className="text-lg font-semibold">Lesson content</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Structure the reading with headings, emphasis, lists, quotes,
-                  and useful links.
-                </p>
-              </div>
-              <div className="p-4 sm:p-6">
+          <section className="surface-panel min-w-0 overflow-hidden xl:sticky xl:top-0">
+            <div className="border-b p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Step 2
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">
+                {lessonType === CourseLessonType.text
+                  ? "Reading content"
+                  : lessonType === CourseLessonType.quiz
+                    ? "Quiz introduction"
+                    : "Video content"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {lessonType === CourseLessonType.text
+                  ? "Create the complete learner-facing reading directly in the editor."
+                  : "Add a formatted description learners will see with this lesson."}
+              </p>
+            </div>
+            <div className="space-y-6 p-4 sm:p-6">
+              {lessonType === CourseLessonType.video && (
+                <TextInput
+                  name="youtubeVideoId"
+                  label="YouTube video ID"
+                  placeholder="Enter YouTube video ID"
+                  required
+                />
+              )}
+              {lessonType === CourseLessonType.text ? (
                 <Controller
                   control={form.control}
                   name="content"
@@ -258,45 +263,63 @@ const LessonForm = ({
                     </>
                   )}
                 />
-                <div className="mt-5 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Info className="size-4" />
-                    Use Preview to check the learner-facing result.
-                  </p>
-                  <Button
-                    type="submit"
-                    className="w-full px-6 sm:w-auto"
-                    disabled={isAdding || isUpdating}
-                  >
-                    {isAdding || isUpdating ? "Saving..." : "Save lesson"}
-                  </Button>
-                </div>
-              </div>
-            </section>
-          ) : (
-            <aside className="surface-panel overflow-hidden xl:sticky xl:top-0">
-              <div className="border-b p-5 sm:p-6">
-                <h2 className="text-lg font-semibold">Lesson preview</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Confirm how this lesson will be presented before saving.
-                </p>
-              </div>
-              {lessonType === CourseLessonType.video && videoId ? (
-                <div className="aspect-video bg-black">
-                  <YoutubeVideoPlayer videoId={videoId} />
-                </div>
-              ) : lessonType === CourseLessonType.quiz ? (
-                <div className="flex min-h-64 items-center justify-center bg-muted/40 p-6 text-center text-sm text-muted-foreground">
-                  Quiz questions and schedule are managed from the Quiz tab
-                  after this lesson is saved.
-                </div>
               ) : (
-                <div className="flex aspect-video items-center justify-center bg-muted/40 p-6 text-center text-sm text-muted-foreground">
-                  Enter a YouTube video ID to preview the lesson.
+                <Controller
+                  control={form.control}
+                  name="description"
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <MarkdownEditor
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        placeholder={
+                          lessonType === CourseLessonType.quiz
+                            ? "Explain the quiz purpose, preparation, and expectations..."
+                            : "Summarize the lesson, learning goals, and key outcomes..."
+                        }
+                        ariaLabel="Lesson description"
+                        compact
+                      />
+                      {error && (
+                        <p className="mt-2 text-sm text-destructive">
+                          {error.message}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
+              )}
+              {lessonType === CourseLessonType.video && videoId && (
+                <div className="overflow-hidden rounded-xl border">
+                  <div className="border-b bg-muted/30 px-4 py-3">
+                    <p className="text-sm font-semibold">Video preview</p>
+                  </div>
+                  <div className="aspect-video bg-black">
+                    <YoutubeVideoPlayer videoId={videoId} />
+                  </div>
                 </div>
               )}
-            </aside>
-          )}
+              {lessonType === CourseLessonType.quiz && (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+                  Save this lesson, then open its Quiz tab to add questions,
+                  timing, attempt dates, and scoring rules.
+                </div>
+              )}
+              <div className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Info className="size-4" />
+                  Changes are saved only when you select Save lesson.
+                </p>
+                <Button
+                  type="submit"
+                  className="w-full px-6 sm:w-auto"
+                  disabled={isAdding || isUpdating}
+                >
+                  {isAdding || isUpdating ? "Saving..." : "Save lesson"}
+                </Button>
+              </div>
+            </div>
+          </section>
         </form>
       </Form>
     </div>

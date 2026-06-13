@@ -10,15 +10,16 @@ import {
 } from "@/components/ui/table";
 import { formatPlural, formatPrice } from "@/lib/formatter";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Archive,
   Copy,
-  Ellipsis,
+  MoreVertical,
+  RotateCcw as ResetIcon,
   EyeIcon,
   LockIcon,
   Pencil,
-  RotateCcw,
+  Search,
   Store,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -41,14 +42,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import ResponsiveFilterSelect from "@/components/ResponsiveFilterSelect";
+import MobileFilterDialog from "@/components/MobileFilterDialog";
+
+const statusOptions = [
+  { value: "all", label: "All statuses" },
+  { value: "public", label: "Public" },
+  { value: "private", label: "Private" },
+];
+
+const visibilityOptions = [
+  { value: "active", label: "Active products" },
+  { value: "archived", label: "Archived products" },
+  { value: "all", label: "All products" },
+];
 
 const ProductTable = () => {
   const pageSize = 10;
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [visibility, setVisibility] = useState("active");
+  const search = useDebouncedValue(searchInput.trim());
+  const hasFilters =
+    searchInput.trim().length > 0 ||
+    status !== "all" ||
+    visibility !== "active";
+  const activeFilterCount =
+    Number(searchInput.trim().length > 0) +
+    Number(status !== "all") +
+    Number(visibility !== "active");
   const { session } = useClientSession();
   const isSuperAdmin = isSuperAdminRole(session?.role);
   const { data: products, isLoading: isFetchingData } = useGetProductsQuery({
@@ -62,6 +86,10 @@ const ProductTable = () => {
   });
   const [updateProductAction, { isLoading: isUpdatingProduct }] =
     useUpdateProductActionMutation();
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, visibility]);
 
   if (isFetchingData) {
     return <TableSkeleton columns={4} withMedia />;
@@ -91,48 +119,92 @@ const ProductTable = () => {
 
   return (
     <div className="space-y-4">
-      <form
-        className="surface-panel grid gap-3 p-4 sm:grid-cols-[minmax(220px,1fr)_180px_180px_auto]"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setPage(1);
-          setSearch(searchInput.trim());
-        }}
+      <MobileFilterDialog
+        activeFilterCount={activeFilterCount}
+        title="Filter products"
+        description="Search products and narrow the list by status."
       >
-        <Input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search products..."
-          aria-label="Search products"
-        />
-        <select
+        <label className="relative block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Search products..."
+            aria-label="Search products"
+            className="h-11 pl-9"
+          />
+        </label>
+        <ResponsiveFilterSelect
           value={status}
-          onChange={(event) => {
-            setStatus(event.target.value);
-            setPage(1);
-          }}
-          className="h-10 rounded-lg border bg-background px-3 text-sm"
-          aria-label="Filter products by status"
-        >
-          <option value="all">All statuses</option>
-          <option value="public">Public</option>
-          <option value="private">Private</option>
-        </select>
-        <select
+          onValueChange={setStatus}
+          options={statusOptions}
+          label="Filter products by status"
+          mobilePresentation="popover"
+        />
+        <ResponsiveFilterSelect
           value={visibility}
-          onChange={(event) => {
-            setVisibility(event.target.value);
-            setPage(1);
-          }}
-          className="h-10 rounded-lg border bg-background px-3 text-sm"
-          aria-label="Filter active or archived products"
-        >
-          <option value="active">Active products</option>
-          <option value="archived">Archived products</option>
-          <option value="all">All products</option>
-        </select>
-        <Button type="submit">Search</Button>
-      </form>
+          onValueChange={setVisibility}
+          options={visibilityOptions}
+          label="Filter active or archived products"
+          mobilePresentation="popover"
+        />
+        {hasFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={() => {
+              setSearchInput("");
+              setStatus("all");
+              setVisibility("active");
+              setPage(1);
+            }}
+          >
+            <ResetIcon className="size-4" />
+            Reset filters
+          </Button>
+        )}
+      </MobileFilterDialog>
+      <div className="hidden gap-3 sm:grid lg:grid-cols-[minmax(280px,1fr)_190px_190px_auto]">
+          <label className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search products..."
+              aria-label="Search products"
+              className="h-11 pl-9"
+            />
+          </label>
+          <ResponsiveFilterSelect
+            value={status}
+            onValueChange={setStatus}
+            options={statusOptions}
+            label="Filter products by status"
+          />
+          <ResponsiveFilterSelect
+            value={visibility}
+            onValueChange={setVisibility}
+            options={visibilityOptions}
+            label="Filter active or archived products"
+          />
+          {hasFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={() => {
+                setSearchInput("");
+                setStatus("all");
+                setVisibility("active");
+                setPage(1);
+              }}
+            >
+              <ResetIcon className="size-4" />
+              Reset
+            </Button>
+          )}
+      </div>
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         <Table>
         <TableHeader>
@@ -151,11 +223,22 @@ const ProductTable = () => {
             </TableHead>
             <TableHead>Customers</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="w-[1%] whitespace-nowrap text-right">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products?.data?.map(
+          {products.data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="h-44 text-center">
+                <p className="font-medium">No products match these filters.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Adjust the search, status, or archive filter.
+                </p>
+              </TableCell>
+            </TableRow>
+          ) : products.data.map(
             (product: {
               id: string;
               name: string;
@@ -216,34 +299,35 @@ const ProductTable = () => {
                     </span>
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="w-[1%] whitespace-nowrap text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
                         disabled={isUpdatingProduct}
                         aria-label={`Open actions for ${product.name}`}
-                        className="rounded-full"
+                        className="rounded-none text-muted-foreground hover:bg-primary/10 hover:text-primary"
                       >
-                        <Ellipsis />
+                        <MoreVertical />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuLabel>Product actions</DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="focus:bg-primary/10 focus:text-primary">
                         <Link href={`/products/${product.id}`}>
                           <Store />
                           View storefront
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="focus:bg-primary/10 focus:text-primary">
                         <Link href={`/admin/products/${product.id}/edit`}>
                           <Pencil />
                           Manage product
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        className="focus:bg-primary/10 focus:text-primary"
                         onSelect={() => {
                           void navigator.clipboard.writeText(
                             `${window.location.origin}/products/${product.id}`,
@@ -257,6 +341,7 @@ const ProductTable = () => {
                       <DropdownMenuSeparator />
                       {!product.isDeleted && (
                         <DropdownMenuItem
+                          className="focus:bg-primary/10 focus:text-primary"
                           onSelect={() =>
                             void handleProductAction(
                               product.id,
@@ -277,6 +362,7 @@ const ProductTable = () => {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
+                        className="focus:bg-destructive/10 focus:text-destructive"
                         disabled={!isSuperAdmin}
                         onSelect={() =>
                           isSuperAdmin
@@ -287,7 +373,7 @@ const ProductTable = () => {
                             : undefined
                         }
                       >
-                        {product.isDeleted ? <RotateCcw /> : <Archive />}
+                        {product.isDeleted ? <ResetIcon /> : <Archive />}
                         {product.isDeleted
                           ? "Restore product"
                           : "Archive product"}

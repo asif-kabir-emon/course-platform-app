@@ -11,8 +11,15 @@ import {
 import { formatPlural } from "@/lib/formatter";
 import { useGetCoursesQuery } from "@/redux/api/courseApi";
 import Link from "next/link";
-import React, { useState } from "react";
-import { BookOpen, Copy, Ellipsis, Pencil } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  BookOpen,
+  Copy,
+  MoreVertical,
+  Pencil,
+  RotateCcw,
+  Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { TableSkeleton } from "@/components/Skeleton";
 import {
@@ -23,18 +30,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import MobileFilterDialog from "@/components/MobileFilterDialog";
 
 const CourseTable = () => {
   const pageSize = 10;
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebouncedValue(searchInput.trim());
   const { data: courses, isLoading: isFetchingData } = useGetCoursesQuery({
     paginate: true,
     page,
     pageSize,
     search,
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   if (isFetchingData) {
     return <TableSkeleton columns={3} />;
@@ -46,23 +59,56 @@ const CourseTable = () => {
 
   return (
     <div className="space-y-4">
-      <form
-        className="surface-panel flex flex-col gap-3 p-4 sm:flex-row"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setPage(1);
-          setSearch(searchInput.trim());
-        }}
+      <MobileFilterDialog
+        activeFilterCount={Number(searchInput.trim().length > 0)}
+        title="Filter courses"
+        description="Search the course catalog by name."
       >
-        <Input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search courses..."
-          aria-label="Search courses"
-          className="sm:max-w-md"
-        />
-        <Button type="submit">Search</Button>
-      </form>
+        <label className="relative block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Search courses..."
+            aria-label="Search courses"
+            className="h-11 pl-9"
+          />
+        </label>
+        {searchInput.trim() && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={() => setSearchInput("")}
+          >
+            <RotateCcw className="size-4" />
+            Reset filters
+          </Button>
+        )}
+      </MobileFilterDialog>
+      <div className="hidden gap-3 sm:flex">
+          <label className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search courses..."
+              aria-label="Search courses"
+              className="h-11 pl-9"
+            />
+          </label>
+          {searchInput.trim() && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={() => setSearchInput("")}
+            >
+              <RotateCcw className="size-4" />
+              Reset
+            </Button>
+          )}
+      </div>
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         <Table>
         <TableHeader>
@@ -80,11 +126,22 @@ const CourseTable = () => {
               )}
             </TableHead>
             <TableHead>Students</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="w-[1%] whitespace-nowrap text-right">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {courses?.data?.map(
+          {courses.data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={3} className="h-44 text-center">
+                <p className="font-medium">No courses match your search.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Try a broader course name or reset the filter.
+                </p>
+              </TableCell>
+            </TableRow>
+          ) : courses.data.map(
             (course: {
               id: string;
               name: string;
@@ -123,33 +180,34 @@ const CourseTable = () => {
                   </div>
                 </TableCell>
                 <TableCell>{course.studentCount}</TableCell>
-                <TableCell>
+                <TableCell className="w-[1%] whitespace-nowrap text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        className="rounded-full"
+                        className="rounded-none text-muted-foreground hover:bg-primary/10 hover:text-primary"
                         aria-label={`Open actions for ${course.name}`}
                       >
-                        <Ellipsis />
+                        <MoreVertical />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuLabel>Course actions</DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="focus:bg-primary/10 focus:text-primary">
                         <Link href={`/admin/courses/${course.id}/edit`}>
                           <Pencil />
                           Manage curriculum
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="focus:bg-primary/10 focus:text-primary">
                         <Link href={`/courses/${course.id}`}>
                           <BookOpen />
                           Open learner view
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        className="focus:bg-primary/10 focus:text-primary"
                         onSelect={() => {
                           void navigator.clipboard.writeText(course.id);
                           toast.success("Course ID copied.");

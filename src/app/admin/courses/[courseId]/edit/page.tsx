@@ -82,16 +82,23 @@ const CourseEditPage = ({
 
   return (
     <div className="container my-5 space-y-5 sm:my-8">
-      <section className="overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/10 via-card to-accent/10 shadow-sm">
-        <div className="p-5 sm:p-7">
-          <Badge variant="secondary" className="mb-3">
-            Course workspace
-          </Badge>
-          <PageHeader title={courses.data.name} />
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Organize the curriculum, control lesson visibility, and keep course
-            details ready for learners.
-          </p>
+      <section className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/[0.09] via-card to-sky-50 shadow-sm">
+        <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-28 left-1/3 size-56 rounded-full bg-sky-300/15 blur-3xl" />
+        <div className="relative p-5 sm:p-7 lg:p-8">
+          <div className="max-w-3xl">
+            <Badge
+              variant="secondary"
+              className="mb-3 border border-primary/10 bg-background/75 text-primary shadow-sm"
+            >
+              Course workspace
+            </Badge>
+            <PageHeader title={courses.data.name} className="mb-0 sm:mb-0" />
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              Organize the curriculum, control lesson visibility, and keep
+              course details ready for learners.
+            </p>
+          </div>
           <CourseSummary sections={sections} />
         </div>
       </section>
@@ -159,17 +166,21 @@ const CourseSummary = ({ sections }: { sections: CourseSection[] }) => {
   ];
 
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="mt-6 grid grid-cols-2 gap-3 lg:mt-7 lg:grid-cols-4">
       {summary.map(({ label, value, icon: Icon, tone }) => (
         <div
           key={label}
-          className="rounded-2xl border border-white/60 bg-white/75 p-4 shadow-sm backdrop-blur"
+          className="flex min-h-24 items-center gap-3 rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur transition-transform duration-200 hover:-translate-y-0.5"
         >
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <Icon className={cn("size-4", tone)} />
-            {label}
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm">
+            <Icon className={cn("size-5", tone)} />
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {label}
+            </div>
+            <div className="mt-1 text-2xl font-bold leading-none">{value}</div>
           </div>
-          <div className="mt-2 text-2xl font-bold">{value}</div>
         </div>
       ))}
     </div>
@@ -206,7 +217,7 @@ const CurriculumEditor = ({
   }, [query, sections, visibility]);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_21rem]">
       <Card className="min-w-0">
         <CardHeader className="gap-4 border-b border-border/70">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -335,15 +346,15 @@ const CurriculumEditor = ({
         </CardContent>
       </Card>
 
-      <aside className="space-y-4">
-        <Card>
-          <CardHeader>
+      <aside className="min-w-0 space-y-4 xl:sticky xl:top-24">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="border-b border-border/60 pb-4">
             <CardTitle className="text-base">Section order</CardTitle>
             <CardDescription>
               Drag sections into the learner-facing order.
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-3 pb-4 sm:px-4">
+          <CardContent className="max-h-[34rem] overflow-y-auto px-2 py-3 sm:px-3">
             <SortableSectionList courseId={courseId} sections={sections} />
           </CardContent>
         </Card>

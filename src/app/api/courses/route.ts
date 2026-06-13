@@ -5,6 +5,10 @@ import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { isAdminRole } from "@/constants/UserRole.constant";
 import { Prisma } from "@prisma/client";
+import {
+  caseInsensitiveMongoFilter,
+  extractMongoIds,
+} from "@/lib/mongoSearch";
 
 
 export const POST = authGuard(
@@ -53,9 +57,17 @@ export const GET = catchAsync(async (request: Request) => {
     Math.max(1, Number(searchParams.get("pageSize")) || 10),
   );
   const search = searchParams.get("search")?.trim() || "";
+  const matchingCourseIds = search
+    ? extractMongoIds(
+        await prisma.courses.findRaw({
+          filter: caseInsensitiveMongoFilter("name", search),
+          options: { projection: { _id: 1 } },
+        }),
+      )
+    : undefined;
   const where: Prisma.CoursesWhereInput = {
     isDeleted: false,
-    ...(search ? { name: { contains: search } } : {}),
+    ...(matchingCourseIds ? { id: { in: matchingCourseIds } } : {}),
   };
 
   const [courses, total] = await Promise.all([

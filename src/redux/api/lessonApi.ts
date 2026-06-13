@@ -118,7 +118,9 @@ export const LessonApi = baseApi.injectEndpoints({
         lessonId: string;
         body: {
           title: string;
+          kind: "quiz" | "exam";
           passingScore: number;
+          isGradable: boolean;
           isPublished: boolean;
           timeLimitMinutes?: number | null;
           maxAttempts?: number | null;
@@ -126,8 +128,18 @@ export const LessonApi = baseApi.injectEndpoints({
           availableUntil?: string | null;
           questions: {
             prompt: string;
+            type:
+              | "single_choice"
+              | "multiple_choice"
+              | "true_false"
+              | "short_answer"
+              | "long_answer";
             options: string[];
             correctOption: number;
+            correctOptions: number[];
+            acceptedAnswers: string[];
+            caseSensitive: boolean;
+            points: number;
             explanation?: string;
           }[];
         };
@@ -149,6 +161,88 @@ export const LessonApi = baseApi.injectEndpoints({
         url: `${Route_URL}/${lessonId}/quiz`,
         method: "POST",
         data: { answers },
+      }),
+      invalidatesTags: [TagTypes.lessonQuiz],
+    }),
+    startQuizAttempt: build.mutation({
+      query: (lessonId: string) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempt`,
+        method: "POST",
+      }),
+      invalidatesTags: [TagTypes.lessonQuiz],
+    }),
+    getQuizAttempt: build.query({
+      query: ({
+        lessonId,
+        attemptId,
+      }: {
+        lessonId: string;
+        attemptId: string;
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempt/${attemptId}`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lessonQuiz],
+    }),
+    saveQuizAttempt: build.mutation({
+      query: ({
+        lessonId,
+        attemptId,
+        responses,
+      }: {
+        lessonId: string;
+        attemptId: string;
+        responses: Record<
+          string,
+          { selectedOptions?: number[]; text?: string }
+        >;
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempt/${attemptId}`,
+        method: "PATCH",
+        data: { responses },
+      }),
+    }),
+    finishQuizAttempt: build.mutation({
+      query: ({
+        lessonId,
+        attemptId,
+        responses,
+      }: {
+        lessonId: string;
+        attemptId: string;
+        responses: Record<
+          string,
+          { selectedOptions?: number[]; text?: string }
+        >;
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempt/${attemptId}`,
+        method: "POST",
+        data: { responses },
+      }),
+      invalidatesTags: [TagTypes.lessonQuiz],
+    }),
+    getPendingQuizAttempts: build.query({
+      query: (lessonId: string) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempts`,
+        method: "GET",
+      }),
+      providesTags: [TagTypes.lessonQuiz],
+    }),
+    gradeQuizAttempt: build.mutation({
+      query: ({
+        lessonId,
+        attemptId,
+        scores,
+        feedback,
+      }: {
+        lessonId: string;
+        attemptId: string;
+        scores: Record<string, number>;
+        feedback: string;
+      }) => ({
+        url: `${Route_URL}/${lessonId}/quiz/attempts`,
+        method: "PATCH",
+        data: { attemptId, scores, feedback },
       }),
       invalidatesTags: [TagTypes.lessonQuiz],
     }),
@@ -205,6 +299,12 @@ export const {
   useGetLessonQuizQuery,
   useSaveLessonQuizMutation,
   useSubmitLessonQuizMutation,
+  useStartQuizAttemptMutation,
+  useGetQuizAttemptQuery,
+  useSaveQuizAttemptMutation,
+  useFinishQuizAttemptMutation,
+  useGetPendingQuizAttemptsQuery,
+  useGradeQuizAttemptMutation,
   useGetPreviousLessonQuery,
   useGetNextLessonQuery,
 } = LessonApi;

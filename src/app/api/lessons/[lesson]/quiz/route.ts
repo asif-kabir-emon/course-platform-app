@@ -4,11 +4,21 @@ import { ApiError } from "@/utils/apiError";
 import { authGuard } from "@/utils/authGuard";
 import { catchAsync } from "@/utils/handleApi";
 import { sendResponse } from "@/utils/sendResponse";
+import {
+  isChoiceQuestion,
+  isQuizKind,
+  isQuizQuestionType,
+} from "@/types/quiz";
 
 type QuizQuestionInput = {
   prompt?: unknown;
+  type?: unknown;
   options?: unknown;
   correctOption?: unknown;
+  correctOptions?: unknown;
+  acceptedAnswers?: unknown;
+  caseSensitive?: unknown;
+  points?: unknown;
   explanation?: unknown;
 };
 
@@ -64,9 +74,12 @@ export const GET = authGuard(
               orderBy: { createdAt: "desc" },
               take: 1,
               select: {
+                id: true,
+                status: true,
                 score: true,
                 passed: true,
                 createdAt: true,
+                expiresAt: true,
               },
             },
       },
@@ -93,6 +106,12 @@ export const GET = authGuard(
       Boolean(quiz.availableUntil) && now > (quiz.availableUntil as Date);
     const hasAttemptsRemaining =
       quiz.maxAttempts === null || attemptCount < quiz.maxAttempts;
+    const latestAttempt = Array.isArray(quiz.attempts)
+      ? (quiz.attempts[0] ?? null)
+      : null;
+    const hasActiveAttempt =
+      latestAttempt?.status === "in_progress" &&
+      (!latestAttempt.expiresAt || latestAttempt.expiresAt > now);
 
     return sendResponse({
       status: 200,
@@ -101,7 +120,9 @@ export const GET = authGuard(
       data: {
         id: quiz.id,
         title: quiz.title,
+        kind: quiz.kind,
         passingScore: quiz.passingScore,
+        isGradable: quiz.isGradable,
         isPublished: quiz.isPublished,
         timeLimitMinutes: quiz.timeLimitMinutes,
         maxAttempts: quiz.maxAttempts,
@@ -110,10 +131,18 @@ export const GET = authGuard(
         questions: quiz.questions.map((question) => ({
           id: question.id,
           prompt: question.prompt,
+          type: question.type,
           options: question.options,
+          points: question.points,
           ...(isAdmin
             ? {
                 correctOption: question.correctOption,
+                correctOptions:
+                  question.correctOptions.length > 0
+                    ? question.correctOptions
+                    : [question.correctOption],
+                acceptedAnswers: question.acceptedAnswers,
+                caseSensitive: question.caseSensitive,
                 explanation: question.explanation ?? "",
               }
             : {}),
@@ -121,17 +150,17 @@ export const GET = authGuard(
         ...(!isAdmin && {
           attemptCount,
           canAttempt:
-            !isBeforeWindow && !isAfterWindow && hasAttemptsRemaining,
+            !isBeforeWindow &&
+            !isAfterWindow &&
+            (hasAttemptsRemaining || hasActiveAttempt),
           unavailableReason: isBeforeWindow
             ? "This quiz is not open yet."
             : isAfterWindow
               ? "This quiz attempt window has closed."
-              : !hasAttemptsRemaining
+              : !hasAttemptsRemaining && !hasActiveAttempt
                 ? "You have used all available attempts."
                 : null,
-          latestAttempt: Array.isArray(quiz.attempts)
-            ? (quiz.attempts[0] ?? null)
-            : null,
+          latestAttempt,
         }),
       },
     });
@@ -156,7 +185,9 @@ export const PUT = authGuard(
 
     const body = await request.json();
     const title = typeof body.title === "string" ? body.title.trim() : "";
+    const kind = isQuizKind(body.kind) ? body.kind : "quiz";
     const passingScore = Number(body.passingScore);
+    const isGradable = body.isGradable !== false;
     const isPublished = body.isPublished === true;
     const timeLimitMinutes =
       body.timeLimitMinutes === null ||
@@ -207,12 +238,29 @@ export const PUT = authGuard(
     const normalizedQuestions = questions.map((question, index) => {
       const prompt =
         typeof question.prompt === "string" ? question.prompt.trim() : "";
+      const type = isQuizQuestionType(question.type)
+        ? question.type
+        : "single_choice";
       const options = Array.isArray(question.options)
         ? question.options.map((option) =>
             typeof option === "string" ? option.trim() : "",
           )
         : [];
       const correctOption = Number(question.correctOption);
+      const correctOptions = Array.isArray(question.correctOptions)
+        ? question.correctOptions.map(Number).filter(Number.isInteger)
+        : Number.isInteger(correctOption)
+          ? [correctOption]
+          : [];
+      const acceptedAnswers = Array.isArray(question.acceptedAnswers)
+        ? question.acceptedAnswers
+            .map((answer) =>
+              typeof answer === "string" ? answer.trim() : "",
+            )
+            .filter(Boolean)
+        : [];
+      const caseSensitive = question.caseSensitive === true;
+      const points = Number(question.points ?? 1);
       const explanation =
         typeof question.explanation === "string"
           ? question.explanation.trim()
@@ -220,11 +268,19 @@ export const PUT = authGuard(
 
       if (
         !prompt ||
-        options.length < 2 ||
-        options.some((option) => !option) ||
-        !Number.isInteger(correctOption) ||
-        correctOption < 0 ||
-        correctOption >= options.length
+        !Number.isInteger(points) ||
+        points < 1 ||
+        (isChoiceQuestion(type) &&
+          (options.length < 2 ||
+            options.some((option) => !option) ||
+            correctOptions.length === 0 ||
+            correctOptions.some(
+              (option) => option < 0 || option >= options.length,
+            ))) ||
+        (type === "single_choice" && correctOptions.length !== 1) ||
+        (type === "true_false" &&
+          (options.length !== 2 || correctOptions.length !== 1)) ||
+        (type === "short_answer" && acceptedAnswers.length === 0)
       ) {
         throw Object.assign(
           new Error(`Question ${index + 1} is incomplete.`),
@@ -232,7 +288,18 @@ export const PUT = authGuard(
         );
       }
 
-      return { prompt, options, correctOption, explanation, order: index };
+      return {
+        prompt,
+        type,
+        options: isChoiceQuestion(type) ? options : [],
+        correctOption: correctOptions[0] ?? 0,
+        correctOptions,
+        acceptedAnswers,
+        caseSensitive,
+        points,
+        explanation,
+        order: index,
+      };
     });
 
     if (isPublished && normalizedQuestions.length === 0) {
@@ -244,7 +311,9 @@ export const PUT = authGuard(
         where: { lessonId },
         update: {
           title,
+          kind,
           passingScore,
+          isGradable,
           isPublished,
           timeLimitMinutes,
           maxAttempts,
@@ -254,7 +323,9 @@ export const PUT = authGuard(
         create: {
           lessonId,
           title,
+          kind,
           passingScore,
+          isGradable,
           isPublished,
           timeLimitMinutes,
           maxAttempts,
@@ -282,7 +353,9 @@ export const PUT = authGuard(
 
     return sendResponse({
       status: 200,
-      message: isPublished ? "Quiz published successfully." : "Quiz draft saved.",
+      message: isPublished
+        ? `${kind === "exam" ? "Exam" : "Quiz"} published successfully.`
+        : `${kind === "exam" ? "Exam" : "Quiz"} draft saved.`,
       success: true,
       data: quiz,
     });

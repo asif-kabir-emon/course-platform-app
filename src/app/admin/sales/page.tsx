@@ -4,20 +4,35 @@ import PurchaseTable, {
   PurchaseTableSkeleton,
 } from "@/features/purchase/PurchaseTable";
 import { useGetPurchaseHistoriesQuery } from "@/redux/api/purchaseApi";
-import React from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useClientSession } from "@/hooks/useClientSession";
 import { isSuperAdminRole } from "@/constants/UserRole.constant";
+import {
+  RotateCcw,
+  Search,
+} from "lucide-react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import ResponsiveFilterSelect from "@/components/ResponsiveFilterSelect";
+import MobileFilterDialog from "@/components/MobileFilterDialog";
+
+const paymentStatusOptions = [
+  { value: "all", label: "All payments" },
+  { value: "paid", label: "Paid" },
+  { value: "refunded", label: "Refunded" },
+];
 
 const SalesPage = () => {
   const pageSize = 10;
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const search = useDebouncedValue(searchInput.trim());
+  const hasFilters = searchInput.trim().length > 0 || status !== "all";
+  const activeFilterCount =
+    Number(searchInput.trim().length > 0) + Number(status !== "all");
   const { session } = useClientSession();
   const { data: purchases, isLoading } = useGetPurchaseHistoriesQuery({
     page,
@@ -25,6 +40,10 @@ const SalesPage = () => {
     search,
     status,
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status]);
 
   if (isLoading) {
     return (
@@ -46,58 +65,103 @@ const SalesPage = () => {
     );
   }
 
-  if (!purchases.data || purchases.data.length === 0) {
-    return (
-      <div className="page-shell">
-        <PageHeader title="Sales" />
-        <div className="surface-panel px-6 py-10 text-center">
-          <p className="font-medium">No sales recorded yet.</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Completed purchases will appear here.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="page-shell">
       <PageHeader title="Sales" />
-      <form
-        className="surface-panel mb-4 grid gap-3 p-4 sm:grid-cols-[minmax(220px,1fr)_180px_auto]"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setPage(1);
-          setSearch(searchInput.trim());
-        }}
-      >
-        <Input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search customer or product..."
-          aria-label="Search sales"
-        />
-        <select
-          value={status}
-          onChange={(event) => {
-            setStatus(event.target.value);
-            setPage(1);
-          }}
-          className="h-10 rounded-lg border bg-background px-3 text-sm"
-          aria-label="Filter sales by status"
+      <div className="mb-4">
+        <MobileFilterDialog
+          activeFilterCount={activeFilterCount}
+          title="Filter sales"
+          description="Search customers or products and filter payment status."
         >
-          <option value="all">All payments</option>
-          <option value="paid">Paid</option>
-          <option value="refunded">Refunded</option>
-        </select>
-        <Button type="submit">Search</Button>
-      </form>
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search customer or product..."
+              aria-label="Search sales"
+              className="h-11 pl-9"
+            />
+          </label>
+          <ResponsiveFilterSelect
+            value={status}
+            onValueChange={setStatus}
+            options={paymentStatusOptions}
+            label="Filter sales by payment status"
+            mobilePresentation="popover"
+          />
+          {hasFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setSearchInput("");
+                setStatus("all");
+                setPage(1);
+              }}
+            >
+              <RotateCcw className="size-4" />
+              Reset filters
+            </Button>
+          )}
+        </MobileFilterDialog>
+      </div>
+      <div className="mb-4 hidden gap-3 sm:grid sm:grid-cols-[minmax(260px,1fr)_190px_auto]">
+          <label className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search customer or product..."
+              aria-label="Search sales"
+              className="h-11 pl-9"
+            />
+          </label>
+          <ResponsiveFilterSelect
+            value={status}
+            onValueChange={setStatus}
+            options={paymentStatusOptions}
+            label="Filter sales by payment status"
+          />
+          {hasFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={() => {
+                setSearchInput("");
+                setStatus("all");
+                setPage(1);
+              }}
+            >
+              <RotateCcw className="size-4" />
+              Reset
+            </Button>
+          )}
+      </div>
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <PurchaseTable
-          purchases={purchases.data}
-          embedded
-          canRefund={isSuperAdminRole(session?.role)}
-        />
+        {purchases.data?.length > 0 ? (
+          <PurchaseTable
+            purchases={purchases.data}
+            embedded
+            canRefund={isSuperAdminRole(session?.role)}
+          />
+        ) : (
+          <div className="flex min-h-44 flex-col items-center justify-center px-6 text-center">
+            <p className="font-medium">
+              {hasFilters
+                ? "No sales match these filters."
+                : "No sales recorded yet."}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {hasFilters
+                ? "Adjust the customer, product, or payment filter."
+                : "Completed purchases will appear here."}
+            </p>
+          </div>
+        )}
         <PaginationControls
           page={purchases.meta.page}
           totalPages={purchases.meta.totalPages}

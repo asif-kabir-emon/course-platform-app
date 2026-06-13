@@ -2,7 +2,9 @@ model LessonQuizzes {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   lessonId     String   @unique @db.ObjectId
   title        String
+  kind         QuizKind @default(quiz)
   passingScore Int      @default(70)
+  isGradable   Boolean  @default(true)
   isPublished  Boolean  @default(false)
   timeLimitMinutes Int?
   maxAttempts     Int?
@@ -22,8 +24,13 @@ model QuizQuestions {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   quizId        String   @db.ObjectId
   prompt        String
+  type          QuizQuestionType @default(single_choice)
   options       String[]
   correctOption Int
+  correctOptions Int[] @default([])
+  acceptedAnswers String[] @default([])
+  caseSensitive Boolean @default(false)
+  points        Int @default(1)
   explanation   String?
   order         Int
   createdAt     DateTime @default(now())
@@ -39,10 +46,21 @@ model QuizAttempts {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   quizId    String   @db.ObjectId
   userId    String   @db.ObjectId
+  status    QuizAttemptStatus @default(graded)
   score     Int
   passed    Boolean
   answers   Int[]
+  responses Json?
+  grading Json?
+  feedback String?
+  earnedPoints Float @default(0)
+  totalPoints Float @default(0)
+  startedAt DateTime @default(now())
+  expiresAt DateTime?
+  submittedAt DateTime?
+  gradedAt DateTime?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   quiz LessonQuizzes @relation(fields: [quizId], references: [id])
   user Users         @relation(fields: [userId], references: [id])
@@ -50,4 +68,25 @@ model QuizAttempts {
   @@index([quizId, userId, createdAt])
   @@index([userId, createdAt])
   @@map("quiz_attempts")
+}
+
+enum QuizKind {
+  quiz
+  exam
+}
+
+enum QuizQuestionType {
+  single_choice
+  multiple_choice
+  true_false
+  short_answer
+  long_answer
+}
+
+enum QuizAttemptStatus {
+  in_progress
+  submitted
+  timed_out
+  pending_review
+  graded
 }

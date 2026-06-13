@@ -3,245 +3,180 @@
 import { Button } from "@/components/ui/button";
 import {
   useGetLessonQuizQuery,
-  useSubmitLessonQuizMutation,
+  useStartQuizAttemptMutation,
 } from "@/redux/api/lessonApi";
 import {
+  ArrowRight,
   CalendarClock,
   CheckCircle2,
   CircleHelp,
   Clock3,
+  FileCheck2,
   RotateCcw,
-  XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-type QuizResult = {
-  score: number;
-  passed: boolean;
-  passingScore: number;
-  results: {
-    questionId: string;
-    correct: boolean;
-    correctOption: number;
-    explanation: string;
-  }[];
-};
-
-const LessonQuiz = ({ lessonId }: { lessonId: string }) => {
+const LessonQuiz = ({
+  lessonId,
+  courseId,
+}: {
+  lessonId: string;
+  courseId: string;
+}) => {
+  const router = useRouter();
   const { data, isLoading } = useGetLessonQuizQuery(lessonId);
-  const [submitQuiz, { isLoading: isSubmitting }] =
-    useSubmitLessonQuizMutation();
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [result, setResult] = useState<QuizResult | null>(null);
-  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [startAttempt, { isLoading: isStarting }] =
+    useStartQuizAttemptMutation();
   const quiz = data?.success ? data.data : null;
 
-  useEffect(() => {
-    if (!quiz?.timeLimitMinutes || result) return;
-
-    setSecondsRemaining(quiz.timeLimitMinutes * 60);
-  }, [quiz?.id, quiz?.timeLimitMinutes, result]);
-
-  const submitAnswers = useCallback(
-    async (allowIncomplete = false) => {
-      if (!quiz) return;
-      if (
-        !allowIncomplete &&
-        Object.keys(answers).length !== quiz.questions.length
-      ) {
-        toast.error("Answer every question before submitting.");
+  const beginAttempt = async () => {
+    try {
+      const response = await startAttempt(lessonId).unwrap();
+      if (!response.success) {
+        toast.error(response.message);
         return;
       }
 
-      try {
-        const response = await submitQuiz({
-          lessonId,
-          answers: quiz.questions.map(
-            (_question: unknown, index: number) => answers[index] ?? -1,
-          ),
-        }).unwrap();
-
-        if (response.success) {
-          setResult(response.data);
-          toast.success(response.message);
-        } else {
-          toast.error(response.message);
-        }
-      } catch (error) {
-        toast.error(getApiErrorMessage(error, "Failed to submit the quiz."));
-      }
-    },
-    [answers, lessonId, quiz, submitQuiz],
-  );
-
-  useEffect(() => {
-    if (secondsRemaining === null || result) return;
-    if (secondsRemaining <= 0) {
-      void submitAnswers(true);
-      return;
+      router.push(
+        `/courses/${courseId}/lessons/${lessonId}/attempt/${response.data.attemptId}`,
+      );
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to start this attempt."));
     }
-
-    const timer = window.setTimeout(
-      () => setSecondsRemaining((current) => Math.max(0, (current ?? 1) - 1)),
-      1000,
-    );
-    return () => window.clearTimeout(timer);
-  }, [result, secondsRemaining, submitAnswers]);
+  };
 
   if (isLoading) {
     return <div className="h-52 animate-pulse rounded-2xl bg-muted" />;
   }
-
   if (!quiz) return null;
+
+  const assessmentLabel = quiz.kind === "exam" ? "Exam" : "Quiz";
+  const remainingAttempts =
+    quiz.maxAttempts === null
+      ? null
+      : Math.max(quiz.maxAttempts - quiz.attemptCount, 0);
 
   return (
     <section className="surface-panel overflow-hidden">
       <div className="border-b bg-gradient-to-r from-primary/10 to-accent/10 p-5 sm:p-6">
         <div className="flex items-center gap-2 text-sm font-semibold text-primary">
           <CircleHelp className="size-5" />
-          Knowledge check
+          {assessmentLabel}
         </div>
         <h2 className="mt-2 text-xl font-semibold">{quiz.title}</h2>
-        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          <span>Score {quiz.passingScore}% or higher to pass.</span>
-          {quiz.maxAttempts && (
-            <span>
-              Attempt {Math.min(quiz.attemptCount + 1, quiz.maxAttempts)} of{" "}
-              {quiz.maxAttempts}
-            </span>
-          )}
-          {secondsRemaining !== null && !result && (
-            <span className="flex items-center gap-1 font-medium text-foreground">
-              <Clock3 className="size-4" />
-              {formatTime(secondsRemaining)}
-            </span>
-          )}
-        </div>
-        {(quiz.availableFrom || quiz.availableUntil) && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <CalendarClock className="size-3.5" />
-            Attempt window: {formatDate(quiz.availableFrom) || "Now"} to{" "}
-            {formatDate(quiz.availableUntil) || "No end date"}
-          </p>
-        )}
+        <p className="mt-1 text-sm text-muted-foreground">
+          Review the rules before starting. The timer begins only after you
+          press Start.
+        </p>
       </div>
-      <div className="space-y-6 p-5 sm:p-6">
-        {!quiz.canAttempt && !result && (
+
+      <div className="space-y-5 p-5 sm:p-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Rule
+            icon={FileCheck2}
+            label="Questions"
+            value={String(quiz.questions.length)}
+          />
+          <Rule
+            icon={Clock3}
+            label="Time limit"
+            value={
+              quiz.timeLimitMinutes
+                ? `${quiz.timeLimitMinutes} minutes`
+                : "No fixed limit"
+            }
+          />
+          <Rule
+            icon={RotateCcw}
+            label="Attempts"
+            value={
+              remainingAttempts === null
+                ? "Unlimited"
+                : `${remainingAttempts} remaining`
+            }
+          />
+          <Rule
+            icon={CheckCircle2}
+            label="Result"
+            value={
+              quiz.isGradable
+                ? `${quiz.passingScore}% to pass`
+                : "Completion only"
+            }
+          />
+        </div>
+
+        {(quiz.availableFrom || quiz.availableUntil) && (
+          <div className="flex items-start gap-2 rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground">
+            <CalendarClock className="mt-0.5 size-4 shrink-0" />
+            <span>
+              Attempt window: {formatDate(quiz.availableFrom) || "Now"} to{" "}
+              {formatDate(quiz.availableUntil) || "No end date"}
+            </span>
+          </div>
+        )}
+
+        {quiz.latestAttempt && (
+          <div className="rounded-xl border p-4 text-sm">
+            <p className="font-medium">
+              {quiz.latestAttempt.status === "in_progress"
+                ? "Attempt in progress"
+                : "Latest attempt"}
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              {quiz.latestAttempt.status === "in_progress"
+                ? "Continue before the attempt timer expires."
+                : `Score ${quiz.latestAttempt.score}% · ${
+                    quiz.latestAttempt.passed ? "Passed" : "Not passed"
+                  } · ${formatDate(quiz.latestAttempt.createdAt)}`}
+            </p>
+          </div>
+        )}
+
+        {!quiz.canAttempt && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900">
-            {quiz.unavailableReason || "This quiz is currently unavailable."}
+            {quiz.unavailableReason || "This assessment is unavailable."}
           </div>
         )}
-        {quiz.questions.map(
-          (
-            question: { id: string; prompt: string; options: string[] },
-            questionIndex: number,
-          ) => {
-            const questionResult = result?.results[questionIndex];
 
-            return (
-              <fieldset key={question.id} className="space-y-3">
-                <legend className="font-medium">
-                  {questionIndex + 1}. {question.prompt}
-                </legend>
-                <div className="grid gap-2">
-                  {question.options.map((option, optionIndex) => {
-                    const isSelected = answers[questionIndex] === optionIndex;
-                    const isCorrect =
-                      questionResult?.correctOption === optionIndex;
-                    const isWrongSelection =
-                      Boolean(result) && isSelected && !isCorrect;
-
-                    return (
-                      <label
-                        key={optionIndex}
-                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm transition-colors ${
-                          isCorrect
-                            ? "border-emerald-500/40 bg-emerald-500/5"
-                            : isWrongSelection
-                              ? "border-destructive/40 bg-destructive/5"
-                              : isSelected
-                                ? "border-primary bg-primary/5"
-                                : "hover:bg-muted/40"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`quiz-question-${questionIndex}`}
-                          checked={isSelected}
-                          disabled={Boolean(result) || !quiz.canAttempt}
-                          onChange={() =>
-                            setAnswers((current) => ({
-                              ...current,
-                              [questionIndex]: optionIndex,
-                            }))
-                          }
-                          className="mt-0.5 size-4 accent-primary"
-                        />
-                        <span className="flex-1">{option}</span>
-                        {isCorrect && (
-                          <CheckCircle2 className="size-4 text-emerald-600" />
-                        )}
-                        {isWrongSelection && (
-                          <XCircle className="size-4 text-destructive" />
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-                {questionResult?.explanation && (
-                  <p className="rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
-                    {questionResult.explanation}
-                  </p>
-                )}
-              </fieldset>
-            );
-          },
-        )}
-
-        {result ? (
-          <div className="flex flex-col gap-3 rounded-2xl border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-semibold">
-                {result.passed ? "Quiz passed" : "Keep learning and try again"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Your score: {result.score}% · Passing score:{" "}
-                {result.passingScore}%
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAnswers({});
-                setResult(null);
-              }}
-              disabled={!quiz.canAttempt}
-            >
-              <RotateCcw className="size-4" />
-              Try again
-            </Button>
-          </div>
-        ) : (
-          <Button
-            onClick={() => void submitAnswers()}
-            disabled={isSubmitting || !quiz.canAttempt}
-          >
-            {isSubmitting ? "Submitting..." : "Submit quiz"}
-          </Button>
-        )}
+        <Button
+          type="button"
+          onClick={() => void beginAttempt()}
+          disabled={!quiz.canAttempt || isStarting}
+          className="w-full sm:w-auto"
+        >
+          {isStarting
+            ? "Starting..."
+            : quiz.latestAttempt?.status === "in_progress"
+              ? "Continue attempt"
+              : `Start ${assessmentLabel.toLowerCase()}`}
+          <ArrowRight className="size-4" />
+        </Button>
       </div>
     </section>
   );
 };
 
-export default LessonQuiz;
+const Rule = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Clock3;
+  label: string;
+  value: string;
+}) => (
+  <div className="rounded-xl border bg-background p-4">
+    <Icon className="size-5 text-primary" />
+    <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {label}
+    </p>
+    <p className="mt-1 font-semibold">{value}</p>
+  </div>
+);
 
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
-};
+export default LessonQuiz;
 
 const formatDate = (value?: string | null) =>
   value

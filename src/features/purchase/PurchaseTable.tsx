@@ -104,7 +104,9 @@ const PurchaseTable = ({
             <TableHead className="min-w-[220px]">Customer</TableHead>
             <TableHead className="min-w-[110px]">Amount</TableHead>
             <TableHead className="min-w-[110px]">Status</TableHead>
-            <TableHead className="min-w-[120px]">Actions</TableHead>
+            <TableHead className="w-[1%] min-w-[120px] whitespace-nowrap text-right">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -159,8 +161,8 @@ const PurchaseTable = ({
                   </Badge>
                 )}
               </TableCell>
-              <TableCell>
-                <div className="flex items-center">
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end">
                   {canRefund &&
                     (purchase.refundAt === null || !purchase.refundAt) &&
                     purchase.pricePaidInCent > 0 && (
@@ -216,7 +218,7 @@ export function PurchaseTableSkeleton() {
             <TableHead>Customer</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

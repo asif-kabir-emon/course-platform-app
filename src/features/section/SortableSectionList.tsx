@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { SortableItem, SortableList } from "@/components/SortableList";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Save, Trash2Icon } from "lucide-react";
+import { Eye, EyeOff, Pencil, Save, Trash2Icon } from "lucide-react";
 import SectionFormDialog from "./SectionFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -76,7 +76,7 @@ const SortableSectionList = ({
             <SortableItem
               key={section.id}
               id={section.id}
-              className="flex min-w-0 items-center gap-2"
+              className="flex min-h-10 min-w-0 items-center gap-1.5"
             >
               <div
                 className={cn(
@@ -87,10 +87,10 @@ const SortableSectionList = ({
                 title={section.name}
               >
                 {section.status === CourseSectionStatus.public && (
-                  <Eye className="size-4" />
+                  <Eye className="size-3.5 shrink-0" />
                 )}
                 {section.status === CourseSectionStatus.private && (
-                  <EyeOff className="size-4" />
+                  <EyeOff className="size-3.5 shrink-0" />
                 )}
                 <span className="truncate text-sm font-medium">
                   {section.name}
@@ -100,11 +100,11 @@ const SortableSectionList = ({
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
+                    size="icon"
+                    className="ml-auto size-8 shrink-0 hover:bg-primary/5 hover:text-primary"
+                    aria-label={`Edit ${section.name}`}
                   >
-                    <span className="hidden sm:inline">Edit</span>
-                    <span className="sm:hidden">Edit</span>
+                    <Pencil className="size-3.5" />
                   </Button>
                 </DialogTrigger>
               </SectionFormDialog>
@@ -116,10 +116,10 @@ const SortableSectionList = ({
               >
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  size="icon"
+                  className="size-8 shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  <Trash2Icon />
+                  <Trash2Icon className="size-3.5" />
                   <span className="sr-only">Delete</span>
                 </Button>
               </ActionButton>

@@ -4,7 +4,13 @@ import { useClientSession } from "@/hooks/useClientSession";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { LogInIcon, LogOutIcon, Menu } from "lucide-react";
+import {
+  Bookmark,
+  GraduationCap,
+  LogInIcon,
+  LogOutIcon,
+  Menu,
+} from "lucide-react";
 import ProfileMenu, { handleSignOut } from "@/components/ProfileMenu";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -35,7 +41,7 @@ function Navbar() {
     <header className="sticky top-0 z-40 flex h-16 border-b border-border/70 bg-white/85 shadow-sm backdrop-blur-xl select-none">
       <nav className="layout-container flex gap-4">
         <div className="flex items-center mr-auto">
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Menu
@@ -64,7 +70,7 @@ function Navbar() {
         </div>
 
         {isLoggedIn && (
-          <div className="hidden md:flex gap-2">
+          <div className="hidden gap-1 lg:flex">
             {isAdmin && (
               <Link
                 className={cn(
@@ -84,6 +90,24 @@ function Navbar() {
               href="/courses"
             >
               My Courses
+            </Link>
+            <Link
+              className={cn(
+                "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                pathname.startsWith("/bookmarks") && "font-bold text-primary",
+              )}
+              href="/bookmarks"
+            >
+              Bookmarks
+            </Link>
+            <Link
+              className={cn(
+                "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                pathname.startsWith("/grades") && "font-bold text-primary",
+              )}
+              href="/grades"
+            >
+              Grades
             </Link>
             <Link
               className={cn(
@@ -148,6 +172,28 @@ const MobileNavMenu = ({
             }}
           >
             My Courses
+          </Link>
+          <Link
+            className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            href="/bookmarks"
+            onClick={() => {
+              window.location.href = "/bookmarks";
+              setOpen(false);
+            }}
+          >
+            <Bookmark className="size-5" />
+            Bookmarks
+          </Link>
+          <Link
+            className="flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            href="/grades"
+            onClick={() => {
+              window.location.href = "/grades";
+              setOpen(false);
+            }}
+          >
+            <GraduationCap className="size-5" />
+            Grades
           </Link>
           <Link
             className="flex items-center rounded-xl px-4 py-3 font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"

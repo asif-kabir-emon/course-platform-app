@@ -1,4 +1,9 @@
-import { LogOutIcon, SettingsIcon } from "lucide-react";
+import {
+  Bookmark,
+  GraduationCap,
+  LogOutIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -70,6 +75,20 @@ const ProfileMenu = () => {
           </div>
         </div>
         <div className="flex flex-col gap-2 border-t py-4">
+          <Link
+            href="/bookmarks"
+            className="flex items-center rounded-lg px-4 py-2 text-base font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
+          >
+            <Bookmark className="mr-2 size-5" />
+            Bookmarks
+          </Link>
+          <Link
+            href="/grades"
+            className="flex items-center rounded-lg px-4 py-2 text-base font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary"
+          >
+            <GraduationCap className="mr-2 size-5" />
+            Grades
+          </Link>
           <Link
             href="/profile"
             className="flex items-center rounded-lg bg-secondary/60 px-4 py-2 text-base font-medium text-secondary-foreground hover:bg-primary/10 hover:text-primary"

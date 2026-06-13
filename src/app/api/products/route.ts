@@ -7,6 +7,10 @@ import { catchAsync } from "@/utils/handleApi";
 import { authGuard } from "@/utils/authGuard";
 import { isAdminRole } from "@/constants/UserRole.constant";
 import { authVerification } from "@/utils/authVerification";
+import {
+  caseInsensitiveMongoFilter,
+  extractMongoIds,
+} from "@/lib/mongoSearch";
 
 
 export const POST = authGuard(
@@ -117,9 +121,17 @@ export const GET = catchAsync(async (request: Request) => {
     authorization?.success &&
     isAdminRole(authorization.user?.role) &&
     showAllProducts === "true";
+  const matchingProductIds = search
+    ? extractMongoIds(
+        await prisma.products.findRaw({
+          filter: caseInsensitiveMongoFilter("name", search),
+          options: { projection: { _id: 1 } },
+        }),
+      )
+    : undefined;
   const where: Prisma.ProductsWhereInput = isAdminRequest
     ? {
-        ...(search ? { name: { contains: search } } : {}),
+        ...(matchingProductIds ? { id: { in: matchingProductIds } } : {}),
         ...(status === ProductStatus.public ||
         status === ProductStatus.private
           ? { status }
@@ -130,7 +142,11 @@ export const GET = catchAsync(async (request: Request) => {
             ? { isDeleted: true }
             : {}),
       }
-    : { status: ProductStatus.public, isDeleted: false };
+    : {
+        status: ProductStatus.public,
+        isDeleted: false,
+        ...(matchingProductIds ? { id: { in: matchingProductIds } } : {}),
+      };
   const [products, total] = await Promise.all([
     prisma.products.findMany({
       where,
