@@ -119,6 +119,7 @@ export const LessonApi = baseApi.injectEndpoints({
         body: {
           title: string;
           kind: "quiz" | "exam";
+          gradeStrategy: "highest" | "latest" | "average" | "first";
           passingScore: number;
           isGradable: boolean;
           isPublished: boolean;

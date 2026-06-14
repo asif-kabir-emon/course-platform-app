@@ -1,6 +1,14 @@
 export const quizKinds = ["quiz", "exam"] as const;
 export type QuizKind = (typeof quizKinds)[number];
 
+export const quizGradeStrategies = [
+  "highest",
+  "latest",
+  "average",
+  "first",
+] as const;
+export type QuizGradeStrategy = (typeof quizGradeStrategies)[number];
+
 export const quizQuestionTypes = [
   "single_choice",
   "multiple_choice",
@@ -24,6 +32,11 @@ export const isQuizQuestionType = (
 
 export const isQuizKind = (value: unknown): value is QuizKind =>
   quizKinds.includes(value as QuizKind);
+
+export const isQuizGradeStrategy = (
+  value: unknown,
+): value is QuizGradeStrategy =>
+  quizGradeStrategies.includes(value as QuizGradeStrategy);
 
 export const isChoiceQuestion = (type: QuizQuestionType) =>
   type === "single_choice" ||
