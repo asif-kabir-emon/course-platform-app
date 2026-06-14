@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   isChoiceQuestion,
+  type QuizGradeStrategy,
   type QuizKind,
   type QuizQuestionType,
 } from "@/types/quiz";
@@ -48,6 +49,8 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
   const [saveQuiz, { isLoading: isSaving }] = useSaveLessonQuizMutation();
   const [title, setTitle] = useState("Lesson knowledge check");
   const [kind, setKind] = useState<QuizKind>("quiz");
+  const [gradeStrategy, setGradeStrategy] =
+    useState<QuizGradeStrategy>("highest");
   const [passingScore, setPassingScore] = useState(70);
   const [isGradable, setIsGradable] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
@@ -62,6 +65,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
 
     setTitle(data.data.title);
     setKind(data.data.kind || "quiz");
+    setGradeStrategy(data.data.gradeStrategy || "highest");
     setPassingScore(data.data.passingScore);
     setIsGradable(data.data.isGradable !== false);
     setIsPublished(data.data.isPublished);
@@ -198,6 +202,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
         body: {
           title,
           kind,
+          gradeStrategy,
           passingScore,
           isGradable,
           isPublished,
@@ -300,6 +305,40 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
                   label: "Completion only",
                   value: "completion",
                   description: "Record submission without a score.",
+                },
+              ]}
+              mobilePresentation="popover"
+              className="h-10"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Final grade uses</Label>
+            <ResponsiveFilterSelect
+              value={gradeStrategy}
+              onValueChange={(value) =>
+                setGradeStrategy(value as QuizGradeStrategy)
+              }
+              label="Final grade calculation"
+              options={[
+                {
+                  label: "Highest attempt",
+                  value: "highest",
+                  description: "Keep the learner's best valid score.",
+                },
+                {
+                  label: "Latest attempt",
+                  value: "latest",
+                  description: "Use the most recently graded attempt.",
+                },
+                {
+                  label: "Average attempts",
+                  value: "average",
+                  description: "Average all valid graded attempts.",
+                },
+                {
+                  label: "First attempt",
+                  value: "first",
+                  description: "Use the first valid graded attempt.",
                 },
               ]}
               mobilePresentation="popover"

@@ -6,6 +6,7 @@ import { catchAsync } from "@/utils/handleApi";
 import { sendResponse } from "@/utils/sendResponse";
 import {
   isChoiceQuestion,
+  isQuizGradeStrategy,
   isQuizKind,
   isQuizQuestionType,
 } from "@/types/quiz";
@@ -121,6 +122,7 @@ export const GET = authGuard(
         id: quiz.id,
         title: quiz.title,
         kind: quiz.kind,
+        gradeStrategy: quiz.gradeStrategy ?? "highest",
         passingScore: quiz.passingScore,
         isGradable: quiz.isGradable,
         isPublished: quiz.isPublished,
@@ -186,6 +188,9 @@ export const PUT = authGuard(
     const body = await request.json();
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const kind = isQuizKind(body.kind) ? body.kind : "quiz";
+    const gradeStrategy = isQuizGradeStrategy(body.gradeStrategy)
+      ? body.gradeStrategy
+      : "highest";
     const passingScore = Number(body.passingScore);
     const isGradable = body.isGradable !== false;
     const isPublished = body.isPublished === true;
@@ -312,6 +317,7 @@ export const PUT = authGuard(
         update: {
           title,
           kind,
+          gradeStrategy,
           passingScore,
           isGradable,
           isPublished,
@@ -324,6 +330,7 @@ export const PUT = authGuard(
           lessonId,
           title,
           kind,
+          gradeStrategy,
           passingScore,
           isGradable,
           isPublished,

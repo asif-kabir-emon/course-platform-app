@@ -4,6 +4,7 @@ model LessonQuizzes {
   title        String
   kind         QuizKind @default(quiz)
   passingScore Int      @default(70)
+  gradeStrategy QuizGradeStrategy? @default(highest)
   isGradable   Boolean  @default(true)
   isPublished  Boolean  @default(false)
   timeLimitMinutes Int?
@@ -73,6 +74,13 @@ model QuizAttempts {
 enum QuizKind {
   quiz
   exam
+}
+
+enum QuizGradeStrategy {
+  highest
+  latest
+  average
+  first
 }
 
 enum QuizQuestionType {
