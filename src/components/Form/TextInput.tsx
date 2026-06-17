@@ -35,7 +35,7 @@ const TextInput = ({
             className: `w-full py-2 px-3 focus:outline-none mt-2 mb-0.5 focus:border-primary ${
               error ? "border-red-400" : ""
             }`,
-            ...field,
+            value: field.value ?? "",
             onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
               field.onChange(
                 type === "number"

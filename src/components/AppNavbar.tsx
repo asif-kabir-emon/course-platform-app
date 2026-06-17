@@ -95,8 +95,7 @@ const AppNavbar = () => {
   const { session, isReady } = useClientSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const items = getNavigation(session?.role);
-  const isAdmin =
-    session?.role === "admin" || session?.role === "super_admin";
+  const isAdmin = session?.role === "admin" || session?.role === "super_admin";
 
   if (!isReady) {
     return (
@@ -189,8 +188,8 @@ const DesktopNavLink = ({
   <Link
     href={item.href}
     className={cn(
-      "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary",
-      active && "bg-primary/5 font-semibold text-primary",
+      "flex items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary",
+      active && "bg-primary/10 font-semibold text-primary",
     )}
   >
     {item.label}
@@ -218,7 +217,7 @@ const MobileNavigation = ({
             href={item.href}
             onClick={() => setOpen(false)}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary",
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium tracking-tight text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary",
               active && "bg-primary/10 text-primary",
             )}
           >
@@ -232,7 +231,7 @@ const MobileNavigation = ({
     <Button
       type="button"
       variant="outline"
-      className="mt-auto mb-6 justify-start text-destructive hover:bg-destructive hover:text-destructive-foreground"
+      className="mt-auto mb-6 justify-start gap-3 px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive hover:text-destructive-foreground"
       onClick={() => {
         handleSignOut();
         setOpen(false);
