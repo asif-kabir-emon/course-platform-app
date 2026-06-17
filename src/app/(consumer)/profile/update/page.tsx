@@ -54,7 +54,7 @@ const ProfileForm = ({
   profileInfo: {
     firstName: string;
     lastName: string;
-    photoUrl: string;
+    imageUrl: string;
   };
 }) => {
   const router = useRouter();

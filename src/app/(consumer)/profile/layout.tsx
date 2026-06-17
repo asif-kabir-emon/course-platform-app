@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { User, Lock } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode } from "react";
@@ -15,46 +16,47 @@ export default function ProfileLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="container my-5 md:my-8 space-y-4">
+    <div className="container my-5 space-y-4 md:my-8">
       <div className="md:hidden">
         <MobileSideBar />
       </div>
-      <div className="grid md:grid-cols-[250px,1fr] gap-8">
-        <div className="py-2 hidden md:block">
+      <div className="grid gap-8 md:grid-cols-[220px,1fr]">
+        <div className="hidden py-2 md:block">
           <DesktopSideBar />
         </div>
-        <div className="py-2">{children}</div>
+        <div className="min-w-0 py-2">{children}</div>
       </div>
     </div>
   );
 }
 
+const sidebarLinks = [
+  { href: "/profile", label: "Your Profile", icon: User },
+  { href: "/profile/change-password", label: "Change Password", icon: Lock },
+];
+
 const DesktopSideBar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col gap-2">
-      <Link
-        href="/profile"
-        className={cn(
-          "flex items-center rounded-xl border border-transparent bg-card px-5 py-3 text-base font-medium text-muted-foreground shadow-sm hover:border-primary/15 hover:bg-primary/5 hover:text-primary",
-          pathname === "/profile" &&
-            "border-primary/20 bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:bg-primary/90 hover:text-primary-foreground",
-        )}
-      >
-        Your Profile
-      </Link>
-      <Link
-        href="/profile/change-password"
-        className={cn(
-          "flex items-center rounded-xl border border-transparent bg-card px-5 py-3 text-base font-medium text-muted-foreground shadow-sm hover:border-primary/15 hover:bg-primary/5 hover:text-primary",
-          pathname === "/profile/change-password" &&
-            "border-primary/20 bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:bg-primary/90 hover:text-primary-foreground",
-        )}
-      >
-        Change Password
-      </Link>
-    </div>
+    <nav className="flex flex-col gap-1" aria-label="Profile navigation">
+      {sidebarLinks.map(({ href, label, icon: Icon }) => {
+        const isActive = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary",
+              isActive && "bg-primary/10 font-semibold text-primary",
+            )}
+          >
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
+            {label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 };
 
@@ -72,18 +74,15 @@ const MobileSideBar = () => {
           <SelectValue placeholder="" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem
-            value="/profile"
-            className="my-1 cursor-pointer hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          >
-            Your Profile
-          </SelectItem>
-          <SelectItem
-            value="/profile/change-password"
-            className="my-1 cursor-pointer hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          >
-            Change Password
-          </SelectItem>
+          {sidebarLinks.map(({ href, label }) => (
+            <SelectItem
+              key={href}
+              value={href}
+              className="my-1 cursor-pointer text-sm hover:!bg-primary/10 hover:!text-primary data-[state=checked]:bg-primary/10 data-[state=checked]:font-semibold data-[state=checked]:text-primary"
+            >
+              {label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
