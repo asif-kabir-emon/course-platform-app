@@ -1,8 +1,11 @@
-import { stripeServerClient } from "@/helpers/stripe/stripeServer";
+import {
+  assertStripeSecretKey,
+  stripeServerClient,
+} from "@/helpers/stripe/stripeServer";
+import { processStripeCheckout } from "@/helpers/stripe/fulfillment";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export const GET = async (req: NextRequest) => {
@@ -14,6 +17,8 @@ export const GET = async (req: NextRequest) => {
   let redirectUrl: string;
 
   try {
+    assertStripeSecretKey();
+
     const checkoutSession =
       await stripeServerClient.checkout.sessions.retrieve(stripeSessionId);
     const productId = checkoutSession.metadata?.productId;
@@ -25,7 +30,8 @@ export const GET = async (req: NextRequest) => {
     if (checkoutSession.payment_status === "unpaid") {
       redirectUrl = "/products/purchase-pending";
     } else {
-      redirectUrl = `/products/${productId}/purchase/success`;
+      await processStripeCheckout(checkoutSession);
+      redirectUrl = `/products/${productId}/purchase/success?stripeSessionId=${encodeURIComponent(stripeSessionId)}`;
     }
   } catch {
     redirectUrl = "/products/purchase-failure";
@@ -37,11 +43,21 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const POST = async (req: NextRequest) => {
-  const signature = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!signature || !webhookSecret) {
-    return new Response("Missing Stripe webhook configuration.", {
+  if (!webhookSecret) {
+    return NextResponse.json({
+      received: true,
+      skipped: true,
+      message:
+        "Stripe webhook signing secret is not configured. Checkout success handles fulfillment.",
+    });
+  }
+
+  const signature = req.headers.get("stripe-signature");
+
+  if (!signature) {
+    return new Response("Missing Stripe webhook signature.", {
       status: 400,
     });
   }
@@ -49,6 +65,8 @@ export const POST = async (req: NextRequest) => {
   let event: Stripe.Event;
 
   try {
+    assertStripeSecretKey();
+
     event = stripeServerClient.webhooks.constructEvent(
       await req.text(),
       signature,
@@ -120,106 +138,4 @@ export const POST = async (req: NextRequest) => {
   }
 
   return new Response(null, { status: 200 });
-};
-
-const processStripeCheckout = async (
-  checkoutSession: Stripe.Checkout.Session,
-) => {
-  const productId = checkoutSession.metadata?.productId;
-  const userId = checkoutSession.metadata?.userId;
-
-  if (productId == null || userId == null) {
-    throw new Error("Missing metadata");
-  }
-
-  const existingPurchase = await prisma.purchaseHistories.findUnique({
-    where: {
-      stripeSessionId: checkoutSession.id,
-    },
-  });
-
-  if (existingPurchase) {
-    return existingPurchase.productId;
-  }
-
-  const product = await prisma.products.findFirst({
-    where: {
-      id: productId,
-    },
-    include: {
-      courseProducts: true,
-    },
-  });
-
-  if (!product) {
-    throw new Error("Product not found");
-  }
-
-  const user = await prisma.users.findFirst({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const courseIds = product.courseProducts.map((courseProduct) => {
-    return courseProduct.courseId;
-  });
-
-  const userHasAccessToCourses = await prisma.userCourseAccess.findMany({
-    where: {
-      userId: userId,
-      courseId: {
-        in: courseIds,
-      },
-    },
-  });
-
-  const needToPurchaseCourses = courseIds.filter((courseId) => {
-    return !userHasAccessToCourses.some((userCourseAccess) => {
-      return userCourseAccess.courseId === courseId;
-    });
-  });
-
-  try {
-    await prisma.$transaction(async (trc: Prisma.TransactionClient) => {
-      await trc.purchaseHistories.create({
-        data: {
-          userId,
-          productId,
-          stripeSessionId: checkoutSession.id,
-          pricePaidInCent:
-            checkoutSession.amount_total ?? product.priceInDollar * 100,
-          productDetails: {
-            name: product.name,
-            description: product.description,
-            imageUrls: product.imageUrl,
-          },
-        },
-      });
-
-      if (needToPurchaseCourses.length > 0) {
-        await trc.userCourseAccess.createMany({
-          data: needToPurchaseCourses.map((courseId) => ({
-            userId,
-            courseId,
-          })),
-        });
-      }
-    });
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      return productId;
-    }
-
-    throw error;
-  }
-
-  return productId;
 };

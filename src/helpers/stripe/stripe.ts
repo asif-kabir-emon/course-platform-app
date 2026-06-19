@@ -1,6 +1,6 @@
 "use server";
 
-import { stripeServerClient } from "./stripeServer";
+import { assertStripeSecretKey, stripeServerClient } from "./stripeServer";
 
 export async function getClientSessionSecret(
   product: {
@@ -12,6 +12,8 @@ export async function getClientSessionSecret(
   },
   user: { email: string; id: string },
 ) {
+  assertStripeSecretKey();
+
   const session = await stripeServerClient.checkout.sessions.create({
     line_items: [
       {
@@ -31,7 +33,7 @@ export async function getClientSessionSecret(
     ],
     ui_mode: "embedded",
     mode: "payment",
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/stripe?stripeSessionId={CHECKOUT_SESSION_ID}`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.id}/purchase/success?stripeSessionId={CHECKOUT_SESSION_ID}`,
     customer_email: user.email,
     payment_intent_data: {
       receipt_email: user.email,

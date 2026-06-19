@@ -30,7 +30,13 @@ const CoursesPage = () => {
 export default CoursesPage;
 
 const CourseGrid = () => {
-  const { data: courses, isLoading } = useGetMyCoursesQuery({});
+  const { data: courses, isLoading } = useGetMyCoursesQuery(
+    {},
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   if (isLoading) {
     return <CourseSkeleton />;
