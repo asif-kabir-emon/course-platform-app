@@ -8,7 +8,7 @@ import ResponsiveFilterSelect from "@/components/ResponsiveFilterSelect";
 import {
   useGetLessonQuizQuery,
   useSaveLessonQuizMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import { CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -92,10 +92,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
           type: question.type || "single_choice",
           options: question.options,
           correctOption: question.correctOption,
-          correctOptions:
-            question.correctOptions?.length
-              ? question.correctOptions
-              : [question.correctOption],
+          correctOptions: question.correctOptions?.length
+            ? question.correctOptions
+            : [question.correctOption],
           acceptedAnswers: question.acceptedAnswers?.length
             ? question.acceptedAnswers
             : [""],
@@ -153,15 +152,11 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
       options,
       correctOption: 0,
       correctOptions: isChoiceQuestion(type) ? [0] : [],
-      acceptedAnswers:
-        type === "short_answer" ? question.acceptedAnswers : [],
+      acceptedAnswers: type === "short_answer" ? question.acceptedAnswers : [],
     });
   };
 
-  const toggleCorrectOption = (
-    questionIndex: number,
-    optionIndex: number,
-  ) => {
+  const toggleCorrectOption = (questionIndex: number, optionIndex: number) => {
     const question = questions[questionIndex];
     if (question.type !== "multiple_choice") {
       updateQuestion(questionIndex, {
@@ -184,7 +179,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
     const question = questions[questionIndex];
     if (question.options.length <= 2) return;
 
-    const options = question.options.filter((_, index) => index !== optionIndex);
+    const options = question.options.filter(
+      (_, index) => index !== optionIndex,
+    );
     const correctOptions = question.correctOptions
       .filter((option) => option !== optionIndex)
       .map((option) => (option > optionIndex ? option - 1 : option));
@@ -206,9 +203,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
           passingScore,
           isGradable,
           isPublished,
-          timeLimitMinutes: timeLimitMinutes
-            ? Number(timeLimitMinutes)
-            : null,
+          timeLimitMinutes: timeLimitMinutes ? Number(timeLimitMinutes) : null,
           maxAttempts: maxAttempts ? Number(maxAttempts) : null,
           availableFrom: availableFrom
             ? new Date(availableFrom).toISOString()
@@ -400,10 +395,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
       </section>
 
       {questions.map((question, questionIndex) => (
-        <section
-          key={questionIndex}
-          className="surface-panel overflow-hidden"
-        >
+        <section key={questionIndex} className="surface-panel overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b bg-muted/30 px-5 py-4 sm:px-6">
             <h3 className="font-semibold">Question {questionIndex + 1}</h3>
             <Button
@@ -428,10 +420,7 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
                 <ResponsiveFilterSelect
                   value={question.type}
                   onValueChange={(value) =>
-                    changeQuestionType(
-                      questionIndex,
-                      value as QuizQuestionType,
-                    )
+                    changeQuestionType(questionIndex, value as QuizQuestionType)
                   }
                   label={`Question ${questionIndex + 1} type`}
                   options={questionTypeOptions}
@@ -467,61 +456,61 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
               />
             </div>
             {isChoiceQuestion(question.type) && (
-            <div className="space-y-3">
-              <Label>Answer options</Label>
-              {question.options.map((option, optionIndex) => (
-                <div
-                  key={optionIndex}
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-3"
-                >
-                  <input
-                    type={
-                      question.type === "multiple_choice"
-                        ? "checkbox"
-                        : "radio"
-                    }
-                    name={`correct-answer-${questionIndex}`}
-                    checked={question.correctOptions.includes(optionIndex)}
-                    onChange={() =>
-                      toggleCorrectOption(questionIndex, optionIndex)
-                    }
-                    aria-label={`Mark option ${optionIndex + 1} as correct`}
-                    className="size-4 accent-primary"
-                  />
-                  <Input
-                    value={option}
-                    onChange={(event) =>
-                      updateOption(
-                        questionIndex,
-                        optionIndex,
-                        event.target.value,
-                      )
-                    }
-                    placeholder={`Option ${optionIndex + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    disabled={question.options.length <= 2}
-                    aria-label={`Remove option ${optionIndex + 1}`}
-                    onClick={() => removeOption(questionIndex, optionIndex)}
+              <div className="space-y-3">
+                <Label>Answer options</Label>
+                {question.options.map((option, optionIndex) => (
+                  <div
+                    key={optionIndex}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3"
                   >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => addOption(questionIndex)}
-                disabled={question.type === "true_false"}
-              >
-                <Plus className="size-4" />
-                Add option
-              </Button>
-            </div>
+                    <input
+                      type={
+                        question.type === "multiple_choice"
+                          ? "checkbox"
+                          : "radio"
+                      }
+                      name={`correct-answer-${questionIndex}`}
+                      checked={question.correctOptions.includes(optionIndex)}
+                      onChange={() =>
+                        toggleCorrectOption(questionIndex, optionIndex)
+                      }
+                      aria-label={`Mark option ${optionIndex + 1} as correct`}
+                      className="size-4 accent-primary"
+                    />
+                    <Input
+                      value={option}
+                      onChange={(event) =>
+                        updateOption(
+                          questionIndex,
+                          optionIndex,
+                          event.target.value,
+                        )
+                      }
+                      placeholder={`Option ${optionIndex + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={question.options.length <= 2}
+                      aria-label={`Remove option ${optionIndex + 1}`}
+                      onClick={() => removeOption(questionIndex, optionIndex)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addOption(questionIndex)}
+                  disabled={question.type === "true_false"}
+                >
+                  <Plus className="size-4" />
+                  Add option
+                </Button>
+              </div>
             )}
             {question.type === "short_answer" && (
               <div className="space-y-3">
@@ -613,7 +602,9 @@ const LessonQuizEditor = ({ lessonId }: { lessonId: string }) => {
         <Button
           type="button"
           variant="outline"
-          onClick={() => setQuestions((current) => [...current, createQuestion()])}
+          onClick={() =>
+            setQuestions((current) => [...current, createQuestion()])
+          }
         >
           <Plus className="size-4" />
           Add question

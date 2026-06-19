@@ -29,6 +29,10 @@ export const POST = catchAsync(async (request: Request) => {
     return ApiError(404, "User not found! Please Create an account.");
   }
 
+  if (isUserExist.isDeleted) {
+    return ApiError(403, "This account has been disabled.");
+  }
+
   // Check if user is verified or not before login
   if (isUserExist && !isUserExist.isVerified) {
     // return ApiError(404, "User not verified!");

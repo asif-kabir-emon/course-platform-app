@@ -7,7 +7,7 @@ import {
   useFinishQuizAttemptMutation,
   useGetQuizAttemptQuery,
   useSaveQuizAttemptMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import { cn } from "@/lib/utils";
 import type {
   QuizQuestionType,
@@ -276,7 +276,8 @@ const QuestionCard = ({
       question.type === "multiple_choice") && (
       <div className="mt-4 grid gap-2">
         {question.options.map((option, optionIndex) => {
-          const selected = value.selectedOptions?.includes(optionIndex) ?? false;
+          const selected =
+            value.selectedOptions?.includes(optionIndex) ?? false;
           const multiple = question.type === "multiple_choice";
 
           return (
@@ -284,9 +285,7 @@ const QuestionCard = ({
               key={optionIndex}
               className={cn(
                 "flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm transition-colors",
-                selected
-                  ? "border-primary bg-primary/5"
-                  : "hover:bg-muted/40",
+                selected ? "border-primary bg-primary/5" : "hover:bg-muted/40",
               )}
             >
               <input
@@ -346,11 +345,7 @@ const AttemptResultCard = ({
   isGradable: boolean;
 }) => {
   const pending = result.pendingReview;
-  const Icon = pending
-    ? Clock3
-    : result.passed
-      ? CheckCircle2
-      : XCircle;
+  const Icon = pending ? Clock3 : result.passed ? CheckCircle2 : XCircle;
 
   return (
     <section className="surface-panel mx-auto max-w-2xl p-6 text-center sm:p-10">

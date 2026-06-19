@@ -1,5 +1,4 @@
 "use client";
-import PageHeader from "@/components/PageHeader";
 import {
   Card,
   CardContent,
@@ -8,19 +7,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
+import { useGetCourseByIdQuery } from "@/hooks/course.hook";
 import React, { use, useMemo, useState } from "react";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import {
+  ArrowUpDown,
   BookOpen,
-  ChevronDown,
+  CircleCheck,
   Eye,
   EyeOff,
+  FileText,
   Layers3,
   ListFilter,
+  Pencil,
   PlusIcon,
   Search,
+  Trash2Icon,
+  X,
   Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -40,6 +43,25 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ActionButton } from "@/components/ActionButton";
+import { useDeleteSectionMutation } from "@/hooks/section.hook";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type CourseSection = {
   id: string;
@@ -81,20 +103,20 @@ const CourseEditPage = ({
   const sections = courses.data.sections as CourseSection[];
 
   return (
-    <div className="container my-5 space-y-5 sm:my-8">
-      <section className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/[0.09] via-card to-sky-50 shadow-sm">
-        <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 left-1/3 size-56 rounded-full bg-sky-300/15 blur-3xl" />
-        <div className="relative p-5 sm:p-7 lg:p-8">
-          <div className="max-w-3xl">
+    <div className="page-shell space-y-5">
+      <section className="surface-panel overflow-hidden bg-card">
+        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_32rem] lg:items-end lg:p-6">
+          <div className="min-w-0">
             <Badge
               variant="secondary"
-              className="mb-3 border border-primary/10 bg-background/75 text-primary shadow-sm"
+              className="mb-3 border border-primary/10 bg-secondary text-primary shadow-sm"
             >
               Course workspace
             </Badge>
-            <PageHeader title={courses.data.name} className="mb-0 sm:mb-0" />
-            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+            <h1 className="truncate text-2xl font-bold tracking-normal text-foreground sm:text-3xl">
+              {courses.data.name}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
               Organize the curriculum, control lesson visibility, and keep
               course details ready for learners.
             </p>
@@ -104,9 +126,15 @@ const CourseEditPage = ({
       </section>
 
       <Tabs defaultValue="lessons">
-        <TabsList className="grid h-11 w-full grid-cols-2 sm:w-auto sm:min-w-64">
-          <TabsTrigger value="lessons">Curriculum</TabsTrigger>
-          <TabsTrigger value="details">Course details</TabsTrigger>
+        <TabsList className="grid h-11 w-full grid-cols-2 bg-muted/80 sm:w-auto sm:min-w-80">
+          <TabsTrigger value="lessons" className="gap-2">
+            <BookOpen className="size-4" />
+            Curriculum
+          </TabsTrigger>
+          <TabsTrigger value="details" className="gap-2">
+            <FileText className="size-4" />
+            Course details
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="lessons" className="mt-4">
           <CurriculumEditor courseId={courseId} sections={sections} />
@@ -166,20 +194,20 @@ const CourseSummary = ({ sections }: { sections: CourseSection[] }) => {
   ];
 
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3 lg:mt-7 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3">
       {summary.map(({ label, value, icon: Icon, tone }) => (
         <div
           key={label}
-          className="flex min-h-24 items-center gap-3 rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur transition-transform duration-200 hover:-translate-y-0.5"
+          className="flex min-h-20 items-center gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 shadow-sm"
         >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm">
             <Icon className={cn("size-5", tone)} />
           </span>
           <div className="min-w-0">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="text-[11px] font-semibold uppercase tracking-normal text-muted-foreground">
               {label}
             </div>
-            <div className="mt-1 text-2xl font-bold leading-none">{value}</div>
+            <div className="mt-1 text-xl font-bold leading-none">{value}</div>
           </div>
         </div>
       ))}
@@ -198,6 +226,8 @@ const CurriculumEditor = ({
   const [visibility, setVisibility] = useState<"all" | CourseSectionStatus>(
     "all",
   );
+  const [deleteSection, { isLoading: isDeletingSection }] =
+    useDeleteSectionMutation();
 
   const filteredSections = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -215,28 +245,77 @@ const CurriculumEditor = ({
       return matchesVisibility && matchesQuery;
     });
   }, [query, sections, visibility]);
+  const totalLessons = sections.reduce(
+    (count, section) => count + section.lessons.length,
+    0,
+  );
+  const isFiltered = query.trim().length > 0 || visibility !== "all";
+  const resetFilters = () => {
+    setQuery("");
+    setVisibility("all");
+  };
+  const handleDeleteSection = async (id: string) => {
+    const toastId = toast.loading("Deleting section ...", {
+      duration: 2000,
+    });
+
+    try {
+      const response = await deleteSection(id).unwrap();
+
+      if (response.success) {
+        toast.success(response.message, { id: toastId, duration: 2000 });
+      } else {
+        toast.error(response.message, { id: toastId, duration: 2000 });
+      }
+    } catch {
+      toast.error("Failed to delete section", { id: toastId, duration: 2000 });
+    }
+  };
 
   return (
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_21rem]">
+    <div className="space-y-5">
+      <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+        <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
+          <div className="flex gap-2">
+            <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+            <span>Public content is available to enrolled learners.</span>
+          </div>
+          <div className="flex gap-2">
+            <Video className="mt-0.5 size-4 shrink-0 text-amber-600" />
+            <span>Preview lessons can be opened before purchase.</span>
+          </div>
+          <div className="flex gap-2">
+            <EyeOff className="mt-0.5 size-4 shrink-0" />
+            <span>Private content stays hidden from learners.</span>
+          </div>
+        </div>
+      </div>
+
       <Card className="min-w-0">
         <CardHeader className="gap-4 border-b border-border/70">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle>Course curriculum</CardTitle>
               <CardDescription className="mt-1">
-                Expand a section to manage lessons. Drag items to reorder them.
+                {sections.length} sections and {totalLessons} lessons in the
+                learner-facing sequence.
               </CardDescription>
             </div>
-            <SectionFormDialog courseId={courseId}>
-              <DialogTrigger asChild>
-                <Button className="w-full sm:w-auto">
-                  <PlusIcon />
-                  Add section
-                </Button>
-              </DialogTrigger>
-            </SectionFormDialog>
+            <div className="grid gap-2 sm:flex sm:items-center">
+              {sections.length > 1 && (
+                <SectionReorderDialog courseId={courseId} sections={sections} />
+              )}
+              <SectionFormDialog courseId={courseId}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto">
+                    <PlusIcon />
+                    Add section
+                  </Button>
+                </DialogTrigger>
+              </SectionFormDialog>
+            </div>
           </div>
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px]">
+          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_190px_auto]">
             <label className="relative">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -248,31 +327,72 @@ const CurriculumEditor = ({
             </label>
             <label className="relative">
               <ListFilter className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <select
+              <Select
                 value={visibility}
-                onChange={(event) =>
-                  setVisibility(
-                    event.target.value as "all" | CourseSectionStatus,
-                  )
+                onValueChange={(value) =>
+                  setVisibility(value as "all" | CourseSectionStatus)
                 }
-                className="h-10 w-full appearance-none rounded-lg border border-input bg-white/80 pl-9 pr-8 text-sm shadow-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15"
               >
-                <option value="all">All visibility</option>
-                <option value={CourseSectionStatus.public}>Public</option>
-                <option value={CourseSectionStatus.private}>Private</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <SelectTrigger className="h-10 bg-background/80 pl-9">
+                  <SelectValue placeholder="All visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All visibility</SelectItem>
+                  <SelectItem value={CourseSectionStatus.public}>
+                    Public
+                  </SelectItem>
+                  <SelectItem value={CourseSectionStatus.private}>
+                    Private
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </label>
+            {isFiltered && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="justify-center"
+                onClick={resetFilters}
+              >
+                <X className="size-4" />
+                Clear
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-3 sm:p-5">
-          {filteredSections.length === 0 ? (
+          {sections.length === 0 ? (
             <div className="rounded-2xl border border-dashed p-10 text-center">
-              <BookOpen className="mx-auto size-8 text-muted-foreground" />
+              <Layers3 className="mx-auto size-8 text-muted-foreground" />
+              <p className="mt-3 font-medium">Start with your first section</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Add sections first, then place lessons inside each section.
+              </p>
+              <SectionFormDialog courseId={courseId}>
+                <DialogTrigger asChild>
+                  <Button className="mt-5">
+                    <PlusIcon />
+                    Add section
+                  </Button>
+                </DialogTrigger>
+              </SectionFormDialog>
+            </div>
+          ) : filteredSections.length === 0 ? (
+            <div className="rounded-2xl border border-dashed p-10 text-center">
+              <Search className="mx-auto size-8 text-muted-foreground" />
               <p className="mt-3 font-medium">No matching curriculum</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Adjust the search or visibility filter.
+                Adjust your search or show every visibility state.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-5"
+                onClick={resetFilters}
+              >
+                <X className="size-4" />
+                Clear filters
+              </Button>
             </div>
           ) : (
             <Accordion
@@ -284,11 +404,11 @@ const CurriculumEditor = ({
                 <AccordionItem
                   key={section.id}
                   value={section.id}
-                  className="overflow-hidden rounded-2xl border border-border/80 bg-muted/20 px-4 last:border-b"
+                  className="overflow-hidden rounded-xl border border-border/80 bg-muted/20 px-4 last:border-b"
                 >
-                  <AccordionTrigger className="gap-3 py-4 hover:no-underline">
+                  <AccordionTrigger className="min-w-0 gap-3 py-4 hover:no-underline">
                     <div className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-background text-xs font-bold text-muted-foreground shadow-sm">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background text-xs font-bold text-muted-foreground shadow-sm">
                         {index + 1}
                       </span>
                       <div className="min-w-0">
@@ -298,7 +418,7 @@ const CurriculumEditor = ({
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           <span>{section.lessons.length} lessons</span>
                           <span>•</span>
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 capitalize">
                             {section.status === CourseSectionStatus.public ? (
                               <Eye className="size-3.5 text-emerald-600" />
                             ) : (
@@ -311,22 +431,57 @@ const CurriculumEditor = ({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-4">
-                    <div className="mb-3 flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm text-muted-foreground">
-                        Manage lessons in this section.
+                    <div className="mb-3 flex flex-col gap-3 border-t pt-4 lg:flex-row lg:items-center lg:justify-between">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {section.lessons.length === 0
+                          ? "No lessons in this section yet."
+                          : `${section.lessons.length} lessons ready to organize.`}
                       </p>
-                      <LessonFormDialog sectionId={section.id}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full sm:w-auto"
+                      <div className="grid gap-2 sm:flex sm:items-center sm:justify-end">
+                        <SectionFormDialog
+                          courseId={courseId}
+                          section={section}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-auto"
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                          </DialogTrigger>
+                        </SectionFormDialog>
+                        {section.lessons.length === 0 && (
+                          <ActionButton
+                            action={() => {
+                              handleDeleteSection(section.id);
+                            }}
+                            tryAction={isDeletingSection}
                           >
-                            <PlusIcon />
-                            New lesson
-                          </Button>
-                        </DialogTrigger>
-                      </LessonFormDialog>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground sm:w-auto"
+                              aria-label={`Delete ${section.name}`}
+                            >
+                              <Trash2Icon className="size-4" />
+                            </Button>
+                          </ActionButton>
+                        )}
+                        <LessonFormDialog sectionId={section.id}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-auto"
+                            >
+                              <PlusIcon />
+                              New lesson
+                            </Button>
+                          </DialogTrigger>
+                        </LessonFormDialog>
+                      </div>
                     </div>
                     {section.lessons.length > 0 ? (
                       <SortableLessonList
@@ -345,30 +500,55 @@ const CurriculumEditor = ({
           )}
         </CardContent>
       </Card>
-
-      <aside className="min-w-0 space-y-4 xl:sticky xl:top-24">
-        <Card className="min-w-0 overflow-hidden">
-          <CardHeader className="border-b border-border/60 pb-4">
-            <CardTitle className="text-base">Section order</CardTitle>
-            <CardDescription>
-              Drag sections into the learner-facing order.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="max-h-[34rem] overflow-y-auto px-2 py-3 sm:px-3">
-            <SortableSectionList courseId={courseId} sections={sections} />
-          </CardContent>
-        </Card>
-        <Card className="border-primary/15 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="text-base">Publishing guide</CardTitle>
-            <CardDescription className="leading-6">
-              Public lessons are available to enrolled learners. Preview lessons
-              can be opened before purchase. Private content stays hidden.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </aside>
     </div>
+  );
+};
+
+const SectionReorderDialog = ({
+  courseId,
+  sections,
+}: {
+  courseId: string;
+  sections: CourseSection[];
+}) => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full sm:w-auto">
+          <ArrowUpDown className="size-4" />
+          Reorder
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        hideClose
+        className="fixed inset-0 left-0 top-0 flex h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:rounded-none"
+      >
+        <DialogHeader className="shrink-0 border-b bg-background px-5 py-4 text-left">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <DialogTitle>Reorder sections</DialogTitle>
+              <DialogDescription className="mt-1">
+                Drag sections into the learner-facing order.
+              </DialogDescription>
+            </div>
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">
+                Done
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-muted/30 px-4 py-5">
+          <div className="mx-auto max-w-3xl rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+            <SortableSectionList
+              courseId={courseId}
+              sections={sections}
+              showActions={false}
+            />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

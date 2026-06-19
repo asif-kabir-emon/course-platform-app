@@ -7,18 +7,29 @@ import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { authKey } from "@/constants/AuthKey.constant";
 import { UserRole, isAdminRole } from "@/constants/UserRole.constant";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
 import PasswordInput from "@/components/Form/PasswordInput";
+import { authService } from "@/service/auth.service";
+import { Suspense } from "react";
 
 type TFormInput = {
   email: string;
   password: string;
 };
 
-const SignInPage = () => {
+const SignInContent = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const redirectTo =
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//") &&
+    !redirectParam.startsWith("/sign-in")
+      ? redirectParam
+      : null;
   const {
     register,
     handleSubmit,
@@ -41,16 +52,7 @@ const SignInPage = () => {
     });
 
     try {
-      // API call
-      const response = await fetch("/api/auth/sign-in", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
+      const responseData = await authService.signIn(payload);
 
       // Show error message if login is unsuccessful
       if (!responseData.success) {
@@ -95,8 +97,10 @@ const SignInPage = () => {
         }),
       );
 
-      // Redirect to the home page
-      if (isAdminRole(responseData.data.role)) {
+      // Redirect to the requested local page when sign-in was triggered from a protected action.
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (isAdminRole(responseData.data.role)) {
         router.push("/admin");
       } else if (responseData.data.role === UserRole.user) {
         router.push("/courses");
@@ -193,13 +197,34 @@ const SignInPage = () => {
         <div>
           <p className="text-gray-700 text-center">
             Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="font-bold hover:underline">
+            <Link
+              href={
+                redirectTo
+                  ? `/sign-up?redirect=${encodeURIComponent(redirectTo)}`
+                  : "/sign-up"
+              }
+              className="font-bold hover:underline"
+            >
               Sign up
             </Link>
           </p>
         </div>
       </div>
     </div>
+  );
+};
+
+const SignInPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md">
+          <div className="h-[32rem] rounded-2xl border border-slate-200 bg-white shadow-xl" />
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 };
 

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   useAddSectionMutation,
   useUpdateSectionMutation,
-} from "@/redux/api/sectionApi";
+} from "@/hooks/section.hook";
 import SelectInput from "@/components/Form/SelectInput";
 
 const SectionForm = ({

@@ -2,8 +2,8 @@
 import { SkeletonText } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
-import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
+import { useGetCourseByIdQuery } from "@/hooks/course.hook";
+import { useGetCompletedLessonsQuery } from "@/hooks/lesson.hook";
 import {
   ChevronRight,
   Home,
@@ -60,8 +60,8 @@ export default function CoursePageLayout({
   }
 
   const activeLesson = course.data.sections
-    .flatMap((section: { lessons: { id: string; name: string }[] }) =>
-      section.lessons,
+    .flatMap(
+      (section: { lessons: { id: string; name: string }[] }) => section.lessons,
     )
     .find((lesson: { id: string }) => lesson.id === lessonId);
 
@@ -124,8 +124,7 @@ export default function CoursePageLayout({
       <div
         className={cn(
           "grid gap-6 xl:gap-8",
-          !isSidebarCollapsed &&
-            "lg:grid-cols-[300px_minmax(0,1fr)]",
+          !isSidebarCollapsed && "lg:grid-cols-[300px_minmax(0,1fr)]",
         )}
       >
         {!isSidebarCollapsed && (
@@ -168,9 +167,7 @@ export default function CoursePageLayout({
             </div>
           </aside>
         )}
-        <main className="min-w-0">
-          {children}
-        </main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
   );

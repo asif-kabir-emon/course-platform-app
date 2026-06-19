@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import UserPurchaseTable, {
   UserPurchaseTableSkeleton,
 } from "@/features/purchase/UserPurchaseTable";
-import { useGetMyPurchaseHistoryQuery } from "@/redux/api/purchaseApi";
+import { useGetMyPurchaseHistoryQuery } from "@/hooks/purchase.hook";
 import Link from "next/link";
 import React, { Suspense } from "react";
 

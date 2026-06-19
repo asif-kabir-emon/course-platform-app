@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   useCheckUserAccessQuery,
   useGetProductByIdQuery,
-} from "@/redux/api/productApi";
+} from "@/hooks/product.hook";
 import {
   BookOpen,
   CheckCircle2,
@@ -162,7 +162,9 @@ const ProductPage = ({
 
       <section className="mt-8">
         <div className="mb-5">
-          <h2 className="text-2xl font-bold tracking-tight">What you’ll learn</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            What you’ll learn
+          </h2>
           <p className="mt-1 text-muted-foreground">
             Explore every course, section, and lesson included in this bundle.
           </p>
@@ -170,8 +172,7 @@ const ProductPage = ({
         <div
           className={cn(
             "grid items-start gap-6",
-            (product.data?.courseProducts.length ?? 0) > 1 &&
-              "xl:grid-cols-2",
+            (product.data?.courseProducts.length ?? 0) > 1 && "xl:grid-cols-2",
           )}
         >
           {product.data?.courseProducts.map(
@@ -371,7 +372,11 @@ const PurchaseButton = ({
   if (!isLoading && userAccess?.success === false) {
     return (
       <Button size="lg" asChild>
-        <Link href="/sign-in">Login to purchase</Link>
+        <Link
+          href={`/sign-in?redirect=${encodeURIComponent(`/products/${productId}`)}`}
+        >
+          Login to purchase
+        </Link>
       </Button>
     );
   }
@@ -415,7 +420,7 @@ const ProductDetailSkeleton = () => {
         </div>
         <SkeletonText className="aspect-video h-full w-full rounded-none" />
       </div>
-      <div className="mt-8 grid gap-6 xl:grid-cols-2">
+      <div className="mt-8">
         <Card className="overflow-hidden">
           <CardHeader className="space-y-2 border-b">
             <SkeletonText className="h-6 w-48" />

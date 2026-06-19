@@ -13,7 +13,7 @@ import {
 import {
   useGetMyBookmarksQuery,
   useRemoveBookmarkMutation,
-} from "@/redux/api/learningApi";
+} from "@/hooks/learning.hook";
 import { formatDate } from "@/lib/formatter";
 import {
   ArrowRight,

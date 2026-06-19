@@ -6,8 +6,8 @@ import {
   useGetCourseByIdQuery,
   useGetCourseReviewsQuery,
   useSaveCourseReviewMutation,
-} from "@/redux/api/courseApi";
-import { useGetCompletedLessonsQuery } from "@/redux/api/lessonApi";
+} from "@/hooks/course.hook";
+import { useGetCompletedLessonsQuery } from "@/hooks/lesson.hook";
 import {
   BookOpen,
   CheckCircle2,
@@ -188,8 +188,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
                           key={value}
                           className={cn(
                             "size-5 text-muted-foreground/30",
-                            value <= rating &&
-                              "fill-amber-400 text-amber-400",
+                            value <= rating && "fill-amber-400 text-amber-400",
                           )}
                         />
                       ))}
@@ -225,8 +224,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
                       <Star
                         className={cn(
                           "size-6 text-muted-foreground/40",
-                          value <= rating &&
-                            "fill-amber-400 text-amber-400",
+                          value <= rating && "fill-amber-400 text-amber-400",
                         )}
                       />
                     </button>
@@ -245,9 +243,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
                       variant="outline"
                       onClick={() => {
                         setRating(reviewsData.currentUserReview.rating);
-                        setComment(
-                          reviewsData.currentUserReview.comment || "",
-                        );
+                        setComment(reviewsData.currentUserReview.comment || "");
                         setIsEditingReview(false);
                       }}
                     >
@@ -267,29 +263,31 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
       </div>
       {reviewsData.reviews?.length > 0 && (
         <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {reviewsData.reviews.slice(0, 6).map(
-            (review: {
-              id: string;
-              rating: number;
-              comment?: string;
-              author: string;
-            }) => (
-              <article key={review.id} className="rounded-2xl border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium">{review.author}</span>
-                  <span className="flex items-center gap-1 text-sm">
-                    <Star className="size-4 fill-amber-400 text-amber-400" />
-                    {review.rating}
-                  </span>
-                </div>
-                {review.comment && (
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {review.comment}
-                  </p>
-                )}
-              </article>
-            ),
-          )}
+          {reviewsData.reviews
+            .slice(0, 6)
+            .map(
+              (review: {
+                id: string;
+                rating: number;
+                comment?: string;
+                author: string;
+              }) => (
+                <article key={review.id} className="rounded-2xl border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{review.author}</span>
+                    <span className="flex items-center gap-1 text-sm">
+                      <Star className="size-4 fill-amber-400 text-amber-400" />
+                      {review.rating}
+                    </span>
+                  </div>
+                  {review.comment && (
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {review.comment}
+                    </p>
+                  )}
+                </article>
+              ),
+            )}
         </div>
       )}
     </section>

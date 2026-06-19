@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { authService } from "@/service/auth.service";
 
 export const sendOTP = async (email: string): Promise<boolean> => {
   const payload = {
@@ -6,15 +7,7 @@ export const sendOTP = async (email: string): Promise<boolean> => {
     otpType: "email_verification",
   };
   try {
-    const response = await fetch("/api/auth/send-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseData = await response.json();
+    const responseData = await authService.sendOtp(payload);
 
     if (!responseData.success) {
       toast.error(responseData.message, {

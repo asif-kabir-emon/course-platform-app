@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   FileText,
+  Pencil,
   Save,
   Trash2Icon,
   Video,
@@ -19,7 +20,7 @@ import LessonFormDialog from "./LessonFormDialog";
 import {
   useDeleteLessonMutation,
   useReorderedLessonsMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import { ActionButton } from "@/components/ActionButton";
 import { SortableItem, SortableList } from "@/components/SortableList";
 
@@ -45,7 +46,7 @@ const SortableLessonList = ({
   const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   const handleDeleteLesson = async (id: string) => {
-    const toastId = toast.loading("Deleting section ...", {
+    const toastId = toast.loading("Deleting lesson ...", {
       duration: 2000,
     });
     try {
@@ -57,7 +58,7 @@ const SortableLessonList = ({
         toast.error(response.message, { id: toastId, duration: 2000 });
       } // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to delete section", { id: toastId, duration: 2000 });
+      toast.error("Failed to delete lesson", { id: toastId, duration: 2000 });
     }
   };
 
@@ -86,68 +87,78 @@ const SortableLessonList = ({
       <SortableList items={lessons} onOrderChange={setDraftOrder}>
         {(items) =>
           items.map((lesson) => (
-          <SortableItem
-            key={lesson.id}
-            id={lesson.id}
-            className="flex min-w-0 items-center gap-2"
-          >
-            <div
-              className={cn(
-                "flex min-w-0 flex-1 items-center gap-2",
-                lesson.status === CourseLessonStatus.private &&
-                  "text-muted-foreground",
-              )}
+            <SortableItem
+              key={lesson.id}
+              id={lesson.id}
+              className="flex min-h-12 min-w-0 items-center gap-2"
             >
-              {lesson.status === CourseLessonStatus.public && (
-                <Eye className="size-4" />
-              )}
-              {lesson.status === CourseLessonStatus.private && (
-                <EyeOff className="size-4" />
-              )}
-              {lesson.status === CourseLessonStatus.preview && (
-                <Video className="size-4" />
-              )}
-              <span className="truncate text-sm font-medium">
-                {lesson.name}
-              </span>
-              <span className="hidden items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] capitalize text-muted-foreground sm:flex">
-                {lesson.type === CourseLessonType.text ? (
-                  <FileText className="size-3" />
-                ) : lesson.type === CourseLessonType.quiz ? (
-                  <CircleHelp className="size-3" />
-                ) : (
-                  <Video className="size-3" />
+              <div
+                className={cn(
+                  "flex min-w-0 flex-1 items-center gap-3",
+                  lesson.status === CourseLessonStatus.private &&
+                    "text-muted-foreground",
                 )}
-                {lesson.type ?? CourseLessonType.video}
-              </span>
-            </div>
-            <LessonFormDialog sectionId={sectionId} lesson={lesson}>
-              <DialogTrigger asChild>
+                title={lesson.name}
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  {lesson.type === CourseLessonType.text ? (
+                    <FileText className="size-4" />
+                  ) : lesson.type === CourseLessonType.quiz ? (
+                    <CircleHelp className="size-4" />
+                  ) : (
+                    <Video className="size-4" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">
+                    {lesson.name}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-center gap-2 text-[11px] capitalize text-muted-foreground">
+                    <span>{lesson.type ?? CourseLessonType.video}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      {lesson.status === CourseLessonStatus.public && (
+                        <Eye className="size-3 text-emerald-600" />
+                      )}
+                      {lesson.status === CourseLessonStatus.private && (
+                        <EyeOff className="size-3" />
+                      )}
+                      {lesson.status === CourseLessonStatus.preview && (
+                        <Video className="size-3 text-amber-600" />
+                      )}
+                      {lesson.status}
+                    </span>
+                  </span>
+                </span>
+              </div>
+              <LessonFormDialog sectionId={sectionId} lesson={lesson}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="ml-auto size-8 shrink-0 hover:bg-primary/5 hover:text-primary"
+                    aria-label={`Edit ${lesson.name}`}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                </DialogTrigger>
+              </LessonFormDialog>
+              <ActionButton
+                action={() => {
+                  handleDeleteLesson(lesson.id);
+                }}
+                tryAction={isDeletingLesson}
+              >
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="ml-auto shrink-0 px-2.5 hover:bg-primary/5 hover:text-primary"
+                  size="icon"
+                  className="size-8 shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  aria-label={`Delete ${lesson.name}`}
                 >
-                  Edit
+                  <Trash2Icon className="size-3.5" />
                 </Button>
-              </DialogTrigger>
-            </LessonFormDialog>
-            <ActionButton
-              action={() => {
-                handleDeleteLesson(lesson.id);
-              }}
-              tryAction={isDeletingLesson}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              >
-                <Trash2Icon />
-                <span className="sr-only">Delete</span>
-              </Button>
-            </ActionButton>
-          </SortableItem>
+              </ActionButton>
+            </SortableItem>
           ))
         }
       </SortableList>

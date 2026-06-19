@@ -2,7 +2,7 @@
 import PageHeader from "@/components/PageHeader";
 import { SkeletonButton, SkeletonText } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
-import { useGetUserProfileQuery } from "@/redux/api/profileApi";
+import { useGetUserProfileQuery } from "@/hooks/profile.hook";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";

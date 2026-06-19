@@ -3,7 +3,7 @@ import { Form } from "@/components/Form/Form";
 import TextInput from "@/components/Form/TextInput";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useResetPasswordMutation } from "@/redux/api/authApi";
+import { useResetPasswordMutation } from "@/hooks/auth.hook";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";

@@ -7,6 +7,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import PasswordInput from "@/components/Form/PasswordInput";
 import PasswordStrength from "@/components/Form/PasswordStrength";
+import { authService } from "@/service/auth.service";
 
 type TFormInput = {
   password: string;
@@ -57,16 +58,9 @@ const ResetPasswordForm = () => {
     });
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+      const responseData = await authService.resetPasswordWithToken(payload, {
+        token,
       });
-
-      const responseData = await response.json();
 
       if (!responseData.success) {
         toast.error(responseData.message, { id: toastId, duration: 2000 });

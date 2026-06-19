@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/formatter";
 import { cn } from "@/lib/utils";
-import { useGetMyGradesQuery } from "@/redux/api/learningApi";
+import { useGetMyGradesQuery } from "@/hooks/learning.hook";
 import {
   ArrowRight,
   Award,
@@ -150,7 +150,9 @@ const GradeSummary = ({
     {
       label: "Overall average",
       value:
-        summary.averageScore === null ? "Not graded" : `${summary.averageScore}%`,
+        summary.averageScore === null
+          ? "Not graded"
+          : `${summary.averageScore}%`,
       helper: "From calculated final grades",
       icon: BarChart3,
       tone: "text-sky-600",
@@ -224,10 +226,7 @@ const CourseGradeCard = ({ course }: { course: CourseGrade }) => (
               label="Passed"
               value={`${course.summary.passedAssessments}/${course.summary.gradedAssessments}`}
             />
-            <CourseMetric
-              label="Review"
-              value={course.summary.pendingReview}
-            />
+            <CourseMetric label="Review" value={course.summary.pendingReview} />
           </div>
         </div>
       </div>
@@ -379,7 +378,9 @@ const AttemptRow = ({ attempt }: { attempt: GradeAttempt }) => {
 
       {attempt.feedback && (
         <div className="mt-3 rounded-lg bg-primary/5 p-3 text-sm">
-          <span className="font-medium text-primary">Instructor feedback: </span>
+          <span className="font-medium text-primary">
+            Instructor feedback:{" "}
+          </span>
           <span className="whitespace-pre-wrap text-muted-foreground">
             {attempt.feedback}
           </span>
@@ -479,17 +480,11 @@ const GradesSkeleton = () => (
   <div className="space-y-5">
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {[1, 2, 3, 4].map((item) => (
-        <div
-          key={item}
-          className="h-28 rounded-2xl border skeleton-shimmer"
-        />
+        <div key={item} className="h-28 rounded-2xl border skeleton-shimmer" />
       ))}
     </div>
     {[1, 2].map((item) => (
-      <div
-        key={item}
-        className="h-64 rounded-2xl border skeleton-shimmer"
-      />
+      <div key={item} className="h-64 rounded-2xl border skeleton-shimmer" />
     ))}
   </div>
 );

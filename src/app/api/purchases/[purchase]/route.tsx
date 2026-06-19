@@ -5,7 +5,10 @@ import { authGuard } from "@/utils/authGuard";
 import { isSuperAdminRole } from "@/constants/UserRole.constant";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { stripeServerClient } from "@/helpers/stripe/stripeServer";
+import {
+  assertStripeSecretKey,
+  stripeServerClient,
+} from "@/helpers/stripe/stripeServer";
 import Stripe from "stripe";
 
 
@@ -109,6 +112,8 @@ export const GET = authGuard(
     if (!purchase) {
       return ApiError(404, "Purchase not found!");
     }
+
+    assertStripeSecretKey();
 
     const { payment_intent, total_details, amount_total, amount_subtotal } =
       await stripeServerClient.checkout.sessions.retrieve(
@@ -244,6 +249,8 @@ export const PUT = authGuard(
 
     const refund = await prisma.$transaction(
       async (tsc: Prisma.TransactionClient) => {
+        assertStripeSecretKey();
+
         const session = await stripeServerClient.checkout.sessions.retrieve(
           isPurchaseExist.stripeSessionId,
         );

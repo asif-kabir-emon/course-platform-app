@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { authService } from "@/service/auth.service";
 
 type TFormInput = {
   email: string;
@@ -64,15 +65,7 @@ const ForgotPasswordPage = () => {
     };
 
     try {
-      const response = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
+      const responseData = await authService.sendOtp(payload);
 
       if (!responseData.success) {
         setIsButtonDisabled(false);

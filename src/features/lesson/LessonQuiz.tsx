@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   useGetLessonQuizQuery,
   useStartQuizAttemptMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import {
   ArrowRight,
   CalendarClock,

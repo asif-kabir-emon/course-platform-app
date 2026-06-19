@@ -10,13 +10,14 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import {
   useDeleteSectionMutation,
   useReorderedSectionsMutation,
-} from "@/redux/api/sectionApi";
+} from "@/hooks/section.hook";
 import { toast } from "sonner";
 import { ActionButton } from "@/components/ActionButton";
 
 const SortableSectionList = ({
   courseId,
   sections,
+  showActions = true,
 }: {
   courseId: string;
   sections: {
@@ -24,6 +25,7 @@ const SortableSectionList = ({
     name: string;
     status: CourseSectionStatus;
   }[];
+  showActions?: boolean;
 }) => {
   const [deleteSection, { isLoading: isDeletingSection }] =
     useDeleteSectionMutation();
@@ -76,53 +78,63 @@ const SortableSectionList = ({
             <SortableItem
               key={section.id}
               id={section.id}
-              className="flex min-h-10 min-w-0 items-center gap-1.5"
+              className="flex min-h-12 min-w-0 items-center gap-1.5"
             >
               <div
                 className={cn(
-                  "flex min-w-0 flex-1 items-center gap-2",
+                  "flex min-w-0 flex-1 items-center gap-3",
                   section.status === CourseSectionStatus.private &&
                     "text-muted-foreground",
                 )}
                 title={section.name}
               >
-                {section.status === CourseSectionStatus.public && (
-                  <Eye className="size-3.5 shrink-0" />
-                )}
-                {section.status === CourseSectionStatus.private && (
-                  <EyeOff className="size-3.5 shrink-0" />
-                )}
-                <span className="truncate text-sm font-medium">
-                  {section.name}
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  {section.status === CourseSectionStatus.public ? (
+                    <Eye className="size-3.5 text-emerald-600" />
+                  ) : (
+                    <EyeOff className="size-3.5" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">
+                    {section.name}
+                  </span>
+                  <span className="text-[11px] capitalize text-muted-foreground">
+                    {section.status}
+                  </span>
                 </span>
               </div>
-              <SectionFormDialog courseId={courseId} section={section}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="ml-auto size-8 shrink-0 hover:bg-primary/5 hover:text-primary"
-                    aria-label={`Edit ${section.name}`}
+              {showActions && (
+                <>
+                  <SectionFormDialog courseId={courseId} section={section}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="ml-auto size-8 shrink-0 hover:bg-primary/5 hover:text-primary"
+                        aria-label={`Edit ${section.name}`}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    </DialogTrigger>
+                  </SectionFormDialog>
+                  <ActionButton
+                    action={() => {
+                      handleDeleteSection(section.id);
+                    }}
+                    tryAction={isDeletingSection}
                   >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                </DialogTrigger>
-              </SectionFormDialog>
-              <ActionButton
-                action={() => {
-                  handleDeleteSection(section.id);
-                }}
-                tryAction={isDeletingSection}
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                >
-                  <Trash2Icon className="size-3.5" />
-                  <span className="sr-only">Delete</span>
-                </Button>
-              </ActionButton>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-8 shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      aria-label={`Delete ${section.name}`}
+                    >
+                      <Trash2Icon className="size-3.5" />
+                    </Button>
+                  </ActionButton>
+                </>
+              )}
             </SortableItem>
           ))
         }
