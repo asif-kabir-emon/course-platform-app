@@ -1,25 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KnowVeria">
   <defs>
-    <linearGradient id="brand" x1="8" y1="8" x2="56" y2="56">
+    <linearGradient id="kv-brand" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
       <stop stop-color="#4f46e5"/>
+      <stop offset="0.55" stop-color="#2563eb"/>
       <stop offset="1" stop-color="#0ea5e9"/>
     </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1e1b4b" flood-opacity="0.28"/>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#brand)"/>
-  <path
-    d="M17 18.5c5.8 0 10.8 1.5 15 4.6 4.2-3.1 9.2-4.6 15-4.6v26.2c-5.6 0-10.6 1.4-15 4.3-4.4-2.9-9.4-4.3-15-4.3V18.5Z"
-    fill="none"
-    stroke="#fff"
-    stroke-linejoin="round"
-    stroke-width="3.5"
-  />
-  <path d="M32 23.1V49" stroke="#fff" stroke-width="3.5"/>
-  <path
-    d="M24 25v13M24 31.5 30 25M24 31.5l6 6.5"
-    fill="none"
-    stroke="#fff"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    stroke-width="3.5"
-  />
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#kv-brand)"/>
+  <path d="M18 16h8v19.2L42.5 16H52L35.8 34.2 52.8 48h-10L26 34.5V48h-8V16Z" fill="#fff" filter="url(#soft-shadow)"/>
+  <path d="M46.5 12.5 48.8 17l4.7 2.2-4.7 2.3-2.3 4.5-2.2-4.5-4.8-2.3 4.8-2.2 2.2-4.5Z" fill="#dbeafe"/>
 </svg>
