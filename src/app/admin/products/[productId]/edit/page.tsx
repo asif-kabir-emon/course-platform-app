@@ -1,7 +1,7 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
 import React, { use } from "react";
-import { useGetProductByIdQuery } from "@/redux/api/productApi";
+import { useGetProductByIdQuery } from "@/hooks/product.hook";
 import ProductForm from "@/features/product/ProductForm";
 import { FormPageSkeleton } from "@/components/Skeleton";
 

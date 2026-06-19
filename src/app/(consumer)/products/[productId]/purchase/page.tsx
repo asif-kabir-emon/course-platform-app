@@ -3,8 +3,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   useCheckUserAccessQuery,
   useGetProductByIdQuery,
-} from "@/redux/api/productApi";
-import { useGetUserProfileQuery } from "@/redux/api/profileApi";
+} from "@/hooks/product.hook";
+import { useGetUserProfileQuery } from "@/hooks/profile.hook";
 import { notFound, redirect } from "next/navigation";
 import React, { Suspense, use } from "react";
 import PageHeader from "@/components/PageHeader";

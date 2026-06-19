@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useGetPendingQuizAttemptsQuery,
   useGradeQuizAttemptMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import type { QuizQuestionType, QuizResponses } from "@/types/quiz";
 import { CheckCircle2, ClipboardCheck } from "lucide-react";
 import { useState } from "react";

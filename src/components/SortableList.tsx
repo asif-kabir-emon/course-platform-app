@@ -52,7 +52,7 @@ export const SortableList = <T extends { id: string }>({
         items={draftItems}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex flex-col gap-1 w-full">{children(draftItems)}</div>
+        <div className="flex w-full flex-col gap-2">{children(draftItems)}</div>
       </SortableContext>
     </DndContext>
   );
@@ -86,8 +86,8 @@ export const SortableItem = ({
         transition,
       }}
       className={cn(
-        "flex gap-1 items-center bg-background rounded-xl border border-transparent p-2.5 transition-colors",
-        isActive && "z-10 border shadow-md",
+        "flex items-center gap-2 rounded-xl border border-border/70 bg-background p-2.5 transition-colors hover:border-primary/20 hover:bg-primary/[0.03]",
+        isActive && "z-10 border-primary/30 shadow-md",
       )}
     >
       <GripVerticalIcon

@@ -3,17 +3,14 @@ import PageHeader from "@/components/PageHeader";
 import PurchaseTable, {
   PurchaseTableSkeleton,
 } from "@/features/purchase/PurchaseTable";
-import { useGetPurchaseHistoriesQuery } from "@/redux/api/purchaseApi";
+import { useGetPurchaseHistoriesQuery } from "@/hooks/purchase.hook";
 import React, { useEffect, useState } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useClientSession } from "@/hooks/useClientSession";
 import { isSuperAdminRole } from "@/constants/UserRole.constant";
-import {
-  RotateCcw,
-  Search,
-} from "lucide-react";
+import { RotateCcw, Search } from "lucide-react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import ResponsiveFilterSelect from "@/components/ResponsiveFilterSelect";
 import MobileFilterDialog from "@/components/MobileFilterDialog";
@@ -109,37 +106,37 @@ const SalesPage = () => {
         </MobileFilterDialog>
       </div>
       <div className="mb-4 hidden gap-3 sm:grid sm:grid-cols-[minmax(260px,1fr)_190px_auto]">
-          <label className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search customer or product..."
-              aria-label="Search sales"
-              className="h-11 pl-9"
-            />
-          </label>
-          <ResponsiveFilterSelect
-            value={status}
-            onValueChange={setStatus}
-            options={paymentStatusOptions}
-            label="Filter sales by payment status"
+        <label className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Search customer or product..."
+            aria-label="Search sales"
+            className="h-11 pl-9"
           />
-          {hasFilters && (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11"
-              onClick={() => {
-                setSearchInput("");
-                setStatus("all");
-                setPage(1);
-              }}
-            >
-              <RotateCcw className="size-4" />
-              Reset
-            </Button>
-          )}
+        </label>
+        <ResponsiveFilterSelect
+          value={status}
+          onValueChange={setStatus}
+          options={paymentStatusOptions}
+          label="Filter sales by payment status"
+        />
+        {hasFilters && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11"
+            onClick={() => {
+              setSearchInput("");
+              setStatus("all");
+              setPage(1);
+            }}
+          >
+            <RotateCcw className="size-4" />
+            Reset
+          </Button>
+        )}
       </div>
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         {purchases.data?.length > 0 ? (

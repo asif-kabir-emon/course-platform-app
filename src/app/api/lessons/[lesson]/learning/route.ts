@@ -3,6 +3,11 @@ import { ApiError } from "@/utils/apiError";
 import { authGuard } from "@/utils/authGuard";
 import { catchAsync } from "@/utils/handleApi";
 import { sendResponse } from "@/utils/sendResponse";
+import { Prisma } from "@prisma/client";
+
+const isUniqueConflict = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError &&
+  error.code === "P2002";
 
 const getLessonAccess = async (userId: string, lessonId: string) => {
   const lesson = await prisma.courseLessons.findUnique({
@@ -107,20 +112,30 @@ export const PUT = authGuard(
 
     await prisma.$transaction(async (transaction) => {
       if (positionSeconds !== undefined || viewed) {
-        await transaction.userLessonProgress.upsert({
-          where: { userId_lessonId: { userId: user.id, lessonId } },
-          update: {
-            ...(positionSeconds !== undefined ? { positionSeconds } : {}),
-            ...(durationSeconds !== undefined ? { durationSeconds } : {}),
-            lastViewedAt: new Date(),
-          },
-          create: {
-            userId: user.id,
-            lessonId,
-            positionSeconds: positionSeconds ?? 0,
-            durationSeconds,
-          },
+        const progressData = {
+          ...(positionSeconds !== undefined ? { positionSeconds } : {}),
+          ...(durationSeconds !== undefined ? { durationSeconds } : {}),
+          lastViewedAt: new Date(),
+        };
+        const updatedProgress = await transaction.userLessonProgress.updateMany({
+          where: { userId: user.id, lessonId },
+          data: progressData,
         });
+
+        if (updatedProgress.count === 0) {
+          try {
+            await transaction.userLessonProgress.create({
+              data: {
+                userId: user.id,
+                lessonId,
+                positionSeconds: positionSeconds ?? 0,
+                durationSeconds,
+              },
+            });
+          } catch (error) {
+            if (!isUniqueConflict(error)) throw error;
+          }
+        }
       }
 
       if (note !== undefined) {
@@ -129,21 +144,39 @@ export const PUT = authGuard(
             where: { userId: user.id, lessonId },
           });
         } else {
-          await transaction.lessonNotes.upsert({
-            where: { userId_lessonId: { userId: user.id, lessonId } },
-            update: { content: note },
-            create: { userId: user.id, lessonId, content: note },
+          const updatedNote = await transaction.lessonNotes.updateMany({
+            where: { userId: user.id, lessonId },
+            data: { content: note },
           });
+
+          if (updatedNote.count === 0) {
+            try {
+              await transaction.lessonNotes.create({
+                data: { userId: user.id, lessonId, content: note },
+              });
+            } catch (error) {
+              if (!isUniqueConflict(error)) throw error;
+            }
+          }
         }
       }
 
       if (bookmarked !== undefined) {
         if (bookmarked) {
-          await transaction.lessonBookmarks.upsert({
-            where: { userId_lessonId: { userId: user.id, lessonId } },
-            update: {},
-            create: { userId: user.id, lessonId },
+          const updatedBookmark = await transaction.lessonBookmarks.updateMany({
+            where: { userId: user.id, lessonId },
+            data: {},
           });
+
+          if (updatedBookmark.count === 0) {
+            try {
+              await transaction.lessonBookmarks.create({
+                data: { userId: user.id, lessonId },
+              });
+            } catch (error) {
+              if (!isUniqueConflict(error)) throw error;
+            }
+          }
         } else {
           await transaction.lessonBookmarks.deleteMany({
             where: { userId: user.id, lessonId },

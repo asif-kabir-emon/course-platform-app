@@ -16,7 +16,7 @@ import {
   SkeletonButton,
   SkeletonText,
 } from "@/components/Skeleton";
-import { useRefundPurchaseMutation } from "@/redux/api/purchaseApi";
+import { useRefundPurchaseMutation } from "@/hooks/purchase.hook";
 import { toast } from "sonner";
 import { ActionButton } from "@/components/ActionButton";
 

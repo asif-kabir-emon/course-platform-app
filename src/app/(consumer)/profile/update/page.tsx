@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
-} from "@/redux/api/profileApi";
+} from "@/hooks/profile.hook";
 import { profileDefaultValues, profileSchema } from "@/schema/profile.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";

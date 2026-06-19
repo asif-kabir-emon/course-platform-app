@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatPlural } from "@/lib/formatter";
-import { useGetMyCoursesQuery } from "@/redux/api/courseApi";
+import { useGetMyCoursesQuery } from "@/hooks/course.hook";
 import Link from "next/link";
 import React, { Suspense } from "react";
 import { ArrowRight, History } from "lucide-react";

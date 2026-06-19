@@ -1,7 +1,7 @@
 "use client";
 import PageHeader from "@/components/PageHeader";
 import ProductCard, { ProductSkeleton } from "@/features/product/ProductCard";
-import { useGetProductsQuery } from "@/redux/api/productApi";
+import { useGetProductsQuery } from "@/hooks/product.hook";
 import React from "react";
 
 const HomePage = () => {

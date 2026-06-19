@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { formatDate, formatPrice } from "@/lib/formatter";
 import { cn } from "@/lib/utils";
-import { useGetPurchaseHistoryByIdQuery } from "@/redux/api/purchaseApi";
+import { useGetPurchaseHistoryByIdQuery } from "@/hooks/purchase.hook";
 import Link from "next/link";
 import React, { Fragment, Suspense, use } from "react";
 import { DetailPageSkeleton } from "@/components/Skeleton";
@@ -59,11 +59,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
     <div className="my-5">
       <PageHeader title="Purchase Details">
         {purchase.data.stripe.receiptUrl && (
-          <Button
-            variant="outline"
-            className="hidden md:flex"
-            asChild
-          >
+          <Button variant="outline" className="hidden md:flex" asChild>
             <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
               View Receipt
             </Link>
@@ -72,11 +68,7 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
       </PageHeader>
 
       {purchase.data.stripe.receiptUrl && (
-        <Button
-          variant="outline"
-          className="mb-5 mt-[-80px] md:hidden"
-          asChild
-        >
+        <Button variant="outline" className="mb-5 mt-[-80px] md:hidden" asChild>
           <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
             View Receipt
           </Link>

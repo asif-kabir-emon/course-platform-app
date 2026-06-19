@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import PasswordInput from "@/components/Form/PasswordInput";
 import PasswordStrength from "@/components/Form/PasswordStrength";
 import { sendOTP } from "@/utils/auth";
+import { authService } from "@/service/auth.service";
 
 type TFormInput = {
   firstName: string;
@@ -47,16 +48,7 @@ const SignUpPage = () => {
     });
 
     try {
-      // API call
-      const response = await fetch("/api/auth/sign-up/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
+      const responseData = await authService.signUpUser(payload);
 
       // Show error message if login is unsuccessful
       if (!responseData.success) {

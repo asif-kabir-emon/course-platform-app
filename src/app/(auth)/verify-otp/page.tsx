@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { authKey } from "@/constants/AuthKey.constant";
 import { sendOTP } from "@/utils/auth";
+import { authService } from "@/service/auth.service";
 
 const VerifyOtpPage = () => {
   const router = useRouter();
@@ -115,15 +116,7 @@ const VerifyOtpPage = () => {
     });
 
     try {
-      const response = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
+      const responseData = await authService.verifyOtp(payload);
 
       if (responseData.success) {
         toast.success(responseData.message, {

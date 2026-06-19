@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { sendOTP } from "@/utils/auth";
 import Link from "next/link";
 import PasswordInput from "@/components/Form/PasswordInput";
+import { authService } from "@/service/auth.service";
 
 type TFormInput = {
   email: string;
@@ -41,16 +42,7 @@ const SignInPage = () => {
     });
 
     try {
-      // API call
-      const response = await fetch("/api/auth/sign-in", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
+      const responseData = await authService.signIn(payload);
 
       // Show error message if login is unsuccessful
       if (!responseData.success) {

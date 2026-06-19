@@ -5,10 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { lessonDefaultValues, lessonSchema } from "@/schema/lesson.schema";
-import {
-  useAddLessonMutation,
-  useUpdateLessonMutation,
-} from "@/redux/api/lessonApi";
+import { useAddLessonMutation, useUpdateLessonMutation } from "@/hooks/lesson.hook";
 import { Form } from "@/components/Form/Form";
 import TextInput from "@/components/Form/TextInput";
 import SelectInput from "@/components/Form/SelectInput";
@@ -18,13 +15,7 @@ import { CourseLessonType } from "@/constants/CourseLessonType.constant";
 import { Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import MarkdownEditor from "@/components/MarkdownEditor";
-import {
-  CircleHelp,
-  FileText,
-  Info,
-  LockKeyhole,
-  Video,
-} from "lucide-react";
+import { CircleHelp, FileText, Info, LockKeyhole, Video } from "lucide-react";
 
 const LessonForm = ({
   lesson,

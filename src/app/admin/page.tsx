@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import {
   useGetAdminDashboardDataQuery,
   useGetPaymentReliabilityQuery,
-} from "@/redux/api/purchaseApi";
+} from "@/hooks/purchase.hook";
 import {
   AlertTriangle,
   BookOpen,
@@ -116,14 +116,16 @@ const AdminPage = () => {
               : "border-amber-500/20 bg-amber-500/5",
           )}
         >
-          <div className="flex items-start gap-3">
-            {reliability?.success &&
-            reliability.data.failedEvents === 0 &&
-            reliability.data.staleProcessingEvents === 0 ? (
-              <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-emerald-600" />
-            ) : (
-              <AlertTriangle className="mt-0.5 size-6 shrink-0 text-amber-600" />
-            )}
+          <div className="flex items-center gap-3">
+            <div>
+              {reliability?.success &&
+              reliability.data.failedEvents === 0 &&
+              reliability.data.staleProcessingEvents === 0 ? (
+                <CheckCircle2 className="mt-0.5 size-6 shrink-0 text-emerald-600" />
+              ) : (
+                <AlertTriangle className="mt-0.5 size-6 shrink-0 text-amber-600" />
+              )}
+            </div>
             <div>
               <h2 className="font-semibold">Payment processing health</h2>
               <p className="mt-1 text-sm text-muted-foreground">

@@ -14,9 +14,9 @@ import { z } from "zod";
 import {
   useAddProductMutation,
   useUpdateProductMutation,
-} from "@/redux/api/productApi";
+} from "@/hooks/product.hook";
 import MultiSelectInput from "@/components/Form/MultiSelectInput";
-import { useGetCoursesQuery } from "@/redux/api/courseApi";
+import { useGetCoursesQuery } from "@/hooks/course.hook";
 import SelectInput from "@/components/Form/SelectInput";
 
 const ProductForm = ({

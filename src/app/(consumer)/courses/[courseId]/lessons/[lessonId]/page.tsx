@@ -9,7 +9,7 @@ import {
   useGetNextLessonQuery,
   useGetPreviousLessonQuery,
   useSaveLessonLearningMutation,
-} from "@/redux/api/lessonApi";
+} from "@/hooks/lesson.hook";
 import {
   ArrowLeft,
   ArrowRight,
@@ -200,9 +200,7 @@ const SuspenseBoundary = ({
               initialPositionSeconds={
                 learningData?.success ? learningData.data.positionSeconds : 0
               }
-              onProgress={
-                isLearnerSession ? handleVideoProgress : undefined
-              }
+              onProgress={isLearnerSession ? handleVideoProgress : undefined}
             />
           </div>
         )}
@@ -237,9 +235,7 @@ const SuspenseBoundary = ({
                 ) : (
                   <Button
                     onClick={() => handleMarkLessonAsComplete(lesson.id)}
-                    disabled={
-                      isMarkingCompletedLesson || isFetchingLessonData
-                    }
+                    disabled={isMarkingCompletedLesson || isFetchingLessonData}
                     className="w-full sm:w-auto"
                   >
                     <CheckCircle2 />
@@ -363,7 +359,9 @@ const LessonLearningTools = ({
       setSavedNote(normalizedNote);
       setNote(normalizedNote);
       setIsEditingNote(false);
-      toast.success(note.trim() ? "Lesson note saved." : "Lesson note removed.");
+      toast.success(
+        note.trim() ? "Lesson note saved." : "Lesson note removed.",
+      );
     } catch {
       toast.error("Failed to save your lesson note.");
     }
@@ -483,10 +481,7 @@ const LessonLearningTools = ({
                     Cancel
                   </Button>
                 )}
-                <Button
-                  onClick={saveNote}
-                  disabled={isLoading || isSaving}
-                >
+                <Button onClick={saveNote} disabled={isLoading || isSaving}>
                   <Save />
                   {savedNote ? "Update note" : "Save note"}
                 </Button>

@@ -2,10 +2,7 @@ import { Form } from "@/components/Form/Form";
 import TextAreaInput from "@/components/Form/TextAreaInput";
 import TextInput from "@/components/Form/TextInput";
 import { Button } from "@/components/ui/button";
-import {
-  useAddCourseMutation,
-  useUpdateCourseMutation,
-} from "@/redux/api/courseApi";
+import { useAddCourseMutation, useUpdateCourseMutation } from "@/hooks/course.hook";
 import { courseDefaultValues, courseSchema } from "@/schema/course.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
