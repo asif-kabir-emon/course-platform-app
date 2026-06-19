@@ -17,6 +17,7 @@ import {
   LogOutIcon,
   Menu,
   ReceiptText,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -84,8 +85,19 @@ const adminItems: NavItem[] = [
   },
 ];
 
+const superAdminItems: NavItem[] = [
+  ...adminItems,
+  {
+    label: "Staff",
+    href: "/admin/staff",
+    match: "/admin/staff",
+    icon: UsersRound,
+  },
+];
+
 const getNavigation = (role?: Role | null) => {
-  if (role === "admin" || role === "super_admin") return adminItems;
+  if (role === "super_admin") return superAdminItems;
+  if (role === "admin") return adminItems;
   if (role === "user") return learnerItems;
   return [];
 };

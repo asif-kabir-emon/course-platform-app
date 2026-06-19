@@ -372,7 +372,11 @@ const PurchaseButton = ({
   if (!isLoading && userAccess?.success === false) {
     return (
       <Button size="lg" asChild>
-        <Link href="/sign-in">Login to purchase</Link>
+        <Link
+          href={`/sign-in?redirect=${encodeURIComponent(`/products/${productId}`)}`}
+        >
+          Login to purchase
+        </Link>
       </Button>
     );
   }
@@ -416,7 +420,7 @@ const ProductDetailSkeleton = () => {
         </div>
         <SkeletonText className="aspect-video h-full w-full rounded-none" />
       </div>
-      <div className="mt-8 grid gap-6 xl:grid-cols-2">
+      <div className="mt-8">
         <Card className="overflow-hidden">
           <CardHeader className="space-y-2 border-b">
             <SkeletonText className="h-6 w-48" />
