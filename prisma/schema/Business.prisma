@@ -1,0 +1,98 @@
+model Promotions {
+  id                    String          @id @default(auto()) @map("_id") @db.ObjectId
+  code                  String          @unique
+  name                  String
+  discountType          DiscountType
+  discountValue         Int
+  startsAt              DateTime?
+  endsAt                DateTime?
+  maxRedemptions        Int?
+  maxRedemptionsPerCustomer Int?
+  maximumRedeemAmountInCent Int?
+  redemptionCount       Int             @default(0)
+  isActive              Boolean         @default(true)
+  status                PromotionStatus?
+  minimumAmountInCent   Int?
+  firstTimeCustomersOnly Boolean?
+  publishedAt           DateTime?
+  stripeCouponId        String?         @unique
+  stripePromotionCodeId String?         @unique
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("promotions")
+}
+
+model PromotionRedemptions {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  promotionId     String   @db.ObjectId
+  userId          String   @db.ObjectId
+  stripeSessionId String   @unique
+  createdAt       DateTime @default(now())
+
+  @@index([promotionId, userId])
+  @@map("promotion_redemptions")
+}
+
+enum DiscountType {
+  percent
+  fixed
+}
+
+enum PromotionStatus {
+  draft
+  scheduled
+  active
+  paused
+  expired
+}
+
+model BusinessSettings {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  key                   String   @unique @default("default")
+  legalName             String   @default("KnowVeria")
+  tradingName           String?
+  supportEmail          String?
+  taxId                  String?
+  addressLine1          String?
+  addressLine2          String?
+  city                   String?
+  state                  String?
+  postalCode             String?
+  country                String?
+  currency               String   @default("USD")
+  automaticTaxEnabled   Boolean  @default(false)
+  invoicePrefix         String   @default("INV")
+  termsUrl               String   @default("/legal/terms")
+  privacyUrl             String   @default("/legal/privacy")
+  refundUrl              String   @default("/legal/refunds")
+  cookieUrl              String   @default("/legal/cookies")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("business_settings")
+}
+
+model EmailDeliveries {
+  id             String              @id @default(auto()) @map("_id") @db.ObjectId
+  recipient      String
+  template       String
+  subject        String
+  status         EmailDeliveryStatus @default(queued)
+  providerId     String?
+  failureReason  String?
+  sentAt         DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([recipient, createdAt])
+  @@map("email_deliveries")
+}
+
+enum EmailDeliveryStatus {
+  queued
+  sent
+  failed
+}

@@ -3,7 +3,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const instance = axios.create();
-instance.defaults.headers.post["Content-Type"] = "application/json";
 instance.defaults.headers["Accept"] = "application/json";
 instance.defaults.timeout = 60000;
 

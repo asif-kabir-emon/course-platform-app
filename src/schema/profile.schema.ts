@@ -15,15 +15,9 @@ export const profileSchema = z.object({
     .min(3, {
       message: "Last name must be at least 3 characters",
     }),
-  imageUrl: z
-    .string({
-      message: "Photo URL is required",
-    })
-    .optional(),
 });
 
 export const profileDefaultValues: z.infer<typeof profileSchema> = {
   firstName: "",
   lastName: "",
-  imageUrl: "",
 };

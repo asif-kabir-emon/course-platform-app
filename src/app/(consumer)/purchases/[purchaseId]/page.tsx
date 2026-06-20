@@ -57,14 +57,23 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
 
   return (
     <div className="my-5">
-      <PageHeader title="Purchase Details">
-        {purchase.data.stripe.receiptUrl && (
-          <Button variant="outline" className="hidden md:flex" asChild>
-            <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
-              View Receipt
-            </Link>
+      <PageHeader title="Purchase Details" className="">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="hidden md:flex"
+            onClick={() => window.print()}
+          >
+            Print invoice
           </Button>
-        )}
+          {purchase.data.stripe.receiptUrl && (
+            <Button variant="outline" className="hidden md:flex" asChild>
+              <Link target="_blank" href={purchase.data.stripe.receiptUrl}>
+                View Receipt
+              </Link>
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       {purchase.data.stripe.receiptUrl && (
@@ -79,8 +88,10 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="flex flex-col gap-1">
-              <CardTitle>Receipt</CardTitle>
-              <CardDescription>ID: {purchase.data.id}</CardDescription>
+              <CardTitle>Invoice / receipt</CardTitle>
+              <CardDescription>
+                {purchase.data.invoiceNumber || `Purchase ${purchase.data.id}`}
+              </CardDescription>
             </div>
             <Badge className="text-base">
               {purchase.data.refundAt ? "Refunded" : "Paid"}
@@ -107,8 +118,39 @@ const SuspenseBoundary = ({ purchaseId }: { purchaseId: string }) => {
           </div>
           <div>
             <label className="text-sm text-muted-foreground">Seller</label>
-            <div>{process.env.NEXT_PUBLIC_APP_NAME}</div>
+            <div>
+              {purchase.data.business?.legalName ||
+                process.env.NEXT_PUBLIC_APP_NAME}
+            </div>
+            {purchase.data.business?.taxId && (
+              <div className="text-sm text-muted-foreground">
+                Tax ID: {purchase.data.business.taxId}
+              </div>
+            )}
+            {purchase.data.business?.addressLine1 && (
+              <div className="text-sm text-muted-foreground">
+                {[
+                  purchase.data.business.addressLine1,
+                  purchase.data.business.city,
+                  purchase.data.business.country,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </div>
+            )}
           </div>
+          {purchase.data.stripe.promotionCode && (
+            <div>
+              <label className="text-sm text-muted-foreground">
+                Promotion code
+              </label>
+              <div>
+                <Badge variant="outline" className="font-mono">
+                  {purchase.data.stripe.promotionCode}
+                </Badge>
+              </div>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="grid grid-cols-2 gap-y-4 gap-x-8 border-t pt-4">
           {purchase.data.stripe.pricingRows.map(

@@ -2,6 +2,9 @@ model UserCourseAccess {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
   courseId  String   @db.ObjectId
+  source    CourseAccessSource @default(purchase)
+  note      String?
+  expiresAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -11,4 +14,9 @@ model UserCourseAccess {
   @@unique([userId, courseId])
   @@index([courseId])
   @@map("user_course_access")
+}
+
+enum CourseAccessSource {
+  purchase
+  manual
 }

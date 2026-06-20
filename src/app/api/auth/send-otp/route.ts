@@ -65,6 +65,7 @@ export const POST = catchAsync(async (request: Request) => {
 
     const isEmailSent = await sendEmail({
       email: email,
+      template: "password_reset",
       subject: "Reset Your Password – Secure Link Inside",
       emailTextInHTML: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
         <h2 style="color: #333;">Password Reset Request</h2>
@@ -102,6 +103,7 @@ export const POST = catchAsync(async (request: Request) => {
 
     const isEmailSent = await sendEmail({
       email: email,
+      template: "email_verification",
       subject: "Your One-Time Password (OTP) for Secure Verification",
       emailTextInHTML: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
         <h2 style="color: #333;">OTP Verification Code</h2>

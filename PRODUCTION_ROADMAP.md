@@ -81,14 +81,14 @@ business. Items are ordered by risk and dependency.
 
 ## Phase 4: Business Essentials
 
-- [ ] Add coupons and limited-time promotions.
-- [ ] Add invoices, receipts, tax details, and business identity settings.
-- [ ] Add customer management and manual course-access controls.
-- [ ] Add revenue, conversion, refund, and course-completion analytics.
-- [ ] Add CSV exports for sales and customers.
-- [ ] Add transactional email templates and delivery tracking.
-- [ ] Add terms, privacy, refund, and cookie policies.
-- [ ] Add account deletion and user data export.
+- [x] Add coupons and limited-time promotions.
+- [x] Add invoices, receipts, tax details, and business identity settings.
+- [x] Add customer management and manual course-access controls.
+- [x] Add revenue, conversion, refund, and course-completion analytics.
+- [x] Add CSV exports for sales and customers.
+- [x] Add transactional email templates and delivery tracking.
+- [x] Add terms, privacy, refund, and cookie policies.
+- [x] Add account deletion and user data export.
 
 ## Phase 5: Learning Product Growth
 

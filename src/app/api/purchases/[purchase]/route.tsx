@@ -29,7 +29,15 @@ function getPricingRows(
     total,
     subtotal,
     refund,
-  }: { total: number; subtotal: number; refund?: number },
+    promotionLabel,
+    promotionDiscountInCent,
+  }: {
+    total: number;
+    subtotal: number;
+    refund?: number;
+    promotionLabel?: string;
+    promotionDiscountInCent: number;
+  },
 ) {
   const pricingRows: {
     label: string;
@@ -43,6 +51,13 @@ function getPricingRows(
         label: `${discount.discount.coupon.name} (${discount.discount.coupon.percent_off}% off)`,
         amountInDollars: discount.amount / -100,
       });
+    });
+  }
+
+  if (pricingRows.length === 0 && promotionDiscountInCent > 0) {
+    pricingRows.push({
+      label: promotionLabel || "Promotion discount",
+      amountInDollars: promotionDiscountInCent / -100,
     });
   }
 
@@ -115,7 +130,7 @@ export const GET = authGuard(
 
     assertStripeSecretKey();
 
-    const { payment_intent, total_details, amount_total, amount_subtotal } =
+    const [session, business] = await Promise.all([
       await stripeServerClient.checkout.sessions.retrieve(
         purchase.stripeSessionId,
         {
@@ -124,7 +139,11 @@ export const GET = authGuard(
             "total_details.breakdown.discounts",
           ],
         },
-      );
+      ),
+      prisma.businessSettings.findUnique({ where: { key: "default" } }),
+    ]);
+    const { payment_intent, total_details, amount_total, amount_subtotal } =
+      session;
 
     const refundAmount =
       typeof payment_intent !== "string" &&
@@ -140,13 +159,20 @@ export const GET = authGuard(
       success: true,
       data: {
         ...purchase,
+        business,
         stripe: {
+          promotionCode: session.metadata?.promotionCode ?? null,
           receiptUrl: getReceiptUrl(payment_intent),
           pricingRows: getPricingRows(total_details, {
             total:
               (amount_total ?? purchase.pricePaidInCent) - (refundAmount ?? 0),
             subtotal: amount_subtotal ?? purchase.pricePaidInCent,
             refund: refundAmount,
+            promotionLabel: session.metadata?.promotionLabel,
+            promotionDiscountInCent:
+              Number(session.metadata?.promotionDiscountInCent ?? 0) ||
+              purchase.discountInCent ||
+              0,
           }),
         },
         user: isUserExist,
@@ -284,6 +310,7 @@ export const PUT = authGuard(
         await tsc.userCourseAccess.deleteMany({
           where: {
             userId: isPurchaseExist.userId,
+            source: "purchase",
             courseId: {
               in: needToRemoveCourseAccess,
             },
