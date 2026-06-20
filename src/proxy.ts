@@ -43,12 +43,17 @@ const isCannotAccessAfterAuthRoutes = createRouteMatcher([
 
 const isAdminRoutes = createRouteMatcher(["/admin(.*)"]);
 
-const isUserRoutes = createRouteMatcher([
+const isSharedAuthenticatedRoutes = createRouteMatcher([
   "/profile(.*)",
+]);
+
+const isLearnerRoutes = createRouteMatcher([
   "/purchases(.*)",
   "/courses(.*)",
-  "/profile(.*)",
+  "/bookmarks(.*)",
+  "/grades(.*)",
   "/products/purchase-failure",
+  "/products/purchase-pending",
   "/products/:productId/purchase",
   "/products/:productId/purchase/success",
 ]);
@@ -78,7 +83,14 @@ export async function proxy(req: NextRequest) {
     if (!isAdminRole(userRole)) {
       return NextResponse.redirect(new URL("/not-found", req.nextUrl));
     }
-  } else if (isUserRoutes(pathname)) {
+  } else if (isLearnerRoutes(pathname)) {
+    if (!token || !isValid) {
+      return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
+    }
+    if (isAdminRole(userRole)) {
+      return NextResponse.redirect(new URL("/admin", req.nextUrl));
+    }
+  } else if (isSharedAuthenticatedRoutes(pathname)) {
     if (!token || !isValid) {
       return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
     }

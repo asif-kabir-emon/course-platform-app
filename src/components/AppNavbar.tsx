@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import type { jwtPayload } from "@/types";
 import {
   BarChart3,
+  BriefcaseBusiness,
   Bookmark,
   BookOpen,
   Boxes,
@@ -82,6 +83,12 @@ const adminItems: NavItem[] = [
     href: "/admin/sales",
     match: "/admin/sales",
     icon: BarChart3,
+  },
+  {
+    label: "Business",
+    href: "/admin/business",
+    match: "/admin/business",
+    icon: BriefcaseBusiness,
   },
 ];
 

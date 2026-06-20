@@ -1,6 +1,11 @@
 model PurchaseHistories {
   id              String        @id @default(auto()) @map("_id") @db.ObjectId
   pricePaidInCent Int
+  subtotalInCent  Int?
+  discountInCent  Int             @default(0)
+  taxInCent       Int             @default(0)
+  currency        String          @default("usd")
+  invoiceNumber   String?         @unique
   productDetails  ProductDetail
   userId          String        @db.ObjectId
   productId       String        @db.ObjectId
@@ -15,6 +20,7 @@ model PurchaseHistories {
 
   @@index([userId, createdAt])
   @@index([productId, isRefunded])
+  @@index([createdAt, isRefunded])
   @@map("purchase_histories")
 }
 

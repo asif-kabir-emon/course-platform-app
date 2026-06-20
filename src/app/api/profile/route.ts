@@ -42,7 +42,9 @@ export const GET = authGuard(
         id: userData.id,
         email: userData.email,
         role: userData.role,
+        isVerified: userData.isVerified,
         isDeleted: userData.isDeleted,
+        createdAt: userData.createdAt,
         profile: userData.profile,
         userCourseAccess: userData.userCourseAccess,
         purchaseHistories: userData.purchaseHistories,
@@ -54,7 +56,7 @@ export const GET = authGuard(
 export const PUT = authGuard(
   catchAsync(async (request: Request) => {
     const user = request.user;
-    const { firstName, lastName, imageUrl } = await request.json();
+    const { firstName, lastName } = await request.json();
 
     // Check firstName, lastName, and imageUrl exist
     if (!firstName || !lastName) {
@@ -74,7 +76,6 @@ export const PUT = authGuard(
       data: {
         firstName: firstName,
         lastName: lastName,
-        imageUrl: imageUrl || "",
       },
     });
 
@@ -94,7 +95,7 @@ export const PUT = authGuard(
       imageUrl: (updatedUser.imageUrl as string) || "",
     };
     const jwtSecret = getJwtSecret();
-    const jwtExpiresIn = String(process.env.JWT_EXPIRES_IN) || "1h";
+    const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "1h";
     const token = createToken(payload, jwtSecret, { expiresIn: jwtExpiresIn });
 
     if (!token) {

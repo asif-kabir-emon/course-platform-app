@@ -4,6 +4,10 @@ export function createToken(
   payload: {
     id: string;
     email: string;
+    role?: "super_admin" | "admin" | "user";
+    verified?: boolean;
+    name?: string;
+    imageUrl?: string;
   },
   secret: string,
   options: {
