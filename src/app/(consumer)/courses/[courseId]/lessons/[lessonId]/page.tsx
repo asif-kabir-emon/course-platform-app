@@ -1,6 +1,12 @@
 "use client";
 import { SkeletonButton, SkeletonText } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import YoutubeVideoPlayer from "@/components/YoutubeVideoPlayer";
 import {
   useAddCompletedLessonMutation,
@@ -170,14 +176,7 @@ const SuspenseBoundary = ({
   return (
     <div className="space-y-5">
       <header>
-        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
-          {lessonType === CourseLessonType.quiz
-            ? "Quiz lesson"
-            : lessonType === CourseLessonType.text
-              ? "Reading lesson"
-              : "Video lesson"}
-        </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           {lesson.name}
         </h1>
       </header>
@@ -281,31 +280,25 @@ const SuspenseBoundary = ({
         )}
       </section>
 
-      {lessonType !== CourseLessonType.text && (
-        <section className="surface-panel p-5 sm:p-6">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
-            <PlayCircle className="size-4" />
-            About this lesson
-          </div>
-          <div className="text-muted-foreground">
-            {lesson.description ? (
-              <MarkdownContent content={lesson.description} />
-            ) : (
-              <p className="leading-7">No additional lesson description.</p>
-            )}
-          </div>
-        </section>
-      )}
-
       {isLearnerSession && (
         <>
-          <LessonQuiz lessonId={lesson.id} courseId={courseId} />
-          <LessonLearningTools
+          <LessonDetailsTabs
+            description={lesson.description}
+            showAbout={lessonType !== CourseLessonType.text}
             lessonId={lesson.id}
             learningData={learningData}
-            isLoading={isLearningDataLoading}
+            isLearningToolsLoading={isLearningDataLoading}
+            showLearningTools
           />
+          <LessonQuiz lessonId={lesson.id} courseId={courseId} />
         </>
+      )}
+      {!isLearnerSession && lessonType !== CourseLessonType.text && (
+        <LessonDetailsTabs
+          description={lesson.description}
+          showAbout
+          showLearningTools={false}
+        />
       )}
       {lesson.isAdminPreview && (
         <section className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-sm text-primary">
@@ -314,6 +307,82 @@ const SuspenseBoundary = ({
         </section>
       )}
     </div>
+  );
+};
+
+const LessonDetailsTabs = ({
+  description,
+  showAbout,
+  showLearningTools,
+  lessonId,
+  learningData,
+  isLearningToolsLoading = false,
+}: {
+  description?: string;
+  showAbout: boolean;
+  showLearningTools: boolean;
+  lessonId?: string;
+  learningData?: {
+    success: boolean;
+    data: {
+      note: string;
+      bookmarked: boolean;
+      positionSeconds: number;
+    };
+  };
+  isLearningToolsLoading?: boolean;
+}) => {
+  const defaultTab = showAbout ? "about" : "tools";
+
+  if (!showAbout && !showLearningTools) {
+    return null;
+  }
+
+  return (
+    <Tabs defaultValue={defaultTab} className="surface-panel overflow-hidden">
+      <div className="border-b px-4 pt-4 sm:px-5">
+        <TabsList className="h-auto w-full justify-start rounded-none bg-transparent p-0">
+          {showAbout && (
+            <TabsTrigger
+              value="about"
+              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              <PlayCircle className="size-4" />
+              About
+            </TabsTrigger>
+          )}
+          {showLearningTools && (
+            <TabsTrigger
+              value="tools"
+              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              <NotebookPen className="size-4" />
+              Notes
+            </TabsTrigger>
+          )}
+        </TabsList>
+      </div>
+      {showAbout && (
+        <TabsContent value="about" className="m-0 p-5 sm:p-6">
+          <div className="max-w-none text-muted-foreground">
+            {description ? (
+              <MarkdownContent content={description} />
+            ) : (
+              <p className="leading-7">No additional lesson description.</p>
+            )}
+          </div>
+        </TabsContent>
+      )}
+      {showLearningTools && lessonId && (
+        <TabsContent value="tools" className="m-0">
+          <LessonLearningTools
+            lessonId={lessonId}
+            learningData={learningData}
+            isLoading={isLearningToolsLoading}
+          />
+        </TabsContent>
+      )}
+    </Tabs>
   );
 };
 
@@ -401,7 +470,7 @@ const LessonLearningTools = ({
   };
 
   return (
-    <section className="surface-panel p-5 sm:p-6">
+    <section className="p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2 font-semibold">
