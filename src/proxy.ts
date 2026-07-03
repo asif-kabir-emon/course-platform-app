@@ -43,8 +43,13 @@ const isCannotAccessAfterAuthRoutes = createRouteMatcher([
 
 const isAdminRoutes = createRouteMatcher(["/admin(.*)"]);
 
+const isPublicLessonRoutes = createRouteMatcher([
+  "/courses/:courseId/lessons/:lessonId",
+]);
+
 const isSharedAuthenticatedRoutes = createRouteMatcher([
   "/profile(.*)",
+  "/courses/:courseId",
 ]);
 
 const isLearnerRoutes = createRouteMatcher([
@@ -83,16 +88,18 @@ export async function proxy(req: NextRequest) {
     if (!isAdminRole(userRole)) {
       return NextResponse.redirect(new URL("/not-found", req.nextUrl));
     }
+  } else if (isPublicLessonRoutes(pathname)) {
+    console.log("Public lesson route");
+  } else if (isSharedAuthenticatedRoutes(pathname)) {
+    if (!token || !isValid) {
+      return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
+    }
   } else if (isLearnerRoutes(pathname)) {
     if (!token || !isValid) {
       return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
     }
     if (isAdminRole(userRole)) {
       return NextResponse.redirect(new URL("/admin", req.nextUrl));
-    }
-  } else if (isSharedAuthenticatedRoutes(pathname)) {
-    if (!token || !isValid) {
-      return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
     }
   } else if (isPublicRoutes(pathname)) {
     console.log("Public route");
