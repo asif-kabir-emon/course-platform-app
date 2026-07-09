@@ -1,6 +1,7 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
+import NetworkStatus from "@/components/NetworkStatus";
 
 const Providers = ({ children }: { children: ReactNode }) => {
   const [queryClient] = useState(
@@ -16,7 +17,10 @@ const Providers = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <NetworkStatus />
+    </QueryClientProvider>
   );
 };
 

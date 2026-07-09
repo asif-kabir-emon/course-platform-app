@@ -27,6 +27,10 @@ instance.interceptors.response.use(
   },
 
   async function (error) {
+    if (typeof window !== "undefined" && !error?.response) {
+      window.dispatchEvent(new Event("app:network-offline"));
+    }
+
     const responseObj: {
       success: boolean;
       status: number;
