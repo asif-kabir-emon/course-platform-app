@@ -591,22 +591,36 @@ const LessonLearningTools = ({
 const LessonSkeleton = () => {
   return (
     <div className="space-y-5">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <SkeletonText className="h-8 w-64 sm:w-96 rounded-md" />
+        <SkeletonText className="h-9 w-32 rounded-lg" />
+      </div>
+
+      {/* Video / Content Panel Skeleton */}
       <div className="surface-panel overflow-hidden">
         <SkeletonText className="aspect-video w-full rounded-none" />
-        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:justify-between">
-          <SkeletonButton />
+        <div className="flex flex-col gap-3 border-t border-border/80 bg-slate-50/50 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <SkeletonText className="h-10 w-36 rounded-lg" />
           <div className="flex gap-2">
-            <SkeletonButton />
-            <SkeletonButton />
+            <SkeletonText className="h-10 w-24 rounded-lg" />
+            <SkeletonText className="h-10 w-20 rounded-lg" />
           </div>
         </div>
       </div>
-      <div className="surface-panel space-y-3 p-6">
-        <SkeletonText className="h-5 w-28" />
-        <SkeletonText className="h-8 w-2/3" />
-        <SkeletonText className="w-full" />
-        <SkeletonText className="w-full" />
-        <SkeletonText className="w-1/2" />
+
+      {/* Tabs & Content Skeleton */}
+      <div className="surface-panel overflow-hidden mt-6">
+        <div className="border-b border-border bg-[#f8fafc]/50 px-4 pt-3 sm:px-5 h-12 flex gap-4">
+          <SkeletonText className="h-4 w-16 mt-1" />
+          <SkeletonText className="h-4 w-16 mt-1" />
+        </div>
+        <div className="p-5 sm:p-6 space-y-3">
+          <SkeletonText className="h-4 w-1/3" />
+          <SkeletonText className="h-4 w-full" />
+          <SkeletonText className="h-4 w-full" />
+          <SkeletonText className="h-4 w-2/3" />
+        </div>
       </div>
     </div>
   );
