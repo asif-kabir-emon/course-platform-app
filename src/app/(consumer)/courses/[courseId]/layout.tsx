@@ -45,10 +45,17 @@ export default function CoursePageLayout({
     return (
       <div className="page-shell">
         <SkeletonText className="mb-6 h-4 w-64" />
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <div className="surface-panel hidden p-5 lg:block">
-            <CoursePageSkeleton />
-          </div>
+        <div
+          className={cn(
+            "grid gap-6 xl:gap-8",
+            lessonId && "lg:grid-cols-[300px_minmax(0,1fr)]",
+          )}
+        >
+          {lessonId && (
+            <div className="surface-panel hidden lg:block overflow-hidden">
+              <CoursePageSkeleton />
+            </div>
+          )}
           <div>{children}</div>
         </div>
       </div>
@@ -105,7 +112,7 @@ export default function CoursePageLayout({
         )}
       </nav>
 
-      {isSidebarCollapsed && (
+      {isSidebarCollapsed && !!lessonId && (
         <div className="mb-4 hidden lg:flex">
           <Button
             type="button"
@@ -124,47 +131,27 @@ export default function CoursePageLayout({
       <div
         className={cn(
           "grid gap-6 xl:gap-8",
-          !isSidebarCollapsed && "lg:grid-cols-[300px_minmax(0,1fr)]",
+          !!lessonId && !isSidebarCollapsed && "lg:grid-cols-[300px_minmax(0,1fr)]",
         )}
       >
-        {!isSidebarCollapsed && (
-          <aside className="surface-panel hidden h-fit p-5 lg:sticky lg:top-24 lg:block">
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  Course content
-                </p>
-                <h2 className="mt-1 text-lg font-semibold leading-snug">
-                  {course.data.name}
-                </h2>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="-mr-2 -mt-2 size-9 shrink-0"
-                onClick={() => setSidebarCollapsed(true)}
-                aria-label="Collapse course content sidebar"
-                aria-expanded
-                title="Collapse sidebar"
-              >
-                <PanelLeftClose />
-              </Button>
-            </div>
-            <div className="max-h-[calc(100vh-190px)] overflow-y-auto pr-1">
-              <Suspense
-                fallback={
-                  <CoursePageClient
-                    course={mapCourse({
-                      course: course.data,
-                      completedLessonIds: [],
-                    })}
-                  />
-                }
-              >
-                <SuspenseBoundary course={course.data} />
-              </Suspense>
-            </div>
+        {!!lessonId && !isSidebarCollapsed && (
+          <aside className="surface-panel hidden h-fit lg:sticky lg:top-24 lg:block overflow-hidden">
+            <Suspense
+              fallback={
+                <CoursePageClient
+                  course={mapCourse({
+                    course: course.data,
+                    completedLessonIds: [],
+                  })}
+                  onCollapse={() => setSidebarCollapsed(true)}
+                />
+              }
+            >
+              <SuspenseBoundary
+                course={course.data}
+                onCollapse={() => setSidebarCollapsed(true)}
+              />
+            </Suspense>
           </aside>
         )}
         <main className="min-w-0">{children}</main>
@@ -175,6 +162,7 @@ export default function CoursePageLayout({
 
 function SuspenseBoundary({
   course,
+  onCollapse,
 }: {
   course: {
     id: string;
@@ -188,6 +176,7 @@ function SuspenseBoundary({
       }[];
     }[];
   };
+  onCollapse: () => void;
 }) {
   const { data: completedLessons, isLoading } = useGetCompletedLessonsQuery({});
 
@@ -205,6 +194,7 @@ function SuspenseBoundary({
         course,
         completedLessonIds: completedLessons.data,
       })}
+      onCollapse={onCollapse}
     />
   );
 }

@@ -17,12 +17,13 @@ import {
   useSaveLessonLearningMutation,
 } from "@/hooks/lesson.hook";
 import {
-  ArrowLeft,
-  ArrowRight,
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  FileText,
   LockIcon,
   NotebookPen,
   Pencil,
@@ -44,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import LessonQuiz from "@/features/lesson/LessonQuiz";
 import { CourseLessonType } from "@/constants/CourseLessonType.constant";
 import MarkdownContent from "@/components/MarkdownContent";
+import { cn } from "@/lib/utils";
 
 const LessonPage = ({
   params,
@@ -119,6 +121,32 @@ const SuspenseBoundary = ({
   const [saveLessonLearning] = useSaveLessonLearningMutation();
   const lessonType = lesson.type ?? CourseLessonType.video;
 
+  const [bookmarked, setBookmarked] = useState(false);
+
+  useEffect(() => {
+    if (learningData?.success) {
+      setBookmarked(learningData.data.bookmarked);
+    }
+  }, [learningData]);
+
+  const toggleBookmark = async () => {
+    const nextBookmarked = !bookmarked;
+    setBookmarked(nextBookmarked);
+
+    try {
+      await saveLessonLearning({
+        lessonId: lesson.id,
+        body: { bookmarked: nextBookmarked },
+      }).unwrap();
+      toast.success(
+        nextBookmarked ? "Lesson bookmarked." : "Bookmark removed.",
+      );
+    } catch {
+      setBookmarked(!nextBookmarked);
+      toast.error("Failed to update the bookmark.");
+    }
+  };
+
   const handleVideoProgress = useCallback(
     (positionSeconds: number, durationSeconds: number) => {
       void saveLessonLearning({
@@ -175,16 +203,36 @@ const SuspenseBoundary = ({
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {lesson.name}
         </h1>
+        {isLearnerSession && (
+          <Button
+            variant={bookmarked ? "default" : "outline"}
+            onClick={toggleBookmark}
+            disabled={isLearningDataLoading}
+            className={cn(
+              "shrink-0 gap-2 rounded-lg transition-all self-start sm:self-center text-xs h-9",
+              bookmarked
+                ? "bg-amber-500 hover:bg-amber-600 border-amber-500 text-white shadow-sm"
+                : "border-slate-200 hover:bg-slate-50 text-slate-700",
+            )}
+          >
+            {bookmarked ? (
+              <BookmarkCheck className="size-4 fill-white text-white" />
+            ) : (
+              <Bookmark className="size-4" />
+            )}
+            {bookmarked ? "Bookmarked" : "Bookmark lesson"}
+          </Button>
+        )}
       </header>
       {lesson.hasAccess && (
         <div className="lg:hidden">
-          <Button variant="outline" className="w-full sm:w-auto" asChild>
+          <Button variant="outline" className="w-full sm:w-auto rounded-lg" asChild>
             <Link href={`/courses/${courseId}`}>
-              <ChevronLeft className="size-6" />
+              <ChevronLeft className="size-5" />
               Course content
             </Link>
           </Button>
@@ -209,35 +257,37 @@ const SuspenseBoundary = ({
           </article>
         )}
         {lessonType === CourseLessonType.quiz && (
-          <div className="flex min-h-48 flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 p-6 text-center">
-            <CheckCircle2 className="size-10 text-primary" />
-            <h2 className="mt-3 text-xl font-semibold">Ready to begin?</h2>
-            <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+          <div className="flex min-h-56 flex-col items-center justify-center bg-gradient-to-b from-blue-50/40 via-indigo-50/10 to-transparent p-8 text-center border-b border-border/50">
+            <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary ring-8 ring-primary/5 mb-4">
+              <CircleHelp className="size-6" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">Ready to begin?</h2>
+            <p className="mt-2 max-w-lg text-sm text-slate-500 leading-relaxed">
               Review the attempt window and quiz rules below before submitting
               your answers.
             </p>
           </div>
         )}
         {isLearnerSession && (
-          <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-t border-border/80 bg-slate-50/50 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Suspense fallback={<SkeletonButton />}>
               <div>
                 {lesson.isCompleted ? (
                   <Button
                     variant="outline"
                     disabled
-                    className="w-full border-emerald-500/30 bg-emerald-500/5 text-emerald-700 disabled:opacity-100 sm:w-auto"
+                    className="w-full border-emerald-200 bg-emerald-50 text-emerald-700 disabled:opacity-100 sm:w-auto font-medium gap-2 rounded-lg"
                   >
-                    <CheckCircle2 />
-                    <span>Lesson completed</span>
+                    <CheckCircle2 className="size-4 shrink-0 fill-emerald-600 text-white" />
+                    <span>Completed</span>
                   </Button>
                 ) : (
                   <Button
                     onClick={() => handleMarkLessonAsComplete(lesson.id)}
                     disabled={isMarkingCompletedLesson || isFetchingLessonData}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/95 text-white shadow-sm font-semibold gap-2 rounded-lg"
                   >
-                    <CheckCircle2 />
+                    <CheckCircle2 className="size-4" />
                     <span>Mark as complete</span>
                   </Button>
                 )}
@@ -250,12 +300,12 @@ const SuspenseBoundary = ({
                     lessonId={previousLesson.data.previousLessonId}
                     isDisabled={isFetchingLessonData}
                   >
-                    <ArrowLeft />
-                    Previous
+                    <ChevronLeft className="size-4 shrink-0" />
+                    <span>Previous</span>
                   </ToLessonButton>
                 ) : (
-                  <Button variant="outline" disabled>
-                    <ArrowLeft />
+                  <Button variant="outline" disabled className="gap-1.5 rounded-lg text-slate-400">
+                    <ChevronLeft className="size-4 shrink-0" />
                     Previous
                   </Button>
                 )}
@@ -265,13 +315,13 @@ const SuspenseBoundary = ({
                     lessonId={nextLesson.data.nextLessonId}
                     isDisabled={isFetchingLessonData}
                   >
-                    Next
-                    <ArrowRight />
+                    <span>Next</span>
+                    <ChevronRight className="size-4 shrink-0" />
                   </ToLessonButton>
                 ) : (
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" disabled className="gap-1.5 rounded-lg text-slate-400">
                     Next
-                    <ArrowRight />
+                    <ChevronRight className="size-4 shrink-0" />
                   </Button>
                 )}
               </div>
@@ -339,13 +389,13 @@ const LessonDetailsTabs = ({
   }
 
   return (
-    <Tabs defaultValue={defaultTab} className="surface-panel overflow-hidden">
-      <div className="border-b px-4 pt-4 sm:px-5">
-        <TabsList className="h-auto w-full justify-start rounded-none bg-transparent p-0">
+    <Tabs defaultValue={defaultTab} className="surface-panel overflow-hidden mt-6">
+      <div className="border-b border-border bg-[#f8fafc]/50 px-4 pt-3 sm:px-5">
+        <TabsList className="h-auto w-full justify-start rounded-none bg-transparent p-0 gap-2">
           {showAbout && (
             <TabsTrigger
               value="about"
-              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-semibold shadow-none text-slate-500 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none transition-all"
             >
               <PlayCircle className="size-4" />
               About
@@ -354,7 +404,7 @@ const LessonDetailsTabs = ({
           {showLearningTools && (
             <TabsTrigger
               value="tools"
-              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+              className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-semibold shadow-none text-slate-500 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none transition-all"
             >
               <NotebookPen className="size-4" />
               Notes
@@ -364,11 +414,11 @@ const LessonDetailsTabs = ({
       </div>
       {showAbout && (
         <TabsContent value="about" className="m-0 p-5 sm:p-6">
-          <div className="max-w-none text-muted-foreground">
+          <div className="max-w-none text-slate-600 leading-relaxed">
             {description ? (
               <MarkdownContent content={description} />
             ) : (
-              <p className="leading-7">No additional lesson description.</p>
+              <p className="leading-7 text-slate-500">No additional lesson description.</p>
             )}
           </div>
         </TabsContent>
@@ -405,7 +455,6 @@ const LessonLearningTools = ({
   const [note, setNote] = useState("");
   const [savedNote, setSavedNote] = useState("");
   const [isEditingNote, setIsEditingNote] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
   const [saveLessonLearning, { isLoading: isSaving }] =
     useSaveLessonLearningMutation();
 
@@ -414,7 +463,6 @@ const LessonLearningTools = ({
       setNote(learningData.data.note);
       setSavedNote(learningData.data.note);
       setIsEditingNote(!learningData.data.note);
-      setBookmarked(learningData.data.bookmarked);
     }
   }, [learningData]);
 
@@ -451,45 +499,20 @@ const LessonLearningTools = ({
     }
   };
 
-  const toggleBookmark = async () => {
-    const nextBookmarked = !bookmarked;
-    setBookmarked(nextBookmarked);
-
-    try {
-      await saveLessonLearning({
-        lessonId,
-        body: { bookmarked: nextBookmarked },
-      }).unwrap();
-      toast.success(
-        nextBookmarked ? "Lesson bookmarked." : "Bookmark removed.",
-      );
-    } catch {
-      setBookmarked(!nextBookmarked);
-      toast.error("Failed to update the bookmark.");
-    }
-  };
-
   return (
     <section className="p-5 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2 font-semibold">
-            <NotebookPen className="size-5 text-primary" />
-            Personal learning tools
+      <div className="flex items-start">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-semibold sm:text-base">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary border border-primary/10">
+              <NotebookPen className="size-4" />
+            </span>
+            <span>Personal learning tools</span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Notes and bookmarks are private to your account.
+            Notes are private to your account.
           </p>
         </div>
-        <Button
-          variant={bookmarked ? "default" : "outline"}
-          onClick={toggleBookmark}
-          disabled={isLoading || isSaving}
-          className="w-full sm:w-auto"
-        >
-          {bookmarked ? <BookmarkCheck /> : <Bookmark />}
-          {bookmarked ? "Bookmarked" : "Bookmark lesson"}
-        </Button>
       </div>
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between gap-3">
@@ -502,8 +525,9 @@ const LessonLearningTools = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsEditingNote(true)}
+                className="h-8 gap-1.5 text-xs text-slate-600 border-slate-200 hover:bg-slate-50 rounded-lg"
               >
-                <Pencil className="size-4" />
+                <Pencil className="size-3.5" />
                 Edit
               </Button>
               <Button
@@ -511,16 +535,16 @@ const LessonLearningTools = ({
                 size="sm"
                 onClick={removeNote}
                 disabled={isSaving}
-                className="text-destructive hover:text-destructive"
+                className="h-8 gap-1.5 text-xs text-destructive border-slate-200 hover:bg-destructive/5 hover:border-destructive/20 rounded-lg"
               >
-                <Trash2 className="size-4" />
+                <Trash2 className="size-3.5" />
                 Remove
               </Button>
             </div>
           )}
         </div>
         {savedNote && !isEditingNote ? (
-          <div className="min-h-28 whitespace-pre-wrap rounded-xl border bg-muted/25 p-4 text-sm leading-7">
+          <div className="min-h-28 whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50/40 p-5 text-sm leading-6 text-slate-700 shadow-sm">
             {savedNote}
           </div>
         ) : (
@@ -546,11 +570,12 @@ const LessonLearningTools = ({
                       setNote(savedNote);
                       setIsEditingNote(false);
                     }}
+                    className="rounded-lg"
                   >
                     Cancel
                   </Button>
                 )}
-                <Button onClick={saveNote} disabled={isLoading || isSaving}>
+                <Button onClick={saveNote} disabled={isLoading || isSaving} className="rounded-lg">
                   <Save />
                   {savedNote ? "Update note" : "Save note"}
                 </Button>
@@ -601,7 +626,7 @@ const ToLessonButton = ({
   return (
     <Button
       variant="outline"
-      className="w-full sm:w-auto"
+      className="w-full sm:w-auto gap-1.5 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
       disabled={isDisabled}
       asChild
     >
